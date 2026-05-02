@@ -1,4 +1,41 @@
-dist/
+# ─── Binarios compilados de tools ───────────────────────────────────────────
+# Agregar una línea por cada tool al añadirlo al monorepo
+tools/linelens/linelens
+tools/linelens/linelens.exe
+
+# Binarios de distribución npm (se generan con scripts/build-npm.sh)
 npm/@open-harness/linelens-*/bin/linelens
 npm/@open-harness/linelens-win32-x64/bin/linelens.exe
-tools/linelens/linelens
+
+# Carpeta de distribución general
+dist/
+
+# ─── Go ─────────────────────────────────────────────────────────────────────
+go.work.sum
+coverage.out
+coverage.html
+**/*.test
+
+# ─── Node / npm ─────────────────────────────────────────────────────────────
+node_modules/
+*.log
+npm-debug.log*
+
+# ─── Skills ─────────────────────────────────────────────────────────────────
+*.skill
+
+# ─── Entorno y secretos ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ─── Editores y OS ──────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
