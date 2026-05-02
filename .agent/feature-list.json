@@ -61,6 +61,22 @@
         "Tests unitarios del nuevo output"
       ],
       "passes": false
+    },
+    {
+      "id": "F-006",
+      "category": "functional",
+      "description": "testlens: CLI que detecta archivos sin tests correspondientes (multi-lenguaje)",
+      "steps": [
+        "Leer docs/adr/adr-001-testlens.md para especificación",
+        "Crear tools/testlens/ con go.mod (module .../tools/testlens)",
+        "Agregar testlens al go.work",
+        "Implementar: mapeo de extensiones por lenguaje, detección de archivos sin test",
+        "Agregar tests unitarios",
+        "Verificar que linelens check --fail y go test pasan",
+        "Actualizar open-harness.json con el nuevo tool"
+      ],
+      "passes": false,
+      "branch": "epic/testlens"
     }
   ]
 }
