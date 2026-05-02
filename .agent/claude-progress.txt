@@ -1,0 +1,29 @@
+SESSION LOG — open-harness
+==========================
+Repo: git@github.com:artiko00/open-harness.git
+Inicializado: 2026-05-02
+Estado: 🟡 Harness configurado — linelens funcional, bigo y CI pendientes
+
+SESSION 1 — 2026-05-02
+-----------------------
+- Creado el monorepo open-harness desde el proyecto standalone linelens
+- Stack: Go workspace (go.work) + npm @open-harness scope
+- Module path: github.com/jassencastillo/open-harness/tools/linelens
+- npm packages: @open-harness/linelens + 4 plataformas (linux-x64, darwin-arm64, darwin-x64, win32-x64)
+- 7/7 tests pasando en tools/linelens
+- GPG signing configurado: castillo.cristianj@gmail.com (key 69F2B7C73105684D)
+- SSH key: id_ed25519_github → artiko00
+- Push exitoso a main con commit firmado y verificado
+
+SESSION 2 — 2026-05-02
+-----------------------
+- Creado skill setup-harness (SKILL.md + references/templates.md + references/agent-protocol.md)
+- Instalada en ~/.agents/setup-harness.skill
+- Aplicado harness al propio proyecto (esta sesión)
+
+Pendiente (ver feature-list.json):
+  F-001 → bigo tool
+  F-002 → GitHub Actions CI
+  F-003 → npm publish
+  F-004 → release workflow
+  F-005 → linelens report --format=json

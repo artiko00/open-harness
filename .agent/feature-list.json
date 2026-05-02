@@ -1,0 +1,66 @@
+{
+  "version": "1.0",
+  "features": [
+    {
+      "id": "F-001",
+      "category": "functional",
+      "description": "bigo: herramienta CLI que analiza funciones y estima su complejidad Big O",
+      "steps": [
+        "Crear tools/bigo/ con go.mod (module .../tools/bigo)",
+        "Agregar bigo al go.work",
+        "Implementar: recibir un archivo, extraer funciones, reportar O(n) estimado",
+        "Agregar tests unitarios",
+        "Verificar que linelens check --fail pasa sobre el nuevo código",
+        "Actualizar open-harness.json con el nuevo tool"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-002",
+      "category": "functional",
+      "description": "GitHub Actions CI: build + test todos los tools en cada push a main",
+      "steps": [
+        "Crear .github/workflows/ci.yml",
+        "Job: go test ./tools/... en ubuntu-latest, macos-latest, windows-latest",
+        "Verificar que el workflow corre sin errores en el repo"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-003",
+      "category": "functional",
+      "description": "npm publish workflow: publicar @open-harness/linelens en el registro npm",
+      "steps": [
+        "Registrar organización @open-harness en npmjs.com",
+        "Correr scripts/build-npm.sh linelens para generar binarios",
+        "Publicar en orden: plataformas primero, luego paquete principal",
+        "Verificar instalación: npm install -g @open-harness/linelens && linelens version"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-004",
+      "category": "functional",
+      "description": "GitHub Actions release: tag vX.Y.Z → build binarios + publish npm automático",
+      "steps": [
+        "Crear .github/workflows/release.yml activado por tags v*",
+        "Build cross-platform de todos los tools",
+        "Upload artifacts a GitHub Release",
+        "Publicar npm packages con token NPM_TOKEN en secrets"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-005",
+      "category": "refactor",
+      "description": "linelens: agregar comando 'report' que genera JSON estructurado de violaciones",
+      "steps": [
+        "Agregar subcomando 'report' a main.go",
+        "Salida: JSON con { files: number, violations: [{path, lines, max, excess}] }",
+        "Flag --format=json en 'check' como alias",
+        "Tests unitarios del nuevo output"
+      ],
+      "passes": false
+    }
+  ]
+}
