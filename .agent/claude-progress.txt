@@ -2,7 +2,7 @@ SESSION LOG — open-harness
 ==========================
 Repo: git@github.com:artiko00/open-harness.git
 Inicializado: 2026-05-02
-Estado: 🟡 Harness configurado — linelens funcional, bigo y CI pendientes
+Estado: 🟡 Harness configurado — linelens funcional, dupelens scaffold, TDD adoptado
 
 SESSION 1 — 2026-05-02
 -----------------------
@@ -19,11 +19,30 @@ SESSION 2 — 2026-05-02
 -----------------------
 - Creado skill setup-harness (SKILL.md + references/templates.md + references/agent-protocol.md)
 - Instalada en ~/.agents/setup-harness.skill
-- Aplicado harness al propio proyecto (esta sesión)
+- Aplicado harness al propio proyecto
+
+SESSION 3 — 2026-05-02 (epic/dupelens)
+---------------------------------------
+- Creada branch epic/dupelens para no tocar main
+- Scaffold completo de tools/dupelens (12 archivos, 760 líneas, todos ≤100 lines)
+- ADR-010: Rabin-Karp sobre AST justificado (zero deps + agnostic)
+- F-006 en feature-list.json desglosada en 9 fases (45 steps, 12 done)
+- Build OK, 6/6 tests scaffold pasando, linelens check pasa sobre repo expandido (40 archivos)
+- Pendiente: implementar fingerprint() Rabin-Karp + findDuplicates() + integraciones
+
+SESSION 4 — 2026-05-02 (TDD adoptado)
+--------------------------------------
+- AGENTS.md creado: instrucciones top-level para agentes (Claude/Codex/Cursor)
+- Workflow TDD obligatorio: Red → Green → Refactor
+- ADR-011: TDD como estándar del proyecto
+- .agent/init.sh actualizado para detectar tools sin tests y fallar
+- lefthook.yml extendido: pre-push corre tests de linelens Y dupelens
+- Reglas duras documentadas: nunca commit sin test, [done] solo si tests pasan contundentemente
 
 Pendiente (ver feature-list.json):
-  F-001 → bigo tool
+  F-001 → bigo tool (planificado)
   F-002 → GitHub Actions CI
   F-003 → npm publish
   F-004 → release workflow
   F-005 → linelens report --format=json
+  F-006 → dupelens core (fase1 en adelante, 33 steps restantes)

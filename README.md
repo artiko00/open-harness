@@ -140,6 +140,11 @@ All non-obvious decisions are documented as ADRs in [`docs/`](docs/):
 - [ADR-008](docs/adr-008-linelens-config-raiz.md) — Root-level linelens.json in monorepo
 - [ADR-009](docs/adr-009-proyecto-protegido-por-su-propia-herramienta.md) — Repo protected by its own tool
 - [ADR-010](docs/adr-010-dupelens-rabin-karp-sobre-ast.md) — Rabin-Karp over AST for dupelens
+- [ADR-011](docs/adr-011-tdd-como-estandar.md) — TDD as project standard
+
+## For agents
+
+If you are an AI agent (Claude Code, Codex, Cursor, etc.) working on this repo, read [`AGENTS.md`](AGENTS.md) first — it is the source of truth for workflow, TDD requirements, and conventions.
 
 ## License
 
