@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,9 +32,6 @@ func isBinaryContent(path string) bool {
 	defer f.Close()
 
 	buf := make([]byte, 512)
-	n, err := f.Read(buf)
-	if err != nil && err != io.EOF {
-		return false
-	}
+	n, _ := f.Read(buf)
 	return bytes.ContainsRune(buf[:n], 0)
 }

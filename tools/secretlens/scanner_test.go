@@ -130,3 +130,104 @@ func main() {
 		t.Errorf("expected 0 findings in clean file, got %d", len(findings))
 	}
 }
+
+func TestScan_RootNotExist(t *testing.T) {
+	_, err := scan("/nonexistent/path/abc123", defaultConfig)
+	if err == nil {
+		t.Error("expected error for nonexistent root")
+	}
+}
+
+func TestScan_InvalidPatterns(t *testing.T) {
+	dir := t.TempDir()
+	badCfg := Config{
+		Patterns:  []PatternRule{{Name: "bad", Pattern: `[invalid`, Severity: "high"}},
+		Allowlist: []string{},
+		Exclude:   []string{},
+	}
+	_, err := scan(dir, badCfg)
+	if err == nil {
+		t.Error("expected error for invalid regex pattern")
+	}
+}
+
+func TestScan_SkipsBinaryPath(t *testing.T) {
+	dir := t.TempDir()
+	writeTestFile(t, dir, "image.jpg", "not really a jpg")
+	writeTestFile(t, dir, "clean.go", "package main\n")
+
+	findings, err := scan(dir, defaultConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range findings {
+		if f.RelPath == "image.jpg" {
+			t.Error("jpg should be skipped as binary path")
+		}
+	}
+}
+
+func TestScan_SkipsBinaryContent(t *testing.T) {
+	dir := t.TempDir()
+	writeTestFile(t, dir, "disguised.go", string([]byte{0x00, 'h', 'i'}))
+	writeTestFile(t, dir, "clean.go", "package main\n")
+
+	findings, err := scan(dir, defaultConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range findings {
+		if f.RelPath == "disguised.go" {
+			t.Error("file with null bytes should be skipped")
+		}
+	}
+}
+
+func TestScan_SkipsExcludedFile(t *testing.T) {
+	dir := t.TempDir()
+	writeTestFile(t, dir, "yarn.lock", "lock content")
+	writeTestFile(t, dir, "clean.go", "package main\n")
+
+	cfg := Config{
+		Patterns:  defaultPatterns(),
+		Allowlist: defaultConfig.Allowlist,
+		Exclude:   []string{"*.lock"},
+	}
+	findings, err := scan(dir, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range findings {
+		if f.RelPath == "yarn.lock" {
+			t.Error("lock file should be excluded")
+		}
+	}
+}
+
+func TestScan_ErrorInSubdir(t *testing.T) {
+	dir := t.TempDir()
+	subdir := filepath.Join(dir, "restricted")
+	os.Mkdir(subdir, 0755)
+	os.WriteFile(filepath.Join(subdir, "file.go"), []byte("package main"), 0644)
+	os.Chmod(subdir, 0000)
+	defer os.Chmod(subdir, 0755)
+
+	_, err := scan(dir, defaultConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestScan_ScanFileError(t *testing.T) {
+	dir := t.TempDir()
+	locked := filepath.Join(dir, "locked.go")
+	writeTestFile(t, dir, "locked.go", `const key = "AKIAQNB7Q7AIIVSMBGPF"`)
+	writeTestFile(t, dir, "clean.go", "package main\n")
+	os.Chmod(locked, 0000)
+	defer os.Chmod(locked, 0644)
+
+	_, err := scan(dir, defaultConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+}

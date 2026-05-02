@@ -22,6 +22,9 @@ func scan(root string, cfg Config, maxOverride int) ([]FileResult, error) {
 
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
+			if path == root {
+				return err
+			}
 			return nil
 		}
 

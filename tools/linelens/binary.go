@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,7 +24,6 @@ func isBinaryPath(path string) bool {
 	return binaryExtensions[ext]
 }
 
-// isBinaryContent detecta binarios por presencia de bytes nulos en los primeros 512 bytes.
 func isBinaryContent(path string) bool {
 	f, err := os.Open(path)
 	if err != nil {
@@ -34,9 +32,6 @@ func isBinaryContent(path string) bool {
 	defer f.Close()
 
 	buf := make([]byte, 512)
-	n, err := f.Read(buf)
-	if err != nil && err != io.EOF {
-		return false
-	}
+	n, _ := f.Read(buf)
 	return bytes.ContainsRune(buf[:n], 0)
 }

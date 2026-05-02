@@ -22,6 +22,10 @@ func TestMatchGlob(t *testing.T) {
 		{"**/migrations/**", "db/migrations/001_init.sql", true},
 		{"**/migrations/**", "src/auth.go", false},
 		{"node_modules", "node_modules", true},
+		{"src/**", "src/main.go", true},
+		{"src/**", "other/main.go", false},
+		{"src/**/config.go", "src/deep/config.go", true},
+		{"src/**/config.go", "other/deep/config.go", false},
 	}
 
 	for _, c := range cases {
