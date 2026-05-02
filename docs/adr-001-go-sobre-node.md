@@ -31,4 +31,4 @@ La diferencia de startup importa: un pre-commit hook que tarda 150ms se siente l
 - **Positivo:** compilación cruzada con un solo comando (`GOOS=linux go build`).
 - **Negativo:** requiere Go instalado para compilar (no para ejecutar).
 - **Negativo:** los desarrolladores JavaScript no pueden contribuir fácilmente al código fuente.
-- **Neutral:** la integración con Husky se hace con un wrapper de shell de una línea, no con un script JS.
+- **Neutral:** proyectos consumidores pueden integrar linelens con Husky usando el wrapper npm (`@open-harness/linelens`). El propio repositorio open-harness usa lefthook en lugar de Husky — esa decisión está documentada en ADR-007.

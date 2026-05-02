@@ -16,7 +16,7 @@ El proyecto **cumple su propia regla**. Se refactorizó extrayendo responsabilid
 - `scanner.go` → la detección de binarios se movió a `binary.go`
 - `main.go` → el texto de ayuda se movió a `help.go`
 
-Cada archivo quedó bajo 100 líneas. El comando `linelens check` ejecutado sobre el propio proyecto retorna `OK: all 11 files within limits`.
+Cada archivo quedó bajo 100 líneas. Al ejecutarse sobre sí mismo, linelens reporta todos los archivos dentro del límite (`OK: all files within limits`).
 
 ## Razonamiento
 
@@ -30,5 +30,6 @@ Además, el ejercicio de refactorizar el propio código para cumplir la regla va
 
 - **Positivo:** credibilidad: la herramienta practica lo que predica.
 - **Positivo:** el refactor descubrió que `binary.go` y `help.go` son cohesivos por sí solos.
-- **Negativo:** el número de archivos aumentó de 9 a 11 para cumplir el umbral.
+- **Negativo:** el número de archivos fuente de `tools/linelens` aumentó de 7 a 9 para cumplir el umbral (se extrajeron `binary.go` y `help.go`).
 - **Regla en `linelens.json`:** los archivos `*_test.go` tienen límite 300 líneas, reconociendo que los tests legítimamente requieren más líneas que el código de producción.
+- **Actualización (monorepo):** al migrar a open-harness, la regla se extiende a todo el repositorio vía `linelens.json` en la raíz (ADR-008) y se aplica automáticamente en cada `git commit` mediante lefthook (ADR-007 y ADR-009).
