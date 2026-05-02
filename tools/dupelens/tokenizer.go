@@ -15,7 +15,11 @@ type Token struct {
 // Estrategia: separar por espacios y puntuación, ignorar tokens triviales.
 // Es language-agnostic — suficiente para detectar duplicados estructurales
 // sin parsear gramática específica de cada lenguaje.
+//
+// Pre-procesa con stripCommentsAndStrings para descartar contenido literal
+// y comentarios, que generan ruido (false positives) en duplicate detection.
 func tokenize(src string) []Token {
+	src = stripCommentsAndStrings(src)
 	var tokens []Token
 	line := 1
 	var current strings.Builder
