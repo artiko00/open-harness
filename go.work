@@ -2,5 +2,6 @@ go 1.22
 
 use (
 	./tools/linelens
+	./tools/secretlens
 	./tools/testlens
 )
