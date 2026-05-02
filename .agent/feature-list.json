@@ -61,6 +61,21 @@
         "Tests unitarios del nuevo output"
       ],
       "passes": false
+    },
+    {
+      "id": "F-006",
+      "category": "functional",
+      "description": "dupelens: detector de código duplicado con Rabin-Karp (scaffold listo, falta core)",
+      "steps": [
+        "[done] Scaffold tools/dupelens con CLI, config, tokenizer, fingerprint, matcher (stubs)",
+        "[done] ADR-010 documentando decisión Rabin-Karp sobre AST",
+        "Implementar fingerprint() — rolling hash sobre tokens",
+        "Implementar findDuplicates() — agrupar por hash y verificar con comparación literal",
+        "Tests unitarios para fingerprint y matcher con casos sintéticos",
+        "Integrar en lefthook pre-commit",
+        "Actualizar README con ejemplo de uso"
+      ],
+      "passes": false
     }
   ]
 }

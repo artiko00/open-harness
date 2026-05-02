@@ -7,6 +7,7 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 | Tool | Description | Status |
 |---|---|---|
 | [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.1.0` |
+| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.1.0-scaffold` |
 | bigo | Big O complexity analyzer | `planned` |
 
 ---
@@ -138,6 +139,7 @@ All non-obvious decisions are documented as ADRs in [`docs/`](docs/):
 - [ADR-007](docs/adr-007-lefthook-sobre-alternativas.md) — lefthook over Husky / pre-commit
 - [ADR-008](docs/adr-008-linelens-config-raiz.md) — Root-level linelens.json in monorepo
 - [ADR-009](docs/adr-009-proyecto-protegido-por-su-propia-herramienta.md) — Repo protected by its own tool
+- [ADR-010](docs/adr-010-dupelens-rabin-karp-sobre-ast.md) — Rabin-Karp over AST for dupelens
 
 ## License
 

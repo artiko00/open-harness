@@ -1,3 +1,4 @@
 go 1.22
 
 use ./tools/linelens
+use ./tools/dupelens

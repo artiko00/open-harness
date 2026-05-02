@@ -1,0 +1,24 @@
+{
+  "default": {
+    "minTokens": 50,
+    "minLines": 5
+  },
+  "rules": [
+    { "pattern": "**/*.spec.*",  "skip": true },
+    { "pattern": "**/*.test.*",  "skip": true },
+    { "pattern": "**/*_test.go", "skip": true },
+    { "pattern": "**/migrations/**", "skip": true }
+  ],
+  "exclude": [
+    "node_modules",
+    "vendor",
+    ".git",
+    "dist",
+    "build",
+    "coverage",
+    "__pycache__",
+    "target",
+    ".next",
+    "out"
+  ]
+}
