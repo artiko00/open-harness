@@ -132,60 +132,46 @@ testlens init
 ```
 open-harness/
 ├── tools/
-│   └── linelens/          ← Go source + tests
-├── npm/
-│   └── @open-harness/
-│       ├── linelens/      ← npm wrapper (JS)
-│       ├── linelens-linux-x64/
-│       ├── linelens-darwin-arm64/
-│       ├── linelens-darwin-x64/
-│       └── linelens-win32-x64/
-├── docs/                  ← Architecture Decision Records (ADR-001 … ADR-009)
+│   ├── linelens/      ← File length linter
+│   ├── testlens/      ← Test coverage detector
+│   └── secretlens/    ← Secret and credential detector
+├── npm/               ← npm package source
+├── docs/adr/          ← Architecture Decision Records (ADR-001 …)
 ├── scripts/
-│   ├── build.sh           ← compile all tools
-│   └── build-npm.sh       ← cross-compile + update npm packages
-├── .agent/                ← agent harness (feature list, session log, init script)
-├── go.work                ← Go workspace
-├── lefthook.yml           ← git hooks (pre-commit: linelens, pre-push: go test)
-└── linelens.json          ← lint config for this repo
+│   ├── build.sh       ← compile all tools
+│   └── build-npm.sh   ← cross-compile + update npm packages
+├── .agent/            ← agent harness (feature list)
+├── go.work             ← Go workspace
+├── lefthook.yml        ← git hooks
+└── linelens.json       ← lint config for this repo
 ```
 
 ## Development
 
-**Prerequisites:** Go 1.22+, [lefthook](https://github.com/evilmartians/lefthook)
+**Prerequisites:** Go 1.22+
 
 ```bash
 # Clone
 git clone git@github.com:artiko00/open-harness.git
 cd open-harness
 
-# Activate git hooks
-brew install lefthook
-lefthook install
-
-# Run tests
-cd tools/linelens && go test ./...
+# Run tests for all tools
+go test ./tools/linelens && go test ./tools/testlens && go test ./tools/secretlens
 
 # Build all tools
 bash scripts/build.sh
 
-# Build npm packages for linelens
-bash scripts/build-npm.sh linelens
+# Lint this repo with its own tool
+./tools/linelens/linelens check --fail
 ```
 
 ## Architecture decisions
 
 All non-obvious decisions are documented as ADRs in [`docs/`](docs/):
 
-- [ADR-001](docs/adr-001-go-sobre-node.md) — Go over Node.js
+- [ADR-001](docs/adr/adr-001-testlens.md) — testlens: multi-language test coverage detection
 - [ADR-002](docs/adr-002-cero-dependencias.md) — Zero external dependencies
-- [ADR-003](docs/adr-003-config-json.md) — JSON config format
-- [ADR-004](docs/adr-004-deteccion-binarios.md) — Binary file detection
-- [ADR-005](docs/adr-005-regla-100-lineas-aplicada-al-proyecto.md) — The project enforces its own rules
-- [ADR-006](docs/adr-006-semantica-glob-gitignore.md) — Glob pattern semantics
-- [ADR-007](docs/adr-007-lefthook-sobre-alternativas.md) — lefthook over Husky / pre-commit
-- [ADR-008](docs/adr-008-linelens-config-raiz.md) — Root-level linelens.json in monorepo
-- [ADR-009](docs/adr-009-proyecto-protegido-por-su-propia-herramienta.md) — Repo protected by its own tool
+- [ADR-003](docs/adr-adr-003-config-json.md) — JSON config format
 
 ## License
 

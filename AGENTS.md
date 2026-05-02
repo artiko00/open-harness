@@ -1,15 +1,14 @@
 # AGENTS.md
 
-open-harness is a Go monorepo for developer tools. Currently ships a single CLI tool (linelens) with architecture ready for more.
+open-harness is a Go monorepo for developer tools. Currently ships three CLI tools: linelens, testlens, and secretlens.
 
 ## Commands
 
-- Install: `go install ./tools/linelens` (from repo root)
+- Install all tools: `go install ./tools/...` (from repo root)
 - Build all tools: `./scripts/build.sh`
-- Build single tool: `go build -o tools/linelens/linelens ./tools/linelens`
-- Test: `go test ./tools/...`
-- Lint: `linelens check --fail`
-- Lint fix: manually review files exceeding line limits
+- Build single tool: `go build -o tools/<tool>/<tool> ./tools/<tool>`
+- Test: `go test ./tools/linelens && go test ./tools/testlens && go test ./tools/secretlens`
+- Lint: `linelens check --fail` (from repo root)
 
 ## Tech stack
 
@@ -22,21 +21,33 @@ open-harness is a Go monorepo for developer tools. Currently ships a single CLI 
 ## Project structure
 
 tools/
-├── linelens/      # CLI file length linter (only tool for now)
-│   ├── main.go    # Entry point, flag parsing, commands
+├── linelens/      # File length linter
+│   ├── main.go    # Entry point, commands: check, init, version
 │   ├── scanner.go # File discovery and line counting
 │   ├── matcher.go # Pattern matching against config rules
-│   ├── reporter.go# Output formatting (console, JSON)
+│   ├── reporter.go# Output formatting
 │   ├── config.go  # Config file loading (linelens.json)
 │   ├── help.go    # Help text
 │   ├── binary.go  # Binary path resolution
 │   └── *_test.go  # Unit tests
+├── testlens/      # Test coverage detector (multi-language)
+│   ├── main.go    # Entry point, commands: check, init, version
+│   ├── check.go   # CLI flag parsing, config struct
+│   ├── coverage.go# Core scanning logic, filepath.Walk
+│   ├── detect.go  # Language auto-detection
+│   ├── language.go# Language mapping definitions
+│   ├── matcher.go # Test candidate generation
+│   ├── scanner.go # File discovery utilities
+│   ├── reporter.go# Output formatting
+│   ├── file.go    # fileExists helper
+│   └── scanner_test.go # Unit tests
+├── secretlens/    # Secret and credential detector
 scripts/
 ├── build.sh       # Build all tools to their directories
 └── build-npm.sh   # Build for npm distribution
 npm/               # npm package source (future publish)
+docs/adr/          # Architecture Decision Records
 .agent/            # Agent config and feature backlog
-docs/              # Documentation
 
 ## Code style
 
@@ -50,19 +61,20 @@ docs/              # Documentation
 - Framework: Go testing (`go test`)
 - Location: co-located with source (`*_test.go`)
 - Naming: `func TestX(t *testing.T)` pattern
-- Run related: `go test ./tools/linelens/... -v -run TestMatcher`
+- Run related: `go test ./tools/<tool>/... -v -run TestName`
 
 ## Git workflow
 
-- Branch: `feat/`, `fix/`, `refactor/`
+- Branch: `feat/`, `fix/`, `refactor/`, `epic/` for multi-step features
 - Commit: `feat: description` / `fix: description`
+- GPG signing: all commits signed with artiko00 GPG key
 - No hooks currently configured
 
 ## Boundaries
 
 ### Always do
-- Run `linelens check` before committing new code
-- Run `go test ./tools/...` after modifying source
+- Run `linelens check --fail` before committing new code
+- Run `go test ./tools/<tool>` after modifying source
 - Build with `./scripts/build.sh` to verify all tools compile
 
 ### Ask first
@@ -71,15 +83,26 @@ docs/              # Documentation
 - Before adding new tools (check feature-list.json for roadmap)
 
 ### Never do
-- Never commit compiled binaries (they're excluded in .gitignore)
+- Never commit compiled binaries (excluded in .gitignore)
 - Never skip linelens failures in CI
-- Never add dependencies to tools/ without reviewing impact on stdlib goal
+- Never add dependencies to tools without reviewing impact on stdlib goal
+
+## Tools
+
+### linelens
+File length linter for any language. Detects files exceeding configured line limits.
+
+### testlens
+Test coverage detector. Finds source files without corresponding test files. Supports 9 languages.
+
+### secretlens
+Secret and credential detector. Scans codebases for hardcoded secrets, API keys, passwords.
 
 ## Features (backlog)
 
-See `.agent/feature-list.json` for planned additions. Currently:
-- F-001: `bigo` - Big O complexity estimator (not implemented)
-- F-002: GitHub Actions CI
-- F-003: npm publish workflow
-- F-004: Release automation
-- F-005: JSON report output for linelens
+See `.agent/feature-list.json` for planned additions:
+- F-001: `bigo` - Big O complexity estimator (planned)
+- F-002: GitHub Actions CI (planned)
+- F-003: npm publish workflow (planned)
+- F-004: Release automation (planned)
+- F-005: linelens JSON report output (planned)
