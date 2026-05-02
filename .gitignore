@@ -2,6 +2,8 @@
 # Agregar una línea por cada tool al añadirlo al monorepo
 tools/linelens/linelens
 tools/linelens/linelens.exe
+tools/secretlens/secretlens
+tools/secretlens/secretlens.exe
 
 # Binarios de distribución npm (se generan con scripts/build-npm.sh)
 npm/@open-harness/linelens-*/bin/linelens

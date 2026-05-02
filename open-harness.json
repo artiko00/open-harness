@@ -6,6 +6,12 @@
       "description": "File length linter for any language",
       "path": "tools/linelens",
       "version": "0.1.0"
+    },
+    {
+      "name": "secretlens",
+      "description": "Secret and credential detector for any codebase",
+      "path": "tools/secretlens",
+      "version": "0.1.0"
     }
   ]
 }
