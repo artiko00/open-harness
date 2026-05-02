@@ -8,6 +8,7 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 |---|---|---|
 | [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.1.0` |
 | [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.1.0-scaffold` |
+| [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.1.0` |
 | bigo | Big O complexity analyzer | `planned` |
 
 ---
@@ -85,21 +86,21 @@ npx linelens check --fail
 ```
 open-harness/
 ├── tools/
-│   └── linelens/          ← Go source + tests
+│   ├── linelens/          ← v0.1.0 (file length linter)
+│   ├── dupelens/          ← v0.1.0-scaffold (duplicate detector)
+│   └── secretlens/        ← v0.1.0 (secret/credential detector)
 ├── npm/
 │   └── @open-harness/
 │       ├── linelens/      ← npm wrapper (JS)
-│       ├── linelens-linux-x64/
-│       ├── linelens-darwin-arm64/
-│       ├── linelens-darwin-x64/
-│       └── linelens-win32-x64/
-├── docs/                  ← Architecture Decision Records (ADR-001 … ADR-009)
+│       └── linelens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/
+├── docs/                  ← Architecture Decision Records (ADR-001 … ADR-011)
 ├── scripts/
 │   ├── build.sh           ← compile all tools
 │   └── build-npm.sh       ← cross-compile + update npm packages
 ├── .agent/                ← agent harness (feature list, session log, init script)
+├── AGENTS.md              ← agent instructions (TDD workflow, conventions)
 ├── go.work                ← Go workspace
-├── lefthook.yml           ← git hooks (pre-commit: linelens, pre-push: go test)
+├── lefthook.yml           ← git hooks (pre-commit: linelens, pre-push: tests)
 └── linelens.json          ← lint config for this repo
 ```
 
