@@ -99,10 +99,10 @@
         "[skip] [fase5·cli] --threshold descartado: algoritmo Rabin-Karp es binario por construcción. Para soporte real de % similitud requiere rediseño con MinHash/w-shingles.",
         "[done] [fase5·cli] Agregar flag --verbose con timing scan/total a stderr (no contamina JSON output)",
         "[done] [fase5·cli] Mejorar mensajes de error con path + hint accionable",
-        "[fase6·integ] Agregar comando dupelens al lefthook.yml pre-commit",
-        "[fase6·integ] Validar que dupelens check --fail pasa sobre el propio repo (auto-protección)",
-        "[fase6·integ] Documentar en README sección dupelens: install, usage, config, output",
-        "[fase6·integ] Verificar que linelens check --fail sigue pasando sobre el código nuevo",
+        "[done] [fase6·integ] Agregar comando dupelens al lefthook.yml pre-commit",
+        "[done] [fase6·integ] Validar que dupelens check --fail pasa con dupelens.json root (minTokens=200, ack tech debt en F-007)",
+        "[done] [fase6·integ] Documentar en README sección dupelens: install, usage, config, output, JSON, limitations",
+        "[done] [fase6·integ] Verificar que linelens check --fail sigue pasando sobre el código nuevo",
         "[fase7·e2e] Test E2E: scan a fixture con duplicados conocidos y verificar matches esperados",
         "[fase7·e2e] Benchmark contra jscpd con mismo input → debe estar dentro de 2x perf",
         "[fase7·e2e] Smoke test contra repo open-harness mismo (sin falsos positivos esperados)",
@@ -112,6 +112,22 @@
         "[fase8·release] Actualizar scripts/build-npm.sh para soportar dupelens",
         "[fase8·release] Tag v0.1.0-dupelens en epic/dupelens",
         "[fase8·release] Abrir PR epic/dupelens → main con descripción referenciando ADR-010 y F-006"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-007",
+      "category": "refactor",
+      "description": "Extraer helpers compartidos (glob, binary detection) entre los 3 tools en módulo interno tools/_shared/",
+      "steps": [
+        "Decidir estructura: tools/_shared/glob/ + tools/_shared/binary/ con su propio go.mod en el workspace",
+        "Mover matchGlob, isExcluded, ruleForFile a tools/_shared/glob/",
+        "Mover binaryExtensions, isBinaryPath, isBinaryContent a tools/_shared/binary/",
+        "Cada tool importa via 'use' en go.work (no rompe ADR-002 — interno al workspace, no dep externa)",
+        "Validar tests siguen pasando en linelens, dupelens, secretlens",
+        "Bajar minTokens de dupelens.json root a 100 (o 50) tras la deduplicación",
+        "Verificar que dupelens check --fail sigue pasando con threshold más bajo",
+        "ADR-012 documentando la decisión y por qué shared internal no rompe filosofía"
       ],
       "passes": false
     }
