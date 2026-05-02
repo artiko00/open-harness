@@ -10,6 +10,7 @@
     { "pattern": "**/*.generated.*",   "skip": true },
     { "pattern": "**/*.min.*",         "skip": true },
     { "pattern": "**/*.md",            "skip": true },
+    { "pattern": "**/*.out",           "skip": true },
     { "pattern": ".agent/feature-list.json", "maxLines": 500 }
   ],
   "exclude": [

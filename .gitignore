@@ -4,6 +4,8 @@ tools/linelens/linelens
 tools/linelens/linelens.exe
 tools/dupelens/dupelens
 tools/dupelens/dupelens.exe
+tools/secretlens/secretlens
+tools/secretlens/secretlens.exe
 
 # Binarios de distribución npm (se generan con scripts/build-npm.sh)
 npm/@open-harness/linelens-*/bin/linelens

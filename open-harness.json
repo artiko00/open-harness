@@ -12,6 +12,12 @@
       "description": "Code duplication detector (Rabin-Karp, scaffold)",
       "path": "tools/dupelens",
       "version": "0.1.0-scaffold"
+    },
+    {
+      "name": "secretlens",
+      "description": "Secret and credential detector for any codebase",
+      "path": "tools/secretlens",
+      "version": "0.1.0"
     }
   ]
 }
