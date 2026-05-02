@@ -66,6 +66,45 @@
       "id": "F-006",
       "category": "functional",
       "description": "testlens: CLI que detecta archivos sin tests correspondientes (multi-lenguaje)",
+      "epic": true,
+      "branch": "epic/testlens",
+      "subtasks": [
+        {
+          "id": "F-006.1",
+          "description": "Implementar testlens: estructura base y mapeo de extensiones por lenguaje",
+          "status": "pending"
+        },
+        {
+          "id": "F-006.2",
+          "description": "Implementar detección de archivos sin test (matching por nombre y ubicación)",
+          "status": "pending"
+        },
+        {
+          "id": "F-006.3",
+          "description": "Implementar output CLI: lista legible + exit codes (0=OK, 1=violations)",
+          "status": "pending"
+        },
+        {
+          "id": "F-006.4",
+          "description": "Agregar tests unitarios para matcher de extensiones y detección de coverage",
+          "status": "pending"
+        },
+        {
+          "id": "F-006.5",
+          "description": "Verificar linelens check --fail pasa sobre el código de testlens",
+          "status": "pending"
+        },
+        {
+          "id": "F-006.6",
+          "description": "Agregar testlens al go.work y actualizar open-harness.json",
+          "status": "pending"
+        },
+        {
+          "id": "F-006.7",
+          "description": "Documentar uso en README.md (ejemplos, flags, lenguajes soportados)",
+          "status": "pending"
+        }
+      ],
       "steps": [
         "Leer docs/adr/adr-001-testlens.md para especificación",
         "Crear tools/testlens/ con go.mod (module .../tools/testlens)",
@@ -75,8 +114,7 @@
         "Verificar que linelens check --fail y go test pasan",
         "Actualizar open-harness.json con el nuevo tool"
       ],
-      "passes": false,
-      "branch": "epic/testlens"
+      "passes": false
     }
   ]
 }
