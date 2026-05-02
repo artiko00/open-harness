@@ -6,10 +6,12 @@ import (
 )
 
 // scan recorre el árbol de archivos, tokeniza, calcula fingerprints,
-// y retorna los matches encontrados. Usa un único windowSize global —
-// fingerprints con ventanas distintas no son comparables entre archivos.
-func scan(root string, cfg Config, minOverride int) ([]Match, error) {
+// y retorna los matches encontrados + cuenta de archivos escaneados.
+// Usa un único windowSize global — fingerprints con ventanas distintas
+// no son comparables entre archivos.
+func scan(root string, cfg Config, minOverride int) ([]Match, int, error) {
 	perFile := make(map[string][]Fingerprint)
+	scanned := 0
 	windowSize := cfg.Default.MinTokens
 	if minOverride > 0 {
 		windowSize = minOverride
@@ -43,6 +45,7 @@ func scan(root string, cfg Config, minOverride int) ([]Match, error) {
 		if readErr != nil {
 			return nil
 		}
+		scanned++
 		tokens := tokenize(string(data))
 		fps := fingerprint(tokens, windowSize)
 		if len(fps) > 0 {
@@ -52,7 +55,7 @@ func scan(root string, cfg Config, minOverride int) ([]Match, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, scanned, err
 	}
-	return findDuplicates(perFile, windowSize, cfg.Default.MinLines), nil
+	return findDuplicates(perFile, windowSize, cfg.Default.MinLines), scanned, nil
 }

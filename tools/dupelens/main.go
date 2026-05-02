@@ -36,6 +36,7 @@ func runCheck(args []string) {
 	minTokens := fs.Int("min-tokens", 0, "override min duplicate token threshold")
 	failOnViolation := fs.Bool("fail", false, "exit with code 1 if duplicates found")
 	noColor := fs.Bool("no-color", false, "disable colored output")
+	format := fs.String("format", "console", "output format: console | json")
 	root := fs.String("dir", ".", "directory to scan")
 	fs.Parse(args)
 
@@ -45,13 +46,21 @@ func runCheck(args []string) {
 		os.Exit(1)
 	}
 
-	matches, err := scan(*root, cfg, *minTokens)
+	matches, scanned, err := scan(*root, cfg, *minTokens)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "scan error: %v\n", err)
 		os.Exit(1)
 	}
 
-	violations := report(matches, *noColor)
+	opts := ReportOpts{
+		Format:       *format,
+		NoColor:      *noColor,
+		ScannedCount: scanned,
+	}
+	if *format != "json" {
+		opts.Snippet = makeSnippetFunc(*root)
+	}
+	violations := report(matches, opts, os.Stdout)
 	if *failOnViolation && violations > 0 {
 		os.Exit(1)
 	}

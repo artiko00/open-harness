@@ -1,7 +1,29 @@
 package main
 
-import "fmt"
+import "io"
 
+// ReportOpts agrupa todas las opciones de salida del reporter.
+// Format: "console" (default) o "json". NoColor desactiva ANSI.
+// Snippet: callback opcional que devuelve un fragmento de N líneas
+// formateado para mostrar contexto. Si nil, no se imprimen snippets.
+type ReportOpts struct {
+	Format       string
+	NoColor      bool
+	ScannedCount int
+	Snippet      func(file string, startLine, count int) string
+}
+
+// report despacha al backend correspondiente según opts.Format.
+// Retorna el número de violations (matches) para que el caller
+// decida exit code en CI / git hooks.
+func report(matches []Match, opts ReportOpts, w io.Writer) int {
+	if opts.Format == "json" {
+		return reportJSON(matches, opts, w)
+	}
+	return reportConsole(matches, opts, w)
+}
+
+// Códigos ANSI para output coloreado en consola.
 const (
 	colorReset = "\033[0m"
 	colorBold  = "\033[1m"
@@ -9,28 +31,6 @@ const (
 	colorGreen = "\033[32m"
 	colorGray  = "\033[90m"
 )
-
-// report imprime los matches encontrados al stdout y retorna la cuenta total.
-// Si noColor=true, descarta los códigos ANSI para output plano.
-func report(matches []Match, noColor bool) int {
-	if len(matches) == 0 {
-		fmt.Printf("%s%sOK%s: no duplicate code blocks found\n",
-			boldOpt(noColor), greenOpt(noColor), resetOpt(noColor))
-		return 0
-	}
-
-	fmt.Printf("%s%sDUPLICATES%s (%d match(es) found):\n\n",
-		boldOpt(noColor), redOpt(noColor), resetOpt(noColor), len(matches))
-
-	for _, m := range matches {
-		fmt.Printf("  %s%s:%d-%d%s  ↔  %s%s:%d-%d%s  %s(%d tokens)%s\n",
-			boldOpt(noColor), m.FileA, m.StartLineA, m.EndLineA, resetOpt(noColor),
-			boldOpt(noColor), m.FileB, m.StartLineB, m.EndLineB, resetOpt(noColor),
-			grayOpt(noColor), m.Tokens, resetOpt(noColor))
-	}
-	fmt.Printf("\nSUMMARY: %d duplicate match(es)\n", len(matches))
-	return len(matches)
-}
 
 func boldOpt(no bool) string  { if no { return "" }; return colorBold }
 func redOpt(no bool) string   { if no { return "" }; return colorRed }
