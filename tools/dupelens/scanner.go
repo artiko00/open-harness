@@ -6,12 +6,13 @@ import (
 )
 
 // scan recorre el árbol de archivos, tokeniza, calcula fingerprints,
-// y retorna los matches encontrados.
+// y retorna los matches encontrados. Usa un único windowSize global —
+// fingerprints con ventanas distintas no son comparables entre archivos.
 func scan(root string, cfg Config, minOverride int) ([]Match, error) {
 	perFile := make(map[string][]Fingerprint)
-	minTokens := cfg.Default.MinTokens
+	windowSize := cfg.Default.MinTokens
 	if minOverride > 0 {
-		minTokens = minOverride
+		windowSize = minOverride
 	}
 
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
@@ -38,17 +39,12 @@ func scan(root string, cfg Config, minOverride int) ([]Match, error) {
 			return nil
 		}
 
-		threshold := minTokens
-		if rule != nil && rule.MinTokens > 0 {
-			threshold = rule.MinTokens
-		}
-
 		data, readErr := os.ReadFile(path)
 		if readErr != nil {
 			return nil
 		}
 		tokens := tokenize(string(data))
-		fps := fingerprint(tokens, threshold)
+		fps := fingerprint(tokens, windowSize)
 		if len(fps) > 0 {
 			perFile[relPath] = fps
 		}
@@ -58,5 +54,5 @@ func scan(root string, cfg Config, minOverride int) ([]Match, error) {
 	if err != nil {
 		return nil, err
 	}
-	return findDuplicates(perFile, minTokens), nil
+	return findDuplicates(perFile, windowSize, cfg.Default.MinLines), nil
 }

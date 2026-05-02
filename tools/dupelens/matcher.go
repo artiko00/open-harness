@@ -5,28 +5,6 @@ import (
 	"strings"
 )
 
-// Match representa un par de bloques duplicados detectados.
-type Match struct {
-	FileA      string
-	StartLineA int
-	EndLineA   int
-	FileB      string
-	StartLineB int
-	EndLineB   int
-	Tokens     int
-}
-
-// findDuplicates agrupa Fingerprints por hash y emite Matches cuando
-// dos archivos comparten una ventana idéntica.
-//
-// IMPLEMENTACIÓN PENDIENTE (scaffold):
-// La detección efectiva queda como TODO. El scaffold compila y retorna
-// lista vacía — la próxima iteración llena el algoritmo de matching.
-func findDuplicates(perFile map[string][]Fingerprint, minTokens int) []Match {
-	// TODO: agrupar fingerprints por hash y emitir matches verificados
-	return nil
-}
-
 // matchGlob — semántica gitignore-style copiada del helper de linelens.
 // Un patrón sin '/' coincide con el filename en cualquier directorio.
 func matchGlob(pattern, relPath string) bool {
