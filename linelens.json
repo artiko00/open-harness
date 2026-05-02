@@ -8,7 +8,8 @@
     { "pattern": "**/*.test.*",        "maxLines": 300 },
     { "pattern": "**/migrations/**",   "skip": true },
     { "pattern": "**/*.generated.*",   "skip": true },
-    { "pattern": "**/*.min.*",         "skip": true }
+    { "pattern": "**/*.min.*",         "skip": true },
+    { "pattern": "**/*.md",            "skip": true }
   ],
   "exclude": [
     "node_modules",
