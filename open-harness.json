@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "tools": [
+    {
+      "name": "linelens",
+      "description": "File length linter for any language",
+      "path": "tools/linelens",
+      "version": "0.1.0"
+    }
+  ]
+}

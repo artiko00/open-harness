@@ -1,0 +1,83 @@
+package main
+
+import (
+	"encoding/json"
+	"os"
+)
+
+type Config struct {
+	Default DefaultConfig `json:"default"`
+	Rules   []Rule        `json:"rules"`
+	Exclude []string      `json:"exclude"`
+}
+
+type DefaultConfig struct {
+	MaxLines int `json:"maxLines"`
+}
+
+type Rule struct {
+	Pattern  string `json:"pattern"`
+	MaxLines int    `json:"maxLines"`
+	Skip     bool   `json:"skip"`
+}
+
+var defaultConfig = Config{
+	Default: DefaultConfig{MaxLines: 100},
+	Rules:   []Rule{},
+	Exclude: []string{
+		"node_modules", "vendor", ".git", "dist", "build",
+		"coverage", "__pycache__", "target", ".next", ".nuxt",
+		"out", ".cache",
+	},
+}
+
+func loadConfig(path string) (Config, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return defaultConfig, nil
+		}
+		return defaultConfig, err
+	}
+
+	var cfg Config
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return defaultConfig, err
+	}
+
+	if cfg.Default.MaxLines == 0 {
+		cfg.Default.MaxLines = defaultConfig.Default.MaxLines
+	}
+	if len(cfg.Exclude) == 0 {
+		cfg.Exclude = defaultConfig.Exclude
+	}
+
+	return cfg, nil
+}
+
+func defaultConfigJSON() string {
+	return `{
+  "default": {
+    "maxLines": 100
+  },
+  "rules": [
+    { "pattern": "**/*.spec.*",  "maxLines": 300 },
+    { "pattern": "**/*.test.*",  "maxLines": 300 },
+    { "pattern": "**/*_test.go", "maxLines": 300 },
+    { "pattern": "**/migrations/**", "skip": true }
+  ],
+  "exclude": [
+    "node_modules",
+    "vendor",
+    ".git",
+    "dist",
+    "build",
+    "coverage",
+    "__pycache__",
+    "target",
+    ".next",
+    "out"
+  ]
+}
+`
+}

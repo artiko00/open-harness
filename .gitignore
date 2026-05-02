@@ -1,0 +1,4 @@
+dist/
+npm/@open-harness/linelens-*/bin/linelens
+npm/@open-harness/linelens-win32-x64/bin/linelens.exe
+tools/linelens/linelens

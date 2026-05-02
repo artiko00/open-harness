@@ -1,0 +1,26 @@
+{
+  "default": {
+    "maxLines": 100
+  },
+  "rules": [
+    { "pattern": "**/*.spec.*",   "maxLines": 300 },
+    { "pattern": "**/*.test.*",   "maxLines": 300 },
+    { "pattern": "**/*_test.go",  "maxLines": 300 },
+    { "pattern": "**/migrations/**", "skip": true },
+    { "pattern": "**/*.generated.*", "skip": true },
+    { "pattern": "**/*.min.*",    "skip": true }
+  ],
+  "exclude": [
+    "node_modules",
+    "vendor",
+    ".git",
+    "dist",
+    "build",
+    "coverage",
+    "__pycache__",
+    "target",
+    ".next",
+    "out",
+    ".cache"
+  ]
+}
