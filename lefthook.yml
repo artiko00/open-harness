@@ -2,6 +2,8 @@ pre-commit:
   commands:
     linelens:
       run: tools/linelens/linelens check --fail --no-color
+    dupelens:
+      run: tools/dupelens/dupelens check --fail --no-color
 
 pre-push:
   parallel: true

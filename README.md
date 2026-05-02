@@ -81,6 +81,90 @@ npx linelens check --fail
 
 ---
 
+## dupelens
+
+Detects duplicated code blocks using **Rabin-Karp** rolling-hash fingerprinting over tokenized source. Language-agnostic (works on Go, TS, Python, Rust, etc.) — strings and comments are stripped before tokenization to avoid false positives. See [ADR-010](docs/adr-010-dupelens-rabin-karp-sobre-ast.md).
+
+### Usage
+
+```bash
+# Scan current directory with defaults
+dupelens check
+
+# Fail with exit code 1 if duplicates found (CI / git hooks)
+dupelens check --fail
+
+# Override the token threshold
+dupelens check --min-tokens 30
+
+# JSON output for tooling integrations
+dupelens check --format=json > report.json
+
+# Verbose timings to stderr
+dupelens check --verbose
+
+# Generate default config
+dupelens init
+```
+
+### Configuration (`dupelens.json`)
+
+```json
+{
+  "default": {
+    "minTokens": 50,
+    "minLines": 5
+  },
+  "rules": [
+    { "pattern": "**/*_test.go",     "skip": true },
+    { "pattern": "**/migrations/**", "skip": true }
+  ],
+  "exclude": ["node_modules", "vendor", ".git", "dist", "build"]
+}
+```
+
+`minTokens` is the window size of the rolling hash. Higher values catch only larger duplications. `minLines` filters short matches (e.g., back-to-back identical imports).
+
+### Output (console)
+
+```
+DUPLICATES (2 match(es) found in 87 files):
+
+  src/auth.go:42-58  ↔  src/users.go:12-28  (35 tokens)
+  | func validate(input string) error {
+  | ...
+  src/db.go:1-10  ↔  src/cache.go:1-10  (15 tokens)
+
+SUMMARY: 2 match(es) across 87 files
+Top duplicated files:
+  - src/auth.go  (1 match(es))
+```
+
+### Output (JSON)
+
+```json
+{
+  "scannedFiles": 87,
+  "matchCount": 2,
+  "matches": [
+    { "fileA": "src/auth.go", "startLineA": 42, "endLineA": 58,
+      "fileB": "src/users.go", "startLineB": 12, "endLineB": 28,
+      "tokens": 35 }
+  ],
+  "summary": {
+    "topDuplicatedFiles": [{ "file": "src/auth.go", "count": 1 }]
+  }
+}
+```
+
+### Limitations (v0.1.0-scaffold)
+
+- Detects only **literal** or near-literal duplication (token-by-token). Refactors with renamed variables are not flagged — that requires AST analysis ([ADR-010](docs/adr-010-dupelens-rabin-karp-sobre-ast.md) explains the trade-off).
+- `--threshold` flag is not implemented; the algorithm is binary (match or not). See `[skip]` note in F-006.
+- Per-rule `minTokens` override does not work cross-file because window sizes must be uniform. Skip via `rules` if you want per-pattern exclusion.
+
+---
+
 ## Repository structure
 
 ```

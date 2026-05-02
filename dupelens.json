@@ -1,0 +1,27 @@
+{
+  "default": {
+    "minTokens": 200,
+    "minLines": 15
+  },
+  "rules": [
+    { "pattern": "**/*_test.go",     "skip": true },
+    { "pattern": "**/*.spec.*",      "skip": true },
+    { "pattern": "**/*.test.*",      "skip": true },
+    { "pattern": "**/migrations/**", "skip": true },
+    { "pattern": "**/*.generated.*", "skip": true },
+    { "pattern": "**/*.min.*",       "skip": true },
+    { "pattern": "**/*.md",          "skip": true },
+    { "pattern": ".agent/feature-list.json", "skip": true }
+  ],
+  "exclude": [
+    "node_modules",
+    "vendor",
+    ".git",
+    "dist",
+    "build",
+    ".cache",
+    "tools/linelens/linelens",
+    "tools/dupelens/dupelens",
+    "tools/secretlens/secretlens"
+  ]
+}
