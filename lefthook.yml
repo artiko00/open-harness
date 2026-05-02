@@ -1,0 +1,10 @@
+pre-commit:
+  commands:
+    linelens:
+      run: tools/linelens/linelens check --fail --no-color
+
+pre-push:
+  parallel: true
+  commands:
+    test-linelens:
+      run: cd tools/linelens && go test ./...
