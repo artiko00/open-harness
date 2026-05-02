@@ -8,6 +8,12 @@
       "version": "0.1.0"
     },
     {
+      "name": "testlens",
+      "description": "Detect source files missing tests (multi-language)",
+      "path": "tools/testlens",
+      "version": "0.1.0"
+    },
+    {
       "name": "secretlens",
       "description": "Secret and credential detector for any codebase",
       "path": "tools/secretlens",

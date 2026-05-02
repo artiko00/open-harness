@@ -7,7 +7,8 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 | Tool | Description | Status |
 |---|---|---|
 | [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.1.0` |
-| [secretlens](tools/secretlens/) | Secret detector — finds hardcoded credentials before they reach the repo | `v0.1.0` |
+| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests | `v0.1.0` |
+| [secretlens](tools/secretlens/) | Secret detector — finds hardcoded credentials | `v0.1.0` |
 | bigo | Big O complexity analyzer | `planned` |
 
 ---
@@ -92,14 +93,51 @@ secretlens init               # generate a default secretlens.json
 
 The `allowlist` skips any line containing those strings (case-insensitive) — useful to suppress false positives in documentation or example files.
 
-### lefthook pre-push integration
+---
+
+## testlens
+
+Finds source files that don't have corresponding test files. Supports multiple languages out of the box.
+
+### Usage
+
+```bash
+# Auto-detect language and scan
+testlens check
+
+# Scan with specific language
+testlens check --lang go
+testlens check --lang typescript
+
+# Scan specific directory
+testlens check --dir ./src
+
+# Exit with code 1 if violations found (for CI)
+testlens check --fail
+
+# Generate a default config
+testlens init
+```
+
+### Supported languages
+
+| Language | Source extensions | Test patterns |
+|---|---|---|
+| Go | `.go` | `*_test.go` |
+| TypeScript | `.ts`, `.tsx` | `*.test.ts`, `*.spec.ts`, `test_*.ts` |
+| JavaScript | `.js`, `.jsx` | `*.test.js`, `*.spec.js`, `test_*.js` |
+| Python | `.py` | `*_test.py`, `test_*.py` |
+| Ruby | `.rb` | `*_spec.rb`, `*_test.rb` |
+| Rust | `.rs` | `*_test.rs` |
+| Java | `.java` | `*Test.java` |
+| Kotlin | `.kt`, `.kts` | `*Test.kt` |
+| C# | `.cs` | `*Tests.cs` |
+
+### CI (GitHub Actions)
 
 ```yaml
-# lefthook.yml
-pre-push:
-  commands:
-    secretlens:
-      run: secretlens check --fail
+- name: Run testlens
+  run: ./tools/testlens/testlens check --lang go --fail
 ```
 
 ---
@@ -109,55 +147,50 @@ pre-push:
 ```
 open-harness/
 ├── tools/
-│   ├── linelens/          ← Go source + tests (100% coverage)
-│   └── secretlens/        ← Go source + tests (100% coverage)
-├── npm/
-│   └── @open-harness/
-│       ├── linelens/      ← npm wrapper (JS)
-│       └── linelens-{platform}/
-├── docs/                  ← Architecture Decision Records (ADR-001 … ADR-011)
+│   ├── linelens/      ← File length linter (100% coverage)
+│   ├── testlens/      ← Test coverage detector
+│   └── secretlens/    ← Secret detector (100% coverage)
+├── docs/adr/          ← Architecture Decision Records (ADR-001 …)
 ├── scripts/
-│   ├── build.sh           ← compile all tools
-│   └── build-npm.sh       ← cross-compile + update npm packages
-├── .agent/                ← agent harness (feature list, session log)
-├── go.work                ← Go workspace
-├── lefthook.yml           ← hooks: pre-commit linelens, pre-push go test
-└── linelens.json          ← lint config for this repo
+│   ├── build.sh       ← compile all tools
+│   └── build-npm.sh   ← cross-compile + update npm packages
+├── .agent/            ← agent harness (feature list)
+├── go.work             ← Go workspace
+├── lefthook.yml        ← hooks: pre-commit linelens, pre-push go test
+└── linelens.json       ← lint config for this repo
 ```
 
 ## Development
 
-**Prerequisites:** Go 1.22+, [lefthook](https://github.com/evilmartians/lefthook)
+**Prerequisites:** Go 1.22+
 
 ```bash
 git clone git@github.com:artiko00/open-harness.git
 cd open-harness
 
-# Activate git hooks
-brew install lefthook
-lefthook install
-
-# Run tests
-cd tools/linelens && go test ./...
-cd tools/secretlens && go test ./...
+# Run tests for all tools
+go test ./tools/linelens && go test ./tools/testlens && go test ./tools/secretlens
 
 # Build all tools
 bash scripts/build.sh
+
+# Lint this repo with its own tool
+./tools/linelens/linelens check --fail
 ```
 
 ## Architecture decisions
 
 | ADR | Decision |
 |---|---|
-| [ADR-001](docs/adr-001-go-sobre-node.md) | Go over Node.js |
-| [ADR-002](docs/adr-002-cero-dependencias.md) | Zero external dependencies |
-| [ADR-003](docs/adr-003-config-json.md) | JSON config format |
-| [ADR-004](docs/adr-004-deteccion-binarios.md) | Binary file detection |
-| [ADR-005](docs/adr-005-regla-100-lineas-aplicada-al-proyecto.md) | Project enforces its own rules |
-| [ADR-006](docs/adr-006-semantica-glob-gitignore.md) | Glob pattern semantics |
-| [ADR-007](docs/adr-007-lefthook-sobre-alternativas.md) | lefthook over Husky |
-| [ADR-008](docs/adr-008-linelens-config-raiz.md) | Root-level linelens.json in monorepo |
-| [ADR-009](docs/adr-009-proyecto-protegido-por-su-propia-herramienta.md) | Repo protected by its own tool |
+| [ADR-001](docs/adr/adr-001-testlens.md) | testlens: multi-language test coverage detection |
+| [ADR-002](docs/adr/adr-002-cero-dependencias.md) | Zero external dependencies |
+| [ADR-003](docs/adr/adr-003-config-json.md) | JSON config format |
+| [ADR-004](docs/adr/adr-004-deteccion-binarios.md) | Binary file detection |
+| [ADR-005](docs/adr/adr-005-regla-100-lineas-aplicada-al-proyecto.md) | Project enforces its own rules |
+| [ADR-006](docs/adr/adr-006-semantica-glob-gitignore.md) | Glob pattern semantics |
+| [ADR-007](docs/adr/adr-007-lefthook-sobre-alternativas.md) | lefthook over Husky |
+| [ADR-008](docs/adr/adr-008-linelens-config-raiz.md) | Root-level linelens.json in monorepo |
+| [ADR-009](docs/adr/adr-009-proyecto-protegido-por-su-propia-herramienta.md) | Repo protected by its own tool |
 | [ADR-010](docs/adr-010-secretlens-diseno-detector.md) | secretlens design: regex, allowlist, severity |
 | [ADR-011](docs/adr-011-cobertura-100-como-estandar.md) | 100% test coverage as project standard |
 

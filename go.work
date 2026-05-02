@@ -1,4 +1,7 @@
 go 1.22
 
-use ./tools/linelens
-use ./tools/secretlens
+use (
+	./tools/linelens
+	./tools/secretlens
+	./tools/testlens
+)
