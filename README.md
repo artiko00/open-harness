@@ -7,6 +7,7 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 | Tool | Description | Status |
 |---|---|---|
 | [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.1.0` |
+| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests | `v0.1.0` |
 | bigo | Big O complexity analyzer | `planned` |
 
 ---
@@ -75,6 +76,53 @@ npx linelens check --fail
     node-version: 20
 - run: npm ci
 - run: npx linelens check --fail
+```
+
+---
+
+## testlens
+
+Finds source files that don't have corresponding test files. Supports multiple languages out of the box.
+
+### Usage
+
+```bash
+# Auto-detect language and scan
+testlens check
+
+# Scan with specific language
+testlens check --lang go
+testlens check --lang typescript
+
+# Scan specific directory
+testlens check --dir ./src
+
+# Exit with code 1 if violations found (for CI)
+testlens check --fail
+
+# Generate a default config
+testlens init
+```
+
+### Supported languages
+
+| Language | Source extensions | Test patterns |
+|---|---|---|
+| Go | `.go` | `*_test.go` |
+| TypeScript | `.ts`, `.tsx` | `*.test.ts`, `*.spec.ts` |
+| JavaScript | `.js`, `.jsx` | `*.test.js`, `*.spec.js` |
+| Python | `.py` | `*_test.py`, `test_*.py` |
+| Ruby | `.rb` | `*_spec.rb`, `*_test.rb` |
+| Rust | `.rs` | `*_test.rs` |
+| Java | `.java` | `*Test.java` |
+| Kotlin | `.kt`, `.kts` | `*Test.kt` |
+| C# | `.cs` | `*Tests.cs` |
+
+### CI (GitHub Actions)
+
+```yaml
+- name: Run testlens
+  run: ./tools/testlens/testlens check --lang go --fail
 ```
 
 ---
