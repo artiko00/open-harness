@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -38,12 +39,12 @@ func loadConfig(path string) (Config, error) {
 		if os.IsNotExist(err) {
 			return defaultConfig, nil
 		}
-		return defaultConfig, err
+		return defaultConfig, fmt.Errorf("reading config %q: %w", path, err)
 	}
 
 	var cfg Config
 	if err := json.Unmarshal(data, &cfg); err != nil {
-		return defaultConfig, err
+		return defaultConfig, fmt.Errorf("parsing config %q: %w (run 'dupelens init' to regenerate)", path, err)
 	}
 
 	if cfg.Default.MinTokens == 0 {

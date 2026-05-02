@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 )
 
 const version = "0.1.0-scaffold"
@@ -38,29 +39,37 @@ func runCheck(args []string) {
 	noColor := fs.Bool("no-color", false, "disable colored output")
 	format := fs.String("format", "console", "output format: console | json")
 	root := fs.String("dir", ".", "directory to scan")
+	verbose := fs.Bool("verbose", false, "print timing and progress to stderr")
 	fs.Parse(args)
 
-	cfg, err := loadConfig(*configPath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error loading config: %v\n", err)
+	if _, err := os.Stat(*root); err != nil {
+		fmt.Fprintf(os.Stderr, "directory %q not accessible: %v\n", *root, err)
 		os.Exit(1)
 	}
 
+	cfg, err := loadConfig(*configPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+
+	t0 := time.Now()
 	matches, scanned, err := scan(*root, cfg, *minTokens)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "scan error: %v\n", err)
 		os.Exit(1)
 	}
+	tScan := time.Since(t0)
 
-	opts := ReportOpts{
-		Format:       *format,
-		NoColor:      *noColor,
-		ScannedCount: scanned,
-	}
+	opts := ReportOpts{Format: *format, NoColor: *noColor, ScannedCount: scanned}
 	if *format != "json" {
 		opts.Snippet = makeSnippetFunc(*root)
 	}
 	violations := report(matches, opts, os.Stdout)
+	if *verbose {
+		fmt.Fprintf(os.Stderr, "[verbose] scan=%s (%d files, %d matches), total=%s\n",
+			tScan, scanned, len(matches), time.Since(t0))
+	}
 	if *failOnViolation && violations > 0 {
 		os.Exit(1)
 	}
@@ -72,14 +81,14 @@ func runInit(args []string) {
 	fs.Parse(args)
 
 	if _, err := os.Stat(*output); err == nil {
-		fmt.Fprintf(os.Stderr, "%s already exists, not overwriting\n", *output)
+		fmt.Fprintf(os.Stderr, "%s already exists, not overwriting (delete it first or use --output)\n", *output)
 		os.Exit(1)
 	}
 
 	if err := os.WriteFile(*output, []byte(defaultConfigJSON()), 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "error writing config: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error writing config to %q: %v\n", *output, err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("created %s\n", *output)
+	fmt.Printf("created %s — edit thresholds and re-run 'dupelens check'\n", *output)
 }
