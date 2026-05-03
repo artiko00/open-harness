@@ -1,4 +1,4 @@
-## ADR-010: Rabin-Karp sobre AST para `dupelens`
+## ADR-012: Rabin-Karp sobre AST para `dupelens`
 
 **Estado:** Aceptado
 **Fecha:** 2026-05-02

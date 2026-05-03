@@ -1,4 +1,4 @@
-## ADR-011: TDD como estándar del proyecto
+## ADR-013: TDD como estándar del proyecto
 
 **Estado:** Aceptado
 **Fecha:** 2026-05-02
