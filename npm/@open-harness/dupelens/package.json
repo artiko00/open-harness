@@ -2,7 +2,14 @@
   "name": "@open-harness/dupelens",
   "version": "0.1.0",
   "description": "Code duplication detector for any language — Rabin-Karp fingerprinting, works with Husky, CI, and any git hook system",
-  "keywords": ["duplication", "linter", "husky", "git-hooks", "code-quality", "dry"],
+  "keywords": [
+    "duplication",
+    "linter",
+    "husky",
+    "git-hooks",
+    "code-quality",
+    "dry"
+  ],
   "homepage": "https://github.com/jassencastillo/open-harness",
   "license": "MIT",
   "bin": {

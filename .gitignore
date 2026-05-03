@@ -12,6 +12,8 @@ tools/testlens/testlens.exe
 # Binarios npm cross-compiled
 npm/@open-harness/secretlens-*/bin/secretlens
 npm/@open-harness/secretlens-win32-x64/bin/secretlens.exe
+npm/@open-harness/testlens-*/bin/testlens
+npm/@open-harness/testlens-win32-x64/bin/testlens.exe
 
 # Binarios de distribución npm (se generan con scripts/build-npm.sh)
 npm/@open-harness/linelens-*/bin/linelens

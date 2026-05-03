@@ -2,8 +2,12 @@
   "name": "@open-harness/linelens-darwin-arm64",
   "version": "0.1.0",
   "description": "linelens binary for macOS Apple Silicon (arm64)",
-  "os": ["darwin"],
-  "cpu": ["arm64"],
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
   "license": "MIT",
   "bin": {
     "linelens": "bin/linelens"

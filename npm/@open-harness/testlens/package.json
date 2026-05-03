@@ -1,0 +1,30 @@
+{
+  "name": "@open-harness/testlens",
+  "version": "0.1.0",
+  "description": "Test coverage detector for any language — finds source files without tests, works with Husky, CI, and any git hook system",
+  "keywords": [
+    "testing",
+    "coverage",
+    "linter",
+    "husky",
+    "git-hooks",
+    "tdd"
+  ],
+  "homepage": "https://github.com/artiko00/open-harness",
+  "license": "MIT",
+  "bin": {
+    "testlens": "bin/testlens.js"
+  },
+  "scripts": {
+    "test": "node bin/testlens.js version"
+  },
+  "optionalDependencies": {
+    "@open-harness/testlens-linux-x64": "0.1.0",
+    "@open-harness/testlens-darwin-arm64": "0.1.0",
+    "@open-harness/testlens-darwin-x64": "0.1.0",
+    "@open-harness/testlens-win32-x64": "0.1.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

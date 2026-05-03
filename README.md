@@ -233,25 +233,80 @@ Top duplicated files:
 
 ---
 
-## Combined CI / git hooks
+## Usage in Node/TS/JS projects
 
-Run all three quality tools as gates in a single workflow:
+Install all tools with a single command (once `open-harness` is published to npm):
+
+```bash
+npm install --save-dev open-harness
+```
+
+Or install individual tools:
+
+```bash
+npm install --save-dev @open-harness/linelens @open-harness/dupelens \
+  @open-harness/secretlens @open-harness/testlens
+```
+
+Add to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "lint:lines":   "linelens check --fail",
+    "lint:dupes":   "dupelens check --fail",
+    "lint:secrets": "secretlens check --fail",
+    "lint:tests":   "testlens check --fail",
+    "lint":         "npm run lint:lines && npm run lint:dupes && npm run lint:secrets && npm run lint:tests"
+  }
+}
+```
+
+With [lint-staged](https://github.com/okonet/lint-staged) + Husky pre-commit:
+
+```json
+{
+  "lint-staged": {
+    "**/*": ["linelens check --fail", "secretlens check --fail"]
+  }
+}
+```
+
+GitHub Actions CI:
 
 ```yaml
-# GitHub Actions
+- name: Install open-harness
+  run: npm install -g open-harness
+
+- run: linelens check --fail
+- run: dupelens check --fail
+- run: secretlens check --fail
+- run: testlens check --fail --lang typescript --dir src/
+```
+
+---
+
+## Combined CI / git hooks
+
+Run all four quality tools as gates in a single workflow:
+
+```yaml
+# GitHub Actions (via npx, no install step)
 - run: npx @open-harness/linelens check --fail
 - run: npx @open-harness/dupelens check --fail
 - run: npx @open-harness/secretlens check --fail
+- run: npx @open-harness/testlens check --fail
 ```
 
-Or via lefthook (this repo uses this pattern — see `lefthook.yml`):
+Via lefthook (this repo uses this pattern — see `lefthook.yml`):
 
 ```yaml
 pre-commit:
   commands:
-    linelens:   { run: tools/linelens/linelens   check --fail --no-color }
-    dupelens:   { run: tools/dupelens/dupelens   check --fail --no-color }
-    secretlens: { run: tools/secretlens/secretlens check --fail --no-color }
+    linelens:   { run: linelens check --fail --no-color }
+    dupelens:   { run: dupelens check --fail --no-color }
+    secretlens: { run: secretlens check --fail --no-color }
+    testlens:   { run: testlens check --fail --lang typescript --dir src/ }
 ```
 
 ---
@@ -266,11 +321,17 @@ open-harness/
 │   ├── secretlens/        ← v0.1.0 (secret/credential detector, 100% coverage)
 │   └── testlens/          ← v0.1.0 (test coverage detector, multi-language, 100% coverage)
 ├── npm/
+│   ├── open-harness/      ← meta-package (instala los 4 tools)
 │   └── @open-harness/
+│       ├── open-harness/  ← meta-package (scoped)
 │       ├── linelens/      ← npm wrapper (JS)
 │       ├── linelens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/
 │       ├── dupelens/      ← npm wrapper (JS)
-│       └── dupelens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/
+│       ├── dupelens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/
+│       ├── secretlens/    ← npm wrapper (JS)
+│       ├── secretlens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/
+│       ├── testlens/      ← npm wrapper (JS)
+│       └── testlens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/
 ├── docs/                  ← Architecture Decision Records (ADR-001 … ADR-013)
 ├── scripts/
 │   ├── build.sh           ← compile all tools

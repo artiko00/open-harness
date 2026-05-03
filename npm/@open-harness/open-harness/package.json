@@ -1,0 +1,17 @@
+{
+  "name": "@open-harness/open-harness",
+  "version": "0.1.0",
+  "description": "All open-harness linting tools in one package — linelens, dupelens, secretlens, testlens",
+  "keywords": ["linter", "code-quality", "husky", "git-hooks", "duplication", "secrets", "testing", "lines"],
+  "homepage": "https://github.com/artiko00/open-harness",
+  "license": "MIT",
+  "dependencies": {
+    "@open-harness/linelens": "0.1.0",
+    "@open-harness/dupelens": "0.1.0",
+    "@open-harness/secretlens": "0.1.0",
+    "@open-harness/testlens": "0.1.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
