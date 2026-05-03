@@ -39,10 +39,37 @@ SESSION 4 — 2026-05-02 (TDD adoptado)
 - lefthook.yml extendido: pre-push corre tests de linelens Y dupelens
 - Reglas duras documentadas: nunca commit sin test, [done] solo si tests pasan contundentemente
 
-Pendiente (ver feature-list.json):
+SESSION 5 — 2026-05-02 (F-006 dupelens completo, end-to-end TDD)
+-----------------------------------------------------------------
+- Fases 1-8 ejecutadas íntegramente bajo TDD
+- fase1·core: Rabin-Karp rolling hash + cache hashToken (sync.Map)
+- fase2·matcher: findDuplicates con collision check + merge overlapping + minLines
+- fase3·tokenizer: strip strings literales y comentarios (//, #, /* */)
+- fase4·reporter: dispatch console|json + snippets opcionales + top files
+- fase5·cli: --verbose timings + error wrapping con contexto
+- fase6·integ: dupelens al lefthook + README sección completa + dupelens.json root
+- fase7·e2e: testdata/e2e_fixture + 3 tests E2E + benchmark + script vs jscpd
+- fase8·release: v0.1.0 + 4 binarios cross-compiled + 5 npm packages + tag local
+
+Merge de origin/main durante el epic:
+- secretlens v0.1.0 incorporado (nuevo tool del clan)
+- AGENTS.md de main fusionado con la versión TDD del epic
+- Tests de coverage de linelens incorporados
+- 6 conflictos resueltos en merge commit 62cd9a2
+
+Estado del epic/dupelens al cierre:
+- 21 commits, tag v0.1.0-dupelens
+- 51+ tests passing, ~88% coverage estimada
+- linelens check pasa sobre 85 archivos
+- dupelens check pasa sobre 62 archivos
+- ADRs 010 (Rabin-Karp), 011 (TDD), 008 y 009 actualizados
+
+Pendiente:
   F-001 → bigo tool (planificado)
   F-002 → GitHub Actions CI
-  F-003 → npm publish
+  F-003 → npm publish (incluye dupelens packages listos)
   F-004 → release workflow
   F-005 → linelens report --format=json
-  F-006 → dupelens core (fase1 en adelante, 33 steps restantes)
+  F-006 → dupelens (cerrado, 44/45 done; falta solo push + PR)
+  F-007 → extraer helpers compartidos a tools/_shared/ (planificado)
+  Acción usuario → push branch + tag + abrir PR

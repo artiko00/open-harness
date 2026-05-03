@@ -85,6 +85,12 @@ npx linelens check --fail
 
 Detects duplicated code blocks using **Rabin-Karp** rolling-hash fingerprinting over tokenized source. Language-agnostic (works on Go, TS, Python, Rust, etc.) — strings and comments are stripped before tokenization to avoid false positives. See [ADR-010](docs/adr-010-dupelens-rabin-karp-sobre-ast.md).
 
+### Install via npm
+
+```bash
+npm install --save-dev @open-harness/dupelens
+```
+
 ### Usage
 
 ```bash
@@ -165,6 +171,29 @@ Top duplicated files:
 
 ---
 
+## Combined CI / git hooks
+
+Run all three quality tools as gates in a single workflow:
+
+```yaml
+# GitHub Actions
+- run: npx @open-harness/linelens check --fail
+- run: npx @open-harness/dupelens check --fail
+- run: npx @open-harness/secretlens check --fail
+```
+
+Or via lefthook (this repo uses this pattern — see `lefthook.yml`):
+
+```yaml
+pre-commit:
+  commands:
+    linelens:   { run: tools/linelens/linelens   check --fail --no-color }
+    dupelens:   { run: tools/dupelens/dupelens   check --fail --no-color }
+    secretlens: { run: tools/secretlens/secretlens check --fail --no-color }
+```
+
+---
+
 ## Repository structure
 
 ```
@@ -176,16 +205,20 @@ open-harness/
 ├── npm/
 │   └── @open-harness/
 │       ├── linelens/      ← npm wrapper (JS)
-│       └── linelens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/
+│       ├── linelens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/
+│       ├── dupelens/      ← npm wrapper (JS)
+│       └── dupelens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/
 ├── docs/                  ← Architecture Decision Records (ADR-001 … ADR-011)
 ├── scripts/
 │   ├── build.sh           ← compile all tools
-│   └── build-npm.sh       ← cross-compile + update npm packages
+│   ├── build-npm.sh       ← cross-compile + npm packages (acepta <tool> como arg)
+│   └── bench-vs-jscpd.sh  ← manual perf comparison dupelens vs jscpd
 ├── .agent/                ← agent harness (feature list, session log, init script)
 ├── AGENTS.md              ← agent instructions (TDD workflow, conventions)
-├── go.work                ← Go workspace
-├── lefthook.yml           ← git hooks (pre-commit: linelens, pre-push: tests)
-└── linelens.json          ← lint config for this repo
+├── go.work                ← Go workspace (3 tools)
+├── lefthook.yml           ← git hooks (pre-commit: linelens + dupelens, pre-push: tests x3)
+├── linelens.json          ← linelens config for this repo
+└── dupelens.json          ← dupelens config for this repo
 ```
 
 ## Development

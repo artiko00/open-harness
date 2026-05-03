@@ -1,24 +1,42 @@
-# ADR-009: open-harness se protege con su propia herramienta
+# ADR-009: open-harness se protege con sus propias herramientas
 
-**Estado:** Aceptado  
+**Estado:** Aceptado
 **Fecha:** 2026-05-02
+**Última actualización:** 2026-05-02 (extendido a múltiples tools tras release de dupelens v0.1.0)
 
 ## Contexto
 
-linelens es una herramienta de calidad de código que detecta archivos que superan un límite de líneas. El proyecto que la desarrolla (open-harness) puede usar linelens sobre sí mismo, creando una relación de auto-aplicación.
-
-Esta práctica fue introducida desde el proyecto standalone (`linelens` v0.1.0, ADR-005) y se mantiene en el monorepo.
+open-harness desarrolla herramientas de calidad de código. El proyecto puede usar esas herramientas sobre sí mismo, creando una relación de auto-aplicación. Esto fue introducido inicialmente con linelens (v0.1.0, ADR-005) y se extendió a múltiples tools cuando llegó dupelens.
 
 ## Decisión
 
-El hook `pre-commit` de lefthook ejecuta `linelens check --fail` sobre todo el repositorio antes de cada commit. Cualquier archivo que supere su límite configurado bloquea el commit.
+El hook `pre-commit` de lefthook ejecuta cada tool de calidad sobre todo el repositorio antes de cada commit:
 
-Esto implica que **cada contribución al proyecto debe cumplir las mismas reglas que linelens impone a los proyectos que lo adoptan**.
+| Tool | Comando |
+|---|---|
+| linelens | `tools/linelens/linelens check --fail --no-color` |
+| dupelens | `tools/dupelens/dupelens check --fail --no-color` |
+
+(secretlens también es candidato a esta lista — pendiente de decisión sobre si correr en cada commit o solo en CI por su costo de regex multi-pattern.)
+
+Cualquier violación de cualquiera de estos tools bloquea el commit. Esto implica que **cada contribución al proyecto debe cumplir las mismas reglas que las herramientas imponen a los proyectos que las adoptan**.
 
 ## Consecuencias
 
-- **Positivo:** credibilidad: la herramienta demuestra en su propio código que las reglas que propone son viables y no arbitrarias.
-- **Positivo:** detecta regresiones inmediatamente; si un refactor hace crecer un archivo más allá del límite, el commit falla antes del push.
-- **Positivo:** sirve como caso de prueba real y continuo del comportamiento de linelens en un proyecto Go activo.
-- **Negativo:** cualquier cambio legítimo que supere el límite (ej. añadir una feature grande en un archivo existente) requiere un refactor previo o un ajuste explícito en `linelens.json`. Esto es intencional: fuerza a mantener archivos pequeños.
-- **Invariante:** el archivo `tools/linelens/scanner_test.go` usa la regla `*_test.go` (300 líneas) porque los tests naturalmente tienden a ser más verbosos. Esta excepción está documentada en `linelens.json`.
+**Positivo:**
+
+- Credibilidad: las herramientas demuestran en su propio código que las reglas que proponen son viables y no arbitrarias.
+- Detecta regresiones inmediatamente: si un refactor hace crecer un archivo más allá del límite, o introduce código duplicado, el commit falla antes del push.
+- Funciona como caso de prueba real y continuo del comportamiento de cada tool en un proyecto Go activo.
+- Cuando se incorpora un tool nuevo al monorepo, agregarlo al `pre-commit` es trivial — la infraestructura ya existe.
+
+**Negativo:**
+
+- Cualquier cambio legítimo que supere los thresholds requiere un refactor previo o un ajuste explícito en el config root del tool. Esto es intencional: fuerza calidad antes de comodidad.
+- El `dupelens.json` root del repo usa `minTokens=200` en vez del default 50, porque actualmente hay duplicación inter-tool real (matcher.go ~166 tokens, binary.go ~87 tokens entre los 3 tools). Esa deuda está acknowledged en F-007 ("extraer helpers compartidos a `tools/_shared/`"). Cuando F-007 cierre, bajaremos el threshold y el detector se vuelve útil para uso real.
+
+**Invariantes:**
+
+- Los archivos `*_test.go` usan la regla `maxLines: 300` en `linelens.json` (los tests naturalmente son más verbosos). Excepción documentada.
+- `.agent/feature-list.json` usa `maxLines: 500` en `linelens.json` (es un registry que crece con features, no código). Excepción documentada.
+- Los `*_test.go` y `migrations/**` se saltan en `dupelens.json` (test boilerplate y migraciones suelen tener patrones repetidos por diseño).
