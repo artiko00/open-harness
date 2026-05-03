@@ -262,9 +262,9 @@ pre-commit:
 open-harness/
 ├── tools/
 │   ├── linelens/          ← v0.1.0 (file length linter, 100% coverage)
-│   ├── dupelens/          ← v0.1.0 (duplicate detector, Rabin-Karp)
+│   ├── dupelens/          ← v0.1.0 (duplicate detector, Rabin-Karp, 100% coverage)
 │   ├── secretlens/        ← v0.1.0 (secret/credential detector, 100% coverage)
-│   └── testlens/          ← v0.1.0 (test coverage detector, multi-language)
+│   └── testlens/          ← v0.1.0 (test coverage detector, multi-language, 100% coverage)
 ├── npm/
 │   └── @open-harness/
 │       ├── linelens/      ← npm wrapper (JS)
@@ -294,7 +294,7 @@ git clone git@github.com:artiko00/open-harness.git
 cd open-harness
 
 # Run tests for all tools
-go test ./tools/linelens && go test ./tools/testlens && go test ./tools/secretlens
+go test ./tools/linelens && go test ./tools/dupelens && go test ./tools/testlens && go test ./tools/secretlens
 
 # Build all tools
 bash scripts/build.sh
