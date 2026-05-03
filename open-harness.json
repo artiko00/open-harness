@@ -9,9 +9,9 @@
     },
     {
       "name": "dupelens",
-      "description": "Code duplication detector (Rabin-Karp, scaffold)",
+      "description": "Code duplication detector (Rabin-Karp, language-agnostic)",
       "path": "tools/dupelens",
-      "version": "0.1.0-scaffold"
+      "version": "0.1.0"
     },
     {
       "name": "secretlens",

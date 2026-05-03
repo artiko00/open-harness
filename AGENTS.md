@@ -85,7 +85,7 @@ Detalle completo en [ADR-011](docs/adr-011-tdd-como-estandar.md).
 open-harness/
 ├── tools/
 │   ├── linelens/        ← v0.1.0 (file length linter)
-│   ├── dupelens/        ← v0.1.0-scaffold (duplicate detector, Rabin-Karp)
+│   ├── dupelens/        ← v0.1.0 (duplicate detector, Rabin-Karp)
 │   └── secretlens/      ← v0.1.0 (secret/credential detector)
 ├── npm/@open-harness/   ← wrappers npm por plataforma
 ├── docs/                ← ADRs (decisiones arquitectónicas)

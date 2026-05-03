@@ -7,7 +7,7 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 | Tool | Description | Status |
 |---|---|---|
 | [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.1.0` |
-| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.1.0-scaffold` |
+| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.1.0` |
 | [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.1.0` |
 | bigo | Big O complexity analyzer | `planned` |
 
@@ -157,7 +157,7 @@ Top duplicated files:
 }
 ```
 
-### Limitations (v0.1.0-scaffold)
+### Limitations (v0.1.0)
 
 - Detects only **literal** or near-literal duplication (token-by-token). Refactors with renamed variables are not flagged — that requires AST analysis ([ADR-010](docs/adr-010-dupelens-rabin-karp-sobre-ast.md) explains the trade-off).
 - `--threshold` flag is not implemented; the algorithm is binary (match or not). See `[skip]` note in F-006.
@@ -171,7 +171,7 @@ Top duplicated files:
 open-harness/
 ├── tools/
 │   ├── linelens/          ← v0.1.0 (file length linter)
-│   ├── dupelens/          ← v0.1.0-scaffold (duplicate detector)
+│   ├── dupelens/          ← v0.1.0 (duplicate detector)
 │   └── secretlens/        ← v0.1.0 (secret/credential detector)
 ├── npm/
 │   └── @open-harness/

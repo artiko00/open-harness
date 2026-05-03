@@ -10,6 +10,8 @@ tools/secretlens/secretlens.exe
 # Binarios de distribución npm (se generan con scripts/build-npm.sh)
 npm/@open-harness/linelens-*/bin/linelens
 npm/@open-harness/linelens-win32-x64/bin/linelens.exe
+npm/@open-harness/dupelens-*/bin/dupelens
+npm/@open-harness/dupelens-win32-x64/bin/dupelens.exe
 
 # Carpeta de distribución general
 dist/

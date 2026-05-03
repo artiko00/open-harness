@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const version = "0.1.0-scaffold"
+const version = "0.1.0"
 
 func main() {
 	if len(os.Args) < 2 {
