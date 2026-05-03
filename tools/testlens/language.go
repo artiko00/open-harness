@@ -2,9 +2,10 @@ package main
 
 // languageMapping defines how a language maps source files to test files
 type languageMapping struct {
-	extensions   []string    // source file extensions
-	testSuffixes []string    // suffixes for test files (e.g., ".test", ".spec")
-	testPrefixes []string    // prefixes for test files (e.g., "test_")
+	extensions   []string
+	testSuffixes []string
+	testPrefixes []string
+	packageBased bool // true when one test file covers all files in the directory (e.g. Go)
 }
 
 // mapLanguageExtensions returns the mapping of languages to their file patterns
@@ -12,8 +13,9 @@ func mapLanguageExtensions() map[string]languageMapping {
 	return map[string]languageMapping{
 		"go": {
 			extensions:   []string{".go"},
-			testSuffixes:  []string{"_test"},
-			testPrefixes:  []string{},
+			testSuffixes: []string{"_test"},
+			testPrefixes: []string{},
+			packageBased: true,
 		},
 		"typescript": {
 			extensions:   []string{".ts", ".tsx"},

@@ -156,5 +156,29 @@
         "[done] [fase8·release] Merge a main resolviendo colisiones con épica testlens (F-006)"
       ]
     }
+  ],
+  "backlog": [
+    {
+      "id": "F-009",
+      "category": "functional",
+      "description": "testlens: modo package para Go — un paquete (directorio) con al menos un *_test.go cuenta como cubierto, sin importar cuántos archivos fuente tenga",
+      "passes": true,
+      "steps": [
+        "[test] TestPackageMode_DirWithAnyTestFile_NoViolation: dir con main.go + scanner.go + scanner_test.go → 0 violaciones en modo Go",
+        "[test] TestPackageMode_DirWithNoTestFiles_OneViolation: dir con main.go + scanner.go sin *_test.go → 1 violación (no 2)",
+        "[test] TestPackageMode_MixedSubdirs_CountsPackages: 2 subdirs, uno con test y uno sin → 1 violación",
+        "[test] TestPackageMode_PythonUnchanged: Python sigue siendo por archivo (packageBased=false)",
+        "[impl] Agregar campo packageBased bool a languageMapping en language.go",
+        "[impl] Marcar go como packageBased: true en mapLanguageExtensions()",
+        "[impl] Agregar packageHasTests(dir, testIndicators, ext string) bool en matcher.go",
+        "[impl] Agregar checkCoveragePackage(cfg, lang, root) (int, error) en coverage.go — agrupa por dir, reporta dir sin tests",
+        "[impl] En checkCoverage: branch sobre lang.packageBased → llama checkCoveragePackage o flujo actual por archivo",
+        "[test] Completar cobertura al 100%: tests para packageHasTests y checkCoveragePackage",
+        "[integ] Correr tools/testlens/testlens check --lang go --dir tools/ → 0 violaciones",
+        "[integ] Agregar testlens check --lang go --dir tools/ --fail a lefthook.yml pre-push",
+        "[integ] Verificar que los 4 hooks pre-push pasan",
+        "[doc] ADR-014: package-mode vs file-mode y criterio para cuándo un lenguaje es packageBased"
+      ]
+    }
   ]
 }

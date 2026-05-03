@@ -183,8 +183,9 @@ func TestCheckCoverageConfig(t *testing.T) {
 		t.Fatalf("checkCoverage failed: %v", err)
 	}
 	
-	if violations != 1 {
-		t.Errorf("checkCoverage = %d violations, want 1 (bar.go)", violations)
+	// Go package mode: foo_test.go covers the whole package, including bar.go
+	if violations != 0 {
+		t.Errorf("checkCoverage = %d violations, want 0 (foo_test.go covers package)", violations)
 	}
 }
 

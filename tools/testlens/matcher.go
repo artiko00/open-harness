@@ -97,3 +97,4 @@ func testExists(sourcePath string, candidates []string) string {
 	}
 	return ""
 }
+
