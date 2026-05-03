@@ -10,16 +10,17 @@ open-harness desarrolla herramientas de calidad de código. El proyecto puede us
 
 ## Decisión
 
-El hook `pre-commit` de lefthook ejecuta cada tool de calidad sobre todo el repositorio antes de cada commit:
+El hook `pre-commit` de lefthook ejecuta los **tres tools de calidad** del monorepo sobre todo el repositorio antes de cada commit:
 
-| Tool | Comando |
-|---|---|
-| linelens | `tools/linelens/linelens check --fail --no-color` |
-| dupelens | `tools/dupelens/dupelens check --fail --no-color` |
-
-(secretlens también es candidato a esta lista — pendiente de decisión sobre si correr en cada commit o solo en CI por su costo de regex multi-pattern.)
+| Tool | Comando | Qué bloquea |
+|---|---|---|
+| linelens | `tools/linelens/linelens check --fail --no-color` | archivos > maxLines |
+| dupelens | `tools/dupelens/dupelens check --fail --no-color` | duplicación ≥ minTokens |
+| secretlens | `tools/secretlens/secretlens check --fail --no-color` | secretos hardcodeados |
 
 Cualquier violación de cualquiera de estos tools bloquea el commit. Esto implica que **cada contribución al proyecto debe cumplir las mismas reglas que las herramientas imponen a los proyectos que las adoptan**.
+
+El hook `pre-push` corre los tests Go de los 3 tools en paralelo, bloqueando push si alguno falla.
 
 ## Consecuencias
 
@@ -40,3 +41,4 @@ Cualquier violación de cualquiera de estos tools bloquea el commit. Esto implic
 - Los archivos `*_test.go` usan la regla `maxLines: 300` en `linelens.json` (los tests naturalmente son más verbosos). Excepción documentada.
 - `.agent/feature-list.json` usa `maxLines: 500` en `linelens.json` (es un registry que crece con features, no código). Excepción documentada.
 - Los `*_test.go` y `migrations/**` se saltan en `dupelens.json` (test boilerplate y migraciones suelen tener patrones repetidos por diseño).
+- Los `*_test.go` y `**/testdata/**` se saltan en `secretlens.json` (los tests del propio secretlens contienen secretos falsos como fixtures por diseño — son la entrada que el detector debe reconocer). Esta excepción es específica del repo open-harness; otros proyectos que adoptan secretlens probablemente no necesitan esta regla.

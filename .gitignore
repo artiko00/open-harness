@@ -7,6 +7,10 @@ tools/dupelens/dupelens.exe
 tools/secretlens/secretlens
 tools/secretlens/secretlens.exe
 
+# Binarios npm cross-compiled
+npm/@open-harness/secretlens-*/bin/secretlens
+npm/@open-harness/secretlens-win32-x64/bin/secretlens.exe
+
 # Binarios de distribución npm (se generan con scripts/build-npm.sh)
 npm/@open-harness/linelens-*/bin/linelens
 npm/@open-harness/linelens-win32-x64/bin/linelens.exe

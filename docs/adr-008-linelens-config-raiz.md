@@ -21,6 +21,7 @@ Se coloca **un archivo de config en la raíz por cada tool que el repo use sobre
 |---|---|---|
 | `linelens.json` | linelens | maxLines 100 por default, 300 para tests, 500 para `.agent/feature-list.json` |
 | `dupelens.json` | dupelens | minTokens 200 (threshold pragmático mientras F-007 deduplica helpers) |
+| `secretlens.json` | secretlens | excluye `**/*_test.go` y `**/testdata/**` (los tests de secretlens contienen secretos falsos como fixtures by design) |
 
 Las configs específicas de cada tool (`tools/<name>/<name>.json`) se mantienen como **plantilla / ejemplo** para usuarios externos que adoptan el tool, pero la **configuración raíz es la fuente de verdad** para los hooks y CI del propio open-harness.
 

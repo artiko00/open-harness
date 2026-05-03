@@ -216,9 +216,10 @@ open-harness/
 ├── .agent/                ← agent harness (feature list, session log, init script)
 ├── AGENTS.md              ← agent instructions (TDD workflow, conventions)
 ├── go.work                ← Go workspace (3 tools)
-├── lefthook.yml           ← git hooks (pre-commit: linelens + dupelens, pre-push: tests x3)
+├── lefthook.yml           ← git hooks (pre-commit: 3 tools, pre-push: tests x3)
 ├── linelens.json          ← linelens config for this repo
-└── dupelens.json          ← dupelens config for this repo
+├── dupelens.json          ← dupelens config for this repo
+└── secretlens.json        ← secretlens config for this repo
 ```
 
 ## Development
