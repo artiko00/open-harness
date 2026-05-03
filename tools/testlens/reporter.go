@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 )
 
@@ -35,9 +34,10 @@ func printSummary(violations int) {
 	}
 }
 
-// exitWithCode exits with appropriate exit code based on fail flag and violations
-func exitWithCode(fail bool, violations int) {
+// exitWithCode returns exit code based on fail flag and violations
+func exitWithCode(fail bool, violations int) int {
 	if fail && violations > 0 {
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }
