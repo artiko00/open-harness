@@ -1,94 +1,38 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
-	"time"
 )
 
 const version = "0.1.0"
 
+var osExit = os.Exit
+
 func main() {
-	if len(os.Args) < 2 {
+	osExit(run(os.Args[1:]))
+}
+
+func run(args []string) int {
+	if len(args) < 1 {
 		printUsage()
-		os.Exit(1)
+		return 1
 	}
 
-	switch os.Args[1] {
+	switch args[0] {
 	case "check":
-		runCheck(os.Args[2:])
+		return runCheck(args[1:])
 	case "init":
-		runInit(os.Args[2:])
+		return runInit(args[1:])
 	case "version", "--version", "-v":
 		fmt.Printf("dupelens %s\n", version)
+		return 0
 	case "help", "--help", "-h":
 		printUsage()
+		return 0
 	default:
-		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", args[0])
 		printUsage()
-		os.Exit(1)
+		return 1
 	}
-}
-
-func runCheck(args []string) {
-	fs := flag.NewFlagSet("check", flag.ExitOnError)
-	configPath := fs.String("config", "dupelens.json", "path to config file")
-	minTokens := fs.Int("min-tokens", 0, "override min duplicate token threshold")
-	failOnViolation := fs.Bool("fail", false, "exit with code 1 if duplicates found")
-	noColor := fs.Bool("no-color", false, "disable colored output")
-	format := fs.String("format", "console", "output format: console | json")
-	root := fs.String("dir", ".", "directory to scan")
-	verbose := fs.Bool("verbose", false, "print timing and progress to stderr")
-	fs.Parse(args)
-
-	if _, err := os.Stat(*root); err != nil {
-		fmt.Fprintf(os.Stderr, "directory %q not accessible: %v\n", *root, err)
-		os.Exit(1)
-	}
-
-	cfg, err := loadConfig(*configPath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
-
-	t0 := time.Now()
-	matches, scanned, err := scan(*root, cfg, *minTokens)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "scan error: %v\n", err)
-		os.Exit(1)
-	}
-	tScan := time.Since(t0)
-
-	opts := ReportOpts{Format: *format, NoColor: *noColor, ScannedCount: scanned}
-	if *format != "json" {
-		opts.Snippet = makeSnippetFunc(*root)
-	}
-	violations := report(matches, opts, os.Stdout)
-	if *verbose {
-		fmt.Fprintf(os.Stderr, "[verbose] scan=%s (%d files, %d matches), total=%s\n",
-			tScan, scanned, len(matches), time.Since(t0))
-	}
-	if *failOnViolation && violations > 0 {
-		os.Exit(1)
-	}
-}
-
-func runInit(args []string) {
-	fs := flag.NewFlagSet("init", flag.ExitOnError)
-	output := fs.String("output", "dupelens.json", "output file name")
-	fs.Parse(args)
-
-	if _, err := os.Stat(*output); err == nil {
-		fmt.Fprintf(os.Stderr, "%s already exists, not overwriting (delete it first or use --output)\n", *output)
-		os.Exit(1)
-	}
-
-	if err := os.WriteFile(*output, []byte(defaultConfigJSON()), 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "error writing config to %q: %v\n", *output, err)
-		os.Exit(1)
-	}
-
-	fmt.Printf("created %s — edit thresholds and re-run 'dupelens check'\n", *output)
 }

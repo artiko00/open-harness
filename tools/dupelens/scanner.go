@@ -19,6 +19,9 @@ func scan(root string, cfg Config, minOverride int) ([]Match, int, error) {
 
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
+			if path == root {
+				return err
+			}
 			return nil
 		}
 		relPath, _ := filepath.Rel(root, path)
