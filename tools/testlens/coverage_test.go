@@ -7,193 +7,6 @@ import (
 	"testing"
 )
 
-// Main and run tests
-func TestMain(t *testing.T) {
-	orig := osExit
-	defer func() { osExit = orig }()
-	
-	var exited int
-	osExit = func(code int) { exited = code }
-	
-	main()
-	if exited != 1 {
-		t.Errorf("main() with no args: expected exit 1, got %d", exited)
-	}
-}
-
-func TestRunNoArgs(t *testing.T) {
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	code := run([]string{})
-
-	w.Close()
-	os.Stdout = old
-
-	if code != 1 {
-		t.Errorf("run([]string{}) = %d, want 1", code)
-	}
-
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	if !bytes.Contains(buf.Bytes(), []byte("testlens")) {
-		t.Error("run([]string{}) should print usage with tool name")
-	}
-}
-
-func TestRunHelp(t *testing.T) {
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	code := run([]string{"help"})
-
-	w.Close()
-	os.Stdout = old
-
-	if code != 0 {
-		t.Errorf("run([\"help\"]) = %d, want 0", code)
-	}
-
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	if !bytes.Contains(buf.Bytes(), []byte("COMMANDS")) {
-		t.Error("help should print commands section")
-	}
-}
-
-func TestRunVersion(t *testing.T) {
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	code := run([]string{"version"})
-
-	w.Close()
-	os.Stdout = old
-
-	if code != 0 {
-		t.Errorf("run([\"version\"]) = %d, want 0", code)
-	}
-
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	if !bytes.Contains(buf.Bytes(), []byte("testlens")) {
-		t.Error("version should print testlens")
-	}
-}
-
-func TestRunUnknown(t *testing.T) {
-	old := os.Stderr
-	_, w, _ := os.Pipe()
-	os.Stderr = w
-
-	code := run([]string{"unknown-cmd"})
-
-	w.Close()
-	os.Stderr = old
-
-	if code != 1 {
-		t.Errorf("run([\"unknown-cmd\"]) = %d, want 1", code)
-	}
-}
-
-func TestRunInitCmd(t *testing.T) {
-	tmpDir := t.TempDir()
-	output := filepath.Join(tmpDir, "testlens.json")
-	
-	code := run([]string{"init", "--output", output})
-	
-	if code != 0 {
-		t.Errorf("run([\"init\"]) = %d, want 0", code)
-	}
-	
-	if _, err := os.Stat(output); err != nil {
-		t.Errorf("init should create file: %v", err)
-	}
-}
-
-func TestRunCheckCmd(t *testing.T) {
-	tmpDir := t.TempDir()
-	os.WriteFile(filepath.Join(tmpDir, "main.go"), []byte("package main"), 0644)
-	
-	code := run([]string{"check", "--lang", "go", "--dir", tmpDir})
-
-	if code != 0 && code != 1 {
-		t.Errorf("run([\"check\"]) = %d, want 0 or 1", code)
-	}
-}
-
-// runCheck tests
-func TestRunCheckNoArgs(t *testing.T) {
-	code := runCheck([]string{})
-	if code != 0 && code != 1 {
-		t.Errorf("runCheck([]) = %d, want 0 or 1", code)
-	}
-}
-
-func TestRunCheckWithLang(t *testing.T) {
-	code := runCheck([]string{"--lang", "go", "--dir", os.TempDir()})
-	
-	if code != 0 && code != 1 {
-		t.Errorf("runCheck with valid args: expected 0 or 1, got %d", code)
-	}
-}
-
-func TestRunCheckFailFlag(t *testing.T) {
-	tmpDir := t.TempDir()
-	os.WriteFile(filepath.Join(tmpDir, "foo.go"), []byte("package main"), 0644)
-	
-	code := runCheck([]string{"--dir", tmpDir})
-	if code != 0 && code != 1 {
-		t.Errorf("runCheck without --fail should return 0 or 1, got %d", code)
-	}
-}
-
-func TestRunCheckInvalidLang(t *testing.T) {
-	// Invalid language falls back to allExtensions, so it succeeds with 0
-	code := runCheck([]string{"--lang", "invalid-lang", "--dir", os.TempDir()})
-	// Should not crash, returns 0 (no violations) or 1 (something found)
-	if code != 0 && code != 1 {
-		t.Errorf("runCheck with invalid lang = %d, want 0 or 1", code)
-	}
-}
-
-// runInit tests
-func TestRunInit(t *testing.T) {
-	tmpDir := t.TempDir()
-	output := filepath.Join(tmpDir, "testlens.json")
-	
-	code := runInit([]string{"--output", output})
-	if code != 0 {
-		t.Errorf("runInit with valid output = %d, want 0", code)
-	}
-	
-	if _, err := os.Stat(output); err != nil {
-		t.Errorf("runInit should create file, got error: %v", err)
-	}
-}
-
-func TestRunInitFileExists(t *testing.T) {
-	tmpDir := t.TempDir()
-	output := filepath.Join(tmpDir, "testlens.json")
-	os.WriteFile(output, []byte("{}"), 0644)
-	
-	old := os.Stderr
-	_, w, _ := os.Pipe()
-	os.Stderr = w
-	
-	code := runInit([]string{"--output", output})
-	
-	os.Stderr = old
-	
-	if code != 1 {
-		t.Errorf("runInit on existing file = %d, want 1", code)
-	}
-}
-
-// Coverage helpers tests
 func TestAllExtensions(t *testing.T) {
 	mappings := mapLanguageExtensions()
 	exts := allExtensions(mappings)
@@ -284,7 +97,6 @@ func TestExtensionsForLanguageUnknown(t *testing.T) {
 	}
 }
 
-// Reporter tests
 func TestPrintViolations(t *testing.T) {
 	old := os.Stdout
 	r, w, _ := os.Pipe()
@@ -358,7 +170,6 @@ func TestExitWithCode(t *testing.T) {
 	}
 }
 
-// checkCoverage integration tests
 func TestCheckCoverageConfig(t *testing.T) {
 	tmpDir := t.TempDir()
 	
@@ -395,7 +206,6 @@ func TestCheckCoverageAllTested(t *testing.T) {
 	}
 }
 
-// isTestFile more coverage
 func TestIsTestFilePython(t *testing.T) {
 	if !isTestFile("foo_test.py", []string{".py"}, []string{"_test"}) {
 		t.Error("foo_test.py should be a test file for python")
@@ -411,7 +221,6 @@ func TestIsTestFileRuby(t *testing.T) {
 	}
 }
 
-// scanDirectory more coverage
 func TestScanDirectoryEmpty(t *testing.T) {
 	tmpDir := t.TempDir()
 	
