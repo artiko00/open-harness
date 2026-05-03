@@ -6,6 +6,8 @@ tools/dupelens/dupelens
 tools/dupelens/dupelens.exe
 tools/secretlens/secretlens
 tools/secretlens/secretlens.exe
+tools/testlens/testlens
+tools/testlens/testlens.exe
 
 # Binarios npm cross-compiled
 npm/@open-harness/secretlens-*/bin/secretlens

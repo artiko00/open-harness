@@ -65,7 +65,49 @@
     {
       "id": "F-006",
       "category": "functional",
-      "description": "dupelens: detector de código duplicado con Rabin-Karp — épica completa desde scaffold hasta release [LISTA]",
+      "description": "testlens: CLI que detecta archivos sin tests correspondientes (multi-lenguaje)",
+      "epic": true,
+      "branch": "epic/testlens",
+      "subtasks": [
+        { "id": "F-006.1", "description": "Implementar testlens: estructura base y mapeo de extensiones por lenguaje", "status": "done" },
+        { "id": "F-006.2", "description": "Implementar detección de archivos sin test (matching por nombre y ubicación)", "status": "done" },
+        { "id": "F-006.3", "description": "Implementar output CLI: lista legible + exit codes (0=OK, 1=violations)", "status": "done" },
+        { "id": "F-006.4", "description": "Agregar tests unitarios para matcher de extensiones y detección de coverage", "status": "done" },
+        { "id": "F-006.5", "description": "Verificar linelens check --fail pasa sobre el código de testlens", "status": "done" },
+        { "id": "F-006.6", "description": "Agregar testlens al go.work y actualizar open-harness.json", "status": "done" },
+        { "id": "F-006.7", "description": "Documentar uso en README.md (ejemplos, flags, lenguajes soportados)", "status": "done" }
+      ],
+      "steps": [
+        "Leer docs/adr/adr-001-testlens.md para especificación",
+        "Crear tools/testlens/ con go.mod (module .../tools/testlens)",
+        "Agregar testlens al go.work",
+        "Implementar: mapeo de extensiones por lenguaje, detección de archivos sin test",
+        "Agregar tests unitarios",
+        "Verificar que linelens check --fail y go test pasan",
+        "Actualizar open-harness.json con el nuevo tool"
+      ],
+      "passes": true
+    },
+    {
+      "id": "F-007",
+      "category": "refactor",
+      "description": "Extraer helpers compartidos (glob, binary detection) entre los tools en módulo interno tools/_shared/",
+      "steps": [
+        "Decidir estructura: tools/_shared/glob/ + tools/_shared/binary/ con su propio go.mod en el workspace",
+        "Mover matchGlob, isExcluded, ruleForFile a tools/_shared/glob/",
+        "Mover binaryExtensions, isBinaryPath, isBinaryContent a tools/_shared/binary/",
+        "Cada tool importa via 'use' en go.work (no rompe ADR-002 — interno al workspace, no dep externa)",
+        "Validar tests siguen pasando en linelens, dupelens, secretlens, testlens",
+        "Bajar minTokens de dupelens.json root a 100 (o 50) tras la deduplicación",
+        "Verificar que dupelens check --fail sigue pasando con threshold más bajo",
+        "ADR-014 documentando la decisión y por qué shared internal no rompe filosofía"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-008",
+      "category": "functional",
+      "description": "dupelens: detector de código duplicado con Rabin-Karp — épica completa desde scaffold hasta release [LISTA, era F-006 antes de colisión con testlens]",
       "passes": true,
       "steps": [
         "[done] [fase0·scaffold] Crear tools/dupelens/ con go.mod (module .../tools/dupelens)",
@@ -77,7 +119,7 @@
         "[done] [fase0·scaffold] Reporter (reporter.go) con output coloreado consola",
         "[done] [fase0·scaffold] Binary skip (binary.go) con extensiones conocidas + heurística NUL byte",
         "[done] [fase0·scaffold] Tests unitarios glob/exclude/rules + tokenizer/hashToken",
-        "[done] [fase0·scaffold] ADR-010 documentando decisión Rabin-Karp sobre AST",
+        "[done] [fase0·scaffold] ADR-012 documentando decisión Rabin-Karp sobre AST (renumerado de ADR-010 por colisión)",
         "[done] [fase0·scaffold] Registrar tool en go.work, open-harness.json y .gitignore",
         "[done] [fase0·scaffold] Validar build + tests + linelens check pasa sobre repo expandido",
         "[done] [fase1·core] Implementar fingerprint() con rolling hash Rabin-Karp real (ventana deslizante O(n))",
@@ -88,7 +130,7 @@
         "[done] [fase2·matcher] Verificación literal post-hash para descartar colisiones de Rabin-Karp",
         "[done] [fase2·matcher] Filtrar overlapping matches (ventanas consecutivas mismo duplicado → un solo Match)",
         "[done] [fase2·matcher] Aplicar threshold minLines además de minTokens",
-        "[skip] [fase2·matcher] rules.minTokens override descartado: ventanas distintas rompen comparabilidad de fingerprints entre archivos. Si se requiere a futuro, repensar como filtro post-detección, no como windowSize por archivo.",
+        "[skip] [fase2·matcher] rules.minTokens override descartado: ventanas distintas rompen comparabilidad de fingerprints entre archivos",
         "[done] [fase2·matcher] Tests con casos sintéticos: duplicado literal, casi-literal, sin duplicados",
         "[done] [fase3·tokenizer] Mejorar tokenizer: stripear strings literales (\"...\", '...', `...`)",
         "[done] [fase3·tokenizer] Stripear comments single-line (// #) y multi-line (/* */)",
@@ -97,40 +139,22 @@
         "[done] [fase4·reporter] Implementar --format=json con schema documentado (camelCase)",
         "[done] [fase4·reporter] Resumen final con stats: archivos escaneados, matches, top archivos duplicados",
         "[done] [fase4·reporter] Tests del output JSON validando schema",
-        "[skip] [fase5·cli] --threshold descartado: algoritmo Rabin-Karp es binario por construcción. Para soporte real de % similitud requiere rediseño con MinHash/w-shingles.",
-        "[done] [fase5·cli] Agregar flag --verbose con timing scan/total a stderr (no contamina JSON output)",
+        "[skip] [fase5·cli] --threshold descartado: algoritmo Rabin-Karp es binario por construcción",
+        "[done] [fase5·cli] Agregar flag --verbose con timing scan/total a stderr",
         "[done] [fase5·cli] Mejorar mensajes de error con path + hint accionable",
         "[done] [fase6·integ] Agregar comando dupelens al lefthook.yml pre-commit",
         "[done] [fase6·integ] Validar que dupelens check --fail pasa con dupelens.json root (minTokens=200, ack tech debt en F-007)",
         "[done] [fase6·integ] Documentar en README sección dupelens: install, usage, config, output, JSON, limitations",
         "[done] [fase6·integ] Verificar que linelens check --fail sigue pasando sobre el código nuevo",
-        "[done] [fase7·e2e] Test E2E: 3 tests sobre testdata/e2e_fixture validan pair detection, no falsos pos en unique.go, y filtro por minTokens",
-        "[done] [fase7·e2e] Benchmark BenchmarkScan_e2eFixture (160µs/scan, 52KB allocs) + scripts/bench-vs-jscpd.sh para comparar manualmente cuando se instale jscpd",
-        "[done] [fase7·e2e] Smoke test contra repo cubierto por lefthook pre-commit (validado en fase6: 55 archivos, 0 falsos positivos con dupelens.json root)",
-        "[done] [fase8·release] Bump version 0.1.0-scaffold → 0.1.0 en main.go, open-harness.json, README, AGENTS",
-        "[done] [fase8·release] Cross-compile binarios (linux-x64 2.2MB, darwin-arm64 2.2MB, darwin-x64 2.3MB, win32-x64 2.4MB) con -ldflags='-s -w'",
-        "[done] [fase8·release] Crear npm/@open-harness/dupelens + 4 packages por plataforma (estructura idéntica a linelens)",
-        "[done] [fase8·release] scripts/build-npm.sh ya soportaba el tool genéricamente (acepta nombre como arg) — no requirió cambios",
-        "[done] [fase8·release] Tag local v0.1.0-dupelens (push lo decide el usuario)",
-        "[pending-user] [fase8·release] Abrir PR epic/dupelens → main: requiere push del branch + tag y creación del PR via gh por el usuario"
-      ],
-      "passes": false
-    },
-    {
-      "id": "F-007",
-      "category": "refactor",
-      "description": "Extraer helpers compartidos (glob, binary detection) entre los 3 tools en módulo interno tools/_shared/",
-      "steps": [
-        "Decidir estructura: tools/_shared/glob/ + tools/_shared/binary/ con su propio go.mod en el workspace",
-        "Mover matchGlob, isExcluded, ruleForFile a tools/_shared/glob/",
-        "Mover binaryExtensions, isBinaryPath, isBinaryContent a tools/_shared/binary/",
-        "Cada tool importa via 'use' en go.work (no rompe ADR-002 — interno al workspace, no dep externa)",
-        "Validar tests siguen pasando en linelens, dupelens, secretlens",
-        "Bajar minTokens de dupelens.json root a 100 (o 50) tras la deduplicación",
-        "Verificar que dupelens check --fail sigue pasando con threshold más bajo",
-        "ADR-012 documentando la decisión y por qué shared internal no rompe filosofía"
-      ],
-      "passes": false
+        "[done] [fase7·e2e] Test E2E: 3 tests sobre testdata/e2e_fixture validan pair detection y filtros",
+        "[done] [fase7·e2e] Benchmark BenchmarkScan_e2eFixture + scripts/bench-vs-jscpd.sh",
+        "[done] [fase7·e2e] Smoke test contra repo cubierto por lefthook pre-commit",
+        "[done] [fase8·release] Bump version 0.1.0-scaffold → 0.1.0",
+        "[done] [fase8·release] Cross-compile binarios (linux-x64, darwin-arm64, darwin-x64, win32-x64)",
+        "[done] [fase8·release] Crear npm/@open-harness/dupelens + 4 packages por plataforma",
+        "[done] [fase8·release] Tag local v0.1.0-dupelens",
+        "[done] [fase8·release] Merge a main resolviendo colisiones con épica testlens (F-006)"
+      ]
     }
   ]
 }
