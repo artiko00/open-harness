@@ -1,8 +1,8 @@
 # @open_harness/testlens
 
-Test coverage detector. Finds source files in your project that don't have a corresponding test file, across 9 languages. Single native binary, zero runtime dependencies, works in any ecosystem.
+Test coverage detector. Finds source files that don't have a corresponding test file, across 9 languages. Single native binary, zero runtime dependencies.
 
-Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo.
+Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
 ## Install
 
@@ -10,7 +10,7 @@ Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo.
 npm install --save-dev @open_harness/testlens
 ```
 
-The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Windows x64) is downloaded automatically via `optionalDependencies`.
+The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Windows x64) is fetched automatically via `optionalDependencies`.
 
 ## Usage
 
@@ -37,15 +37,19 @@ npx testlens version                     # print version
 | Kotlin | `.kt`, `.kts` | `*Test.kt` |
 | C# | `.cs` | `*Tests.cs` |
 
-## Husky / lefthook / CI integration
+## Why this exists
+
+Coverage tools tell you which **lines** are tested. testlens tells you which **files** have no test at all — a different and complementary check. It surfaces orphan modules early, when adding a first test is cheapest. Combine both for a complete picture.
+
+## Integrations
 
 ```bash
-# .husky/pre-commit
+# Husky pre-commit
 npx testlens check --fail
 ```
 
 ```yaml
-# .github/workflows/quality.yml
+# GitHub Actions
 - name: Detect source files without tests
   run: npx @open_harness/testlens check --fail --lang typescript --dir src/
 ```
@@ -56,6 +60,52 @@ npx testlens check --fail
 |---|---|
 | `0` | All source files have tests (or `--fail` not passed) |
 | `1` | Files without tests found and `--fail` was passed, or config error |
+
+---
+
+## Español
+
+Detector de cobertura de tests. Encuentra archivos fuente que no tienen un archivo de test correspondiente, en 9 lenguajes. Un solo binario nativo, cero dependencias.
+
+Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
+
+### Instalación
+
+```bash
+npm install --save-dev @open_harness/testlens
+```
+
+El binario para tu plataforma se descarga automáticamente via `optionalDependencies`.
+
+### Uso
+
+```bash
+npx testlens check                       # autodetecta lenguaje y escanea
+npx testlens check --lang typescript     # fuerza un lenguaje específico
+npx testlens check --dir ./src           # escanea un directorio específico
+npx testlens check --fail                # exit 1 si hay archivos sin test
+npx testlens init                        # genera la config por defecto
+npx testlens version                     # imprime la versión
+```
+
+### Lenguajes soportados
+
+Go, TypeScript, JavaScript, Python, Ruby, Rust, Java, Kotlin, C#. Ver la tabla arriba para las extensiones y patrones de naming de test que reconoce cada uno.
+
+### Por qué existe
+
+Las herramientas tradicionales de cobertura te dicen qué **líneas** están testeadas. testlens te dice qué **archivos** no tienen ningún test — una verificación distinta y complementaria. Detecta módulos huérfanos temprano, cuando agregar el primer test es más barato. Combinalos para tener una vista completa.
+
+### Integraciones
+
+Sirve con Husky, lefthook o GitHub Actions usando los snippets de la sección en inglés.
+
+### Códigos de salida
+
+| Código | Significado |
+|---|---|
+| `0` | Todos los archivos fuente tienen tests (o no se pasó `--fail`) |
+| `1` | Hay archivos sin test con `--fail`, o error de configuración |
 
 ## License
 

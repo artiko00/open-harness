@@ -1,8 +1,8 @@
 # @open_harness/linelens
 
-File length linter for any language. Scans your project and reports files that exceed a configured line limit. Single native binary, zero runtime dependencies, works with any language ecosystem.
+File length linter for any language. Reports files that exceed a configured line limit. Single native binary, zero runtime dependencies.
 
-Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo.
+Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
 ## Install
 
@@ -10,7 +10,7 @@ Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo.
 npm install --save-dev @open_harness/linelens
 ```
 
-The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Windows x64) is downloaded automatically via `optionalDependencies`.
+The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Windows x64) is fetched automatically via `optionalDependencies`.
 
 ## Usage
 
@@ -42,14 +42,12 @@ Place a `linelens.json` at the repo root:
 
 Pattern semantics follow `.gitignore` style. The first matching `rules` entry wins; if no rule matches, `default.maxLines` applies.
 
-## Husky integration
+## Integrations
 
 ```bash
-# .husky/pre-commit
+# Husky pre-commit
 npx linelens check --fail
 ```
-
-## lefthook integration
 
 ```yaml
 # lefthook.yml
@@ -59,16 +57,15 @@ pre-commit:
       run: npx linelens check --fail --no-color
 ```
 
-## GitHub Actions
-
 ```yaml
+# GitHub Actions
 - name: Run linelens
   run: npx @open_harness/linelens check --fail
 ```
 
 ## Why a line limit?
 
-Large files concentrate too many responsibilities and become hard to read, test, and refactor. Enforcing a soft cap (e.g. 100 lines per file with exceptions for tests) keeps modules focused and pushes responsibility split decisions early in the development cycle, when they are cheap.
+Large files concentrate too many responsibilities and become hard to read, test, and refactor. A soft cap (e.g. 100 lines, with exceptions for tests) keeps modules focused and forces responsibility-split decisions early — when they are cheap.
 
 ## Exit codes
 
@@ -76,6 +73,53 @@ Large files concentrate too many responsibilities and become hard to read, test,
 |---|---|
 | `0` | No violations (or `--fail` not passed) |
 | `1` | Violations found and `--fail` was passed, or config error |
+
+---
+
+## Español
+
+Linter de longitud de archivos, agnóstico al lenguaje. Reporta los archivos que superan un límite de líneas configurable. Un solo binario nativo, cero dependencias en tiempo de ejecución.
+
+Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
+
+### Instalación
+
+```bash
+npm install --save-dev @open_harness/linelens
+```
+
+El binario nativo correcto para tu plataforma (Linux x64, macOS arm64, macOS x64, Windows x64) se descarga automáticamente via `optionalDependencies`.
+
+### Uso
+
+```bash
+npx linelens check               # escanea el directorio actual
+npx linelens check --fail        # exit 1 si hay violaciones (CI / git hooks)
+npx linelens check --dir ./src   # escanea un directorio específico
+npx linelens check --max 200     # sobrescribe el límite de líneas
+npx linelens check --no-color    # salida sin colores
+npx linelens init                # genera un linelens.json por defecto
+npx linelens version             # imprime la versión
+```
+
+### Configuración
+
+Colocá un `linelens.json` en la raíz del repo. Ver ejemplo arriba. La semántica de patrones sigue el estilo `.gitignore`. La primera regla coincidente en `rules` gana; si ninguna coincide, aplica `default.maxLines`.
+
+### Integraciones
+
+Mismos snippets que arriba — sirven con Husky (`.husky/pre-commit`), lefthook (`lefthook.yml`) o GitHub Actions.
+
+### Por qué un límite de líneas
+
+Los archivos grandes concentran demasiadas responsabilidades y son difíciles de leer, testear y refactorizar. Un tope blando (por ejemplo 100 líneas, con excepciones para tests) mantiene los módulos enfocados y obliga a tomar decisiones de partición temprano — cuando son baratas.
+
+### Códigos de salida
+
+| Código | Significado |
+|---|---|
+| `0` | Sin violaciones (o no se pasó `--fail`) |
+| `1` | Hubo violaciones con `--fail`, o error de configuración |
 
 ## License
 

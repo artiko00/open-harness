@@ -1,8 +1,8 @@
 # @open_harness/dupelens
 
-Code duplication detector for any language. Uses **Rabin-Karp** rolling-hash fingerprinting over tokenized source — strings and comments are stripped before hashing to reduce false positives. Single native binary, zero runtime dependencies, works on any codebase (Go, TS, JS, Python, Rust, Java, etc.).
+Code duplication detector. Uses **Rabin-Karp** rolling-hash fingerprinting over tokenized source — strings and comments are stripped before hashing to reduce false positives. Language-agnostic (Go, TS, JS, Python, Rust, Java, etc.). Single native binary, zero runtime dependencies.
 
-Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo.
+Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
 ## Install
 
@@ -10,14 +10,14 @@ Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo.
 npm install --save-dev @open_harness/dupelens
 ```
 
-The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Windows x64) is downloaded automatically via `optionalDependencies`.
+The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Windows x64) is fetched automatically via `optionalDependencies`.
 
 ## Usage
 
 ```bash
 npx dupelens check                  # scan current directory with defaults
 npx dupelens check --fail           # exit 1 if duplicates found (CI / git hooks)
-npx dupelens check --min-tokens 30  # override window size
+npx dupelens check --min-tokens 30  # override the rolling window size
 npx dupelens check --format=json    # JSON output for tooling integrations
 npx dupelens check --dir ./src      # scan a specific directory
 npx dupelens check --verbose        # print timings to stderr
@@ -82,15 +82,15 @@ Top duplicated files:
 }
 ```
 
-## Husky / lefthook / CI integration
+## Integrations
 
 ```bash
-# .husky/pre-commit
+# Husky pre-commit
 npx dupelens check --fail
 ```
 
 ```yaml
-# .github/workflows/quality.yml
+# GitHub Actions
 - name: Run dupelens
   run: npx @open_harness/dupelens check --fail
 ```
@@ -103,7 +103,7 @@ npx dupelens check --fail
 
 The trade-off is documented in [ADR-012](https://github.com/artiko00/open-harness/blob/main/docs/adr-012-dupelens-rabin-karp-sobre-ast.md).
 
-## Limitations (v0.1.0)
+## Limitations (v0.1.1)
 
 - Detects only **literal** or near-literal duplication (token-by-token). Refactors with renamed variables are not flagged — that requires AST analysis.
 - The algorithm is binary (match or no match); there is no similarity threshold flag.
@@ -115,6 +115,73 @@ The trade-off is documented in [ADR-012](https://github.com/artiko00/open-harnes
 |---|---|
 | `0` | No duplicates (or `--fail` not passed) |
 | `1` | Duplicates found and `--fail` was passed, or config error |
+
+---
+
+## Español
+
+Detector de duplicación de código. Usa fingerprinting **Rabin-Karp** (hash rodante) sobre el código tokenizado — los strings y comentarios se eliminan antes del hashing para reducir falsos positivos. Agnóstico al lenguaje (Go, TS, JS, Python, Rust, Java, etc.). Un solo binario nativo, cero dependencias.
+
+Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
+
+### Instalación
+
+```bash
+npm install --save-dev @open_harness/dupelens
+```
+
+El binario para tu plataforma se descarga automáticamente via `optionalDependencies`.
+
+### Uso
+
+```bash
+npx dupelens check                  # escanea con defaults
+npx dupelens check --fail           # exit 1 si hay duplicados (CI / git hooks)
+npx dupelens check --min-tokens 30  # cambia el tamaño de ventana del hash rodante
+npx dupelens check --format=json    # salida JSON para integraciones
+npx dupelens check --dir ./src      # escanea un directorio específico
+npx dupelens check --verbose        # imprime timings en stderr
+npx dupelens check --no-color       # consola sin colores
+npx dupelens init                   # genera un dupelens.json por defecto
+npx dupelens version                # imprime la versión
+```
+
+### Configuración
+
+Colocá un `dupelens.json` en la raíz del repo (ver ejemplo arriba).
+
+- `minTokens` — tamaño de la ventana del hash rodante. Valores más altos detectan solo duplicaciones más grandes.
+- `minLines` — filtra matches cortos (ej. imports idénticos consecutivos).
+- `rules` — `skip` por patrón. Gana la primera regla coincidente.
+
+### Salida
+
+Soporta consola coloreada y JSON estructurado. Ver ejemplos arriba.
+
+### Integraciones
+
+Sirve con Husky, lefthook o GitHub Actions usando los mismos snippets de la sección en inglés.
+
+### Por qué Rabin-Karp en vez de AST
+
+- Cero dependencias: no hay que enviar parsers por lenguaje.
+- Agnóstico: el mismo binario escanea Go, TypeScript, Python, Rust, Java, etc.
+- Rápido: el hash rodante detecta matches en `O(n)` sobre el stream de tokens.
+
+El trade-off está documentado en [ADR-012](https://github.com/artiko00/open-harness/blob/main/docs/adr-012-dupelens-rabin-karp-sobre-ast.md).
+
+### Limitaciones (v0.1.1)
+
+- Solo detecta duplicación **literal** o cuasi-literal (token a token). Refactors con variables renombradas no se detectan — eso requiere análisis AST.
+- El algoritmo es binario (hay match o no hay); no existe un flag de umbral de similitud.
+- El override de `minTokens` por regla no funciona entre archivos porque la ventana debe ser uniforme. Usá `rules.skip` para excluir patrones por completo.
+
+### Códigos de salida
+
+| Código | Significado |
+|---|---|
+| `0` | Sin duplicados (o no se pasó `--fail`) |
+| `1` | Hay duplicados con `--fail`, o error de configuración |
 
 ## License
 

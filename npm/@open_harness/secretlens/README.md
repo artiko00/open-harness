@@ -1,8 +1,8 @@
 # @open_harness/secretlens
 
-Secret and credential detector for any codebase. Scans source files for hardcoded AWS keys, GitHub tokens, PEM private keys, JWTs, and generic credential assignments. Single native binary, zero runtime dependencies, works in any language ecosystem.
+Secret and credential detector for any codebase. Scans source files for hardcoded AWS keys, GitHub tokens, PEM private keys, JWTs, and generic credential assignments. Single native binary, zero runtime dependencies.
 
-Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo.
+Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
 ## Install
 
@@ -10,7 +10,7 @@ Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo.
 npm install --save-dev @open_harness/secretlens
 ```
 
-The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Windows x64) is downloaded automatically via `optionalDependencies`.
+The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Windows x64) is fetched automatically via `optionalDependencies`.
 
 ## Usage
 
@@ -52,15 +52,15 @@ Place a `secretlens.json` at the repo root:
 - `allowlist` skips any line containing the listed strings (case-insensitive) — useful to suppress false positives in docs or examples.
 - `exclude` skips matching directories entirely.
 
-## Husky / lefthook / CI integration
+## Integrations
 
 ```bash
-# .husky/pre-commit
+# Husky pre-commit
 npx secretlens check --fail
 ```
 
 ```yaml
-# .github/workflows/security.yml
+# GitHub Actions
 - name: Scan for hardcoded secrets
   run: npx @open_harness/secretlens check --fail
 ```
@@ -71,6 +71,56 @@ npx secretlens check --fail
 |---|---|
 | `0` | No secrets detected (or `--fail` not passed) |
 | `1` | Secrets found and `--fail` was passed, or config error |
+
+---
+
+## Español
+
+Detector de secretos y credenciales para cualquier base de código. Escanea archivos buscando claves AWS, tokens de GitHub, claves privadas PEM, JWTs y asignaciones genéricas de credenciales hardcodeadas. Un solo binario nativo, cero dependencias.
+
+Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
+
+### Instalación
+
+```bash
+npm install --save-dev @open_harness/secretlens
+```
+
+El binario para tu plataforma se descarga automáticamente via `optionalDependencies`.
+
+### Uso
+
+```bash
+npx secretlens check              # escanea el directorio actual
+npx secretlens check --fail       # exit 1 si encuentra secretos (git hooks / CI)
+npx secretlens check --dir ./src  # escanea un directorio específico
+npx secretlens check --no-color   # salida sin colores
+npx secretlens init               # genera un secretlens.json por defecto
+npx secretlens version            # imprime la versión
+```
+
+### Patrones integrados
+
+Los 8 patrones built-in cubren claves AWS, tokens GitHub (clásicos y fine-grained), claves privadas PEM, JWTs y asignaciones genéricas tipo `secret=…`, `password=…`, `api_key=…`, `token=…`, `bearer …`. Ver la tabla arriba para severidades exactas.
+
+### Configuración
+
+Colocá un `secretlens.json` en la raíz del repo (ver ejemplo arriba).
+
+- `patterns: []` usa los 8 patrones built-in. Sobrescribí el array para agregar regexes propias.
+- `allowlist` salta cualquier línea que contenga los strings indicados (case-insensitive) — útil para suprimir falsos positivos en docs o ejemplos.
+- `exclude` ignora completamente los directorios que matcheen.
+
+### Integraciones
+
+Sirve con Husky, lefthook o GitHub Actions con los mismos snippets de la sección en inglés.
+
+### Códigos de salida
+
+| Código | Significado |
+|---|---|
+| `0` | No se detectaron secretos (o no se pasó `--fail`) |
+| `1` | Hubo secretos con `--fail`, o error de configuración |
 
 ## License
 
