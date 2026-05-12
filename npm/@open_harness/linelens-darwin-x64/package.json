@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/linelens-darwin-x64",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "linelens binary for macOS Intel (x64)",
   "os": [
     "darwin"
