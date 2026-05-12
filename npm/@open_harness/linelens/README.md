@@ -42,6 +42,23 @@ Place a `linelens.json` at the repo root:
 
 Pattern semantics follow `.gitignore` style. The first matching `rules` entry wins; if no rule matches, `default.maxLines` applies.
 
+### Alternative: configure inside `package.json`
+
+If you prefer not to keep a separate `linelens.json`, add a `linelens` key in your `package.json` with the same shape:
+
+```json
+{
+  "name": "my-project",
+  "linelens": {
+    "default": { "maxLines": 100 },
+    "rules": [{ "pattern": "**/*_test.go", "maxLines": 300 }],
+    "exclude": ["node_modules", "dist"]
+  }
+}
+```
+
+Precedence: `--config <path>` > `linelens.json` > `package.json` key > built-in defaults. CLI flags (`--max`, `--no-color`, etc.) always win.
+
 ## Integrations
 
 ```bash
@@ -105,6 +122,10 @@ npx linelens version             # imprime la versión
 ### Configuración
 
 Colocá un `linelens.json` en la raíz del repo. Ver ejemplo arriba. La semántica de patrones sigue el estilo `.gitignore`. La primera regla coincidente en `rules` gana; si ninguna coincide, aplica `default.maxLines`.
+
+#### Alternativa: configurar dentro de `package.json`
+
+Si preferís no tener un `linelens.json` separado, agregá una key `linelens` en tu `package.json` con la misma forma del archivo dedicado. Precedencia: `--config <path>` > `linelens.json` > key en `package.json` > defaults del binario. Los flags CLI (`--max`, `--no-color`, etc.) siempre ganan.
 
 ### Integraciones
 
