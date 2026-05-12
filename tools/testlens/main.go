@@ -52,11 +52,7 @@ func runInit(args []string) int {
 
 	config := `{
   "language": "auto",
-  "skip": ["node_modules", ".git", "vendor", "dist", "build"],
-  "languages": {
-    "go": { "extensions": [".go"], "testSuffixes": ["_test"] },
-    "typescript": { "extensions": [".ts", ".tsx"], "testSuffixes": [".test", ".spec"] }
-  }
+  "exclude": ["node_modules", ".git", "vendor", "dist", "build", "testdata"]
 }`
 	if err := os.WriteFile(*output, []byte(config), 0644); err != nil {
 		fmt.Fprintf(os.Stderr, "error writing config: %v\n", err)

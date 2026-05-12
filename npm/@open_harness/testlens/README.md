@@ -18,6 +18,7 @@ The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Wi
 npx testlens check                       # auto-detect language and scan
 npx testlens check --lang typescript     # force a specific language
 npx testlens check --dir ./src           # scan a specific directory
+npx testlens check --config my.json      # use a specific config file
 npx testlens check --fail                # exit 1 if files without tests are found
 npx testlens init                        # generate a default config
 npx testlens version                     # print version
@@ -36,6 +37,36 @@ npx testlens version                     # print version
 | Java | `.java` | `*Test.java` |
 | Kotlin | `.kt`, `.kts` | `*Test.kt` |
 | C# | `.cs` | `*Tests.cs` |
+
+## Configuration
+
+Place a `testlens.json` at the repo root:
+
+```json
+{
+  "language": "auto",
+  "exclude": ["node_modules", ".git", "vendor", "dist", "build", "testdata"]
+}
+```
+
+- `language` — `auto` (default), `go`, `typescript`, `javascript`, `python`, `ruby`, `rust`, `java`, `kotlin`, `csharp`.
+- `exclude` — directories to skip during the scan.
+
+### Alternative: configure inside `package.json`
+
+If you prefer not to keep a separate `testlens.json`, add a `testlens` key in your `package.json` with the same shape:
+
+```json
+{
+  "name": "my-project",
+  "testlens": {
+    "language": "typescript",
+    "exclude": ["node_modules", "dist", "fixtures"]
+  }
+}
+```
+
+Precedence: `--config <path>` > `testlens.json` > `package.json` key > built-in defaults. CLI flags win **when passed explicitly** (`fs.Visit`); if you don't pass `--lang`, the value from the config is used.
 
 ## Why this exists
 
@@ -83,6 +114,7 @@ El binario para tu plataforma se descarga automáticamente via `optionalDependen
 npx testlens check                       # autodetecta lenguaje y escanea
 npx testlens check --lang typescript     # fuerza un lenguaje específico
 npx testlens check --dir ./src           # escanea un directorio específico
+npx testlens check --config my.json      # usa un archivo de config específico
 npx testlens check --fail                # exit 1 si hay archivos sin test
 npx testlens init                        # genera la config por defecto
 npx testlens version                     # imprime la versión
@@ -91,6 +123,17 @@ npx testlens version                     # imprime la versión
 ### Lenguajes soportados
 
 Go, TypeScript, JavaScript, Python, Ruby, Rust, Java, Kotlin, C#. Ver la tabla arriba para las extensiones y patrones de naming de test que reconoce cada uno.
+
+### Configuración
+
+Colocá un `testlens.json` en la raíz del repo (ver ejemplo arriba).
+
+- `language` — `auto` (default), `go`, `typescript`, `javascript`, `python`, `ruby`, `rust`, `java`, `kotlin`, `csharp`.
+- `exclude` — directorios a ignorar durante el escaneo.
+
+#### Alternativa: configurar dentro de `package.json`
+
+Si preferís no tener un `testlens.json` separado, agregá una key `testlens` en tu `package.json` con la misma forma. Precedencia: `--config <path>` > `testlens.json` > key en `package.json` > defaults. Los flags CLI ganan **solo cuando se pasan explícitamente**; si omitís `--lang`, se usa el valor de la config.
 
 ### Por qué existe
 

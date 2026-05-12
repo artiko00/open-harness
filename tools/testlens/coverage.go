@@ -15,13 +15,17 @@ func checkCoverage(cfg config) (int, error) {
 		return checkCoveragePackage(cfg, lang)
 	}
 
+	exclude := cfg.exclude
+	if len(exclude) == 0 {
+		exclude = defaultConfig.Exclude
+	}
 	violations := 0
 	err := filepath.Walk(cfg.root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
-			if shouldSkipDir(path, []string{"node_modules", ".git", "vendor", "dist", "build", "testdata"}) {
+			if shouldSkipDir(path, exclude) {
 				return filepath.SkipDir
 			}
 			return nil

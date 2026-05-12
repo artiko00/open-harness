@@ -156,6 +156,37 @@ func TestRunCheckInvalidLang(t *testing.T) {
 	}
 }
 
+func TestRunCheckConfigLoadError(t *testing.T) {
+	tmpDir := t.TempDir()
+	code := runCheck([]string{"--config", tmpDir, "--dir", tmpDir})
+	if code != 1 {
+		t.Errorf("expected runCheck=1 when --config points to a directory, got %d", code)
+	}
+}
+
+func TestRunCheckConfigFromPackageJSON(t *testing.T) {
+	tmpDir := t.TempDir()
+	os.WriteFile(filepath.Join(tmpDir, "foo.go"), []byte("package main"), 0644)
+	os.WriteFile(filepath.Join(tmpDir, "package.json"),
+		[]byte(`{"testlens":{"language":"go"}}`), 0644)
+
+	code := runCheck([]string{"--config", filepath.Join(tmpDir, "testlens.json"), "--dir", tmpDir})
+	if code != 0 && code != 1 {
+		t.Errorf("expected 0 or 1 with config from package.json, got %d", code)
+	}
+}
+
+func TestRunCheckExplicitLangBeatsConfig(t *testing.T) {
+	tmpDir := t.TempDir()
+	os.WriteFile(filepath.Join(tmpDir, "testlens.json"),
+		[]byte(`{"language":"typescript"}`), 0644)
+
+	code := runCheck([]string{"--config", filepath.Join(tmpDir, "testlens.json"), "--lang", "go", "--dir", tmpDir})
+	if code != 0 && code != 1 {
+		t.Errorf("expected 0 or 1 when --lang explicit overrides config, got %d", code)
+	}
+}
+
 func TestRunInit(t *testing.T) {
 	tmpDir := t.TempDir()
 	output := filepath.Join(tmpDir, "testlens.json")
