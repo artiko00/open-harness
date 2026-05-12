@@ -15,7 +15,7 @@ for PKG in \
   dupelens-darwin-arm64 dupelens \
   secretlens-darwin-arm64 secretlens \
   testlens-darwin-arm64 testlens; do
-  (cd "$ROOT/npm/@open-harness/$PKG" && npm pack --pack-destination "$PACK_DIR" --quiet)
+  (cd "$ROOT/npm/@open_harness/$PKG" && npm pack --pack-destination "$PACK_DIR" --quiet)
 done
 
 echo "Packed tarballs:"

@@ -150,7 +150,7 @@ Detects duplicated code blocks using **Rabin-Karp** rolling-hash fingerprinting 
 ### Install via npm
 
 ```bash
-npm install --save-dev @open-harness/dupelens
+npm install --save-dev @open_harness/dupelens
 ```
 
 ### Usage
@@ -244,8 +244,8 @@ npm install --save-dev open-harness
 Or install individual tools:
 
 ```bash
-npm install --save-dev @open-harness/linelens @open-harness/dupelens \
-  @open-harness/secretlens @open-harness/testlens
+npm install --save-dev @open_harness/linelens @open_harness/dupelens \
+  @open_harness/secretlens @open_harness/testlens
 ```
 
 Add to your `package.json`:
@@ -276,7 +276,7 @@ GitHub Actions CI:
 
 ```yaml
 - name: Install open-harness
-  run: npm install -g open-harness
+  run: npm install -g @open_harness/open-harness
 
 - run: linelens check --fail
 - run: dupelens check --fail
@@ -292,10 +292,10 @@ Run all four quality tools as gates in a single workflow:
 
 ```yaml
 # GitHub Actions (via npx, no install step)
-- run: npx @open-harness/linelens check --fail
-- run: npx @open-harness/dupelens check --fail
-- run: npx @open-harness/secretlens check --fail
-- run: npx @open-harness/testlens check --fail
+- run: npx @open_harness/linelens check --fail
+- run: npx @open_harness/dupelens check --fail
+- run: npx @open_harness/secretlens check --fail
+- run: npx @open_harness/testlens check --fail
 ```
 
 Via lefthook (this repo uses this pattern — see `lefthook.yml`):
@@ -322,7 +322,7 @@ open-harness/
 │   └── testlens/          ← v0.1.0 (test coverage detector, multi-language, 100% coverage)
 ├── npm/
 │   ├── open-harness/      ← meta-package (instala los 4 tools)
-│   └── @open-harness/
+│   └── @open_harness/
 │       ├── open-harness/  ← meta-package (scoped)
 │       ├── linelens/      ← npm wrapper (JS)
 │       ├── linelens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/

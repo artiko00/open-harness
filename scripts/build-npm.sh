@@ -11,7 +11,7 @@ if [ -z "$TOOL" ]; then
 fi
 
 TOOL_DIR="$ROOT/tools/$TOOL"
-NPM_DIR="$ROOT/npm/@open-harness"
+NPM_DIR="$ROOT/npm/@open_harness"
 VERSION=$(grep '^const version' "$TOOL_DIR/main.go" | grep -oE '"[^"]+"' | tr -d '"')
 
 echo "Building $TOOL v$VERSION for all platforms..."
@@ -47,5 +47,5 @@ done
 echo ""
 echo "Done. To publish:"
 for pkg in $TOOL-linux-x64 $TOOL-darwin-arm64 $TOOL-darwin-x64 $TOOL-win32-x64 $TOOL; do
-  echo "  cd npm/@open-harness/$pkg && npm publish --access public"
+  echo "  cd npm/@open_harness/$pkg && npm publish --access public"
 done

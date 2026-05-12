@@ -29,12 +29,12 @@
     {
       "id": "F-003",
       "category": "functional",
-      "description": "npm publish workflow: publicar @open-harness/linelens en el registro npm",
+      "description": "npm publish workflow: publicar @open_harness/linelens en el registro npm",
       "steps": [
-        "Registrar organización @open-harness en npmjs.com",
+        "Registrar organización @open_harness en npmjs.com",
         "Correr scripts/build-npm.sh linelens para generar binarios",
         "Publicar en orden: plataformas primero, luego paquete principal",
-        "Verificar instalación: npm install -g @open-harness/linelens && linelens version"
+        "Verificar instalación: npm install -g @open_harness/linelens && linelens version"
       ],
       "passes": false
     },
@@ -151,7 +151,7 @@
         "[done] [fase7·e2e] Smoke test contra repo cubierto por lefthook pre-commit",
         "[done] [fase8·release] Bump version 0.1.0-scaffold → 0.1.0",
         "[done] [fase8·release] Cross-compile binarios (linux-x64, darwin-arm64, darwin-x64, win32-x64)",
-        "[done] [fase8·release] Crear npm/@open-harness/dupelens + 4 packages por plataforma",
+        "[done] [fase8·release] Crear npm/@open_harness/dupelens + 4 packages por plataforma",
         "[done] [fase8·release] Tag local v0.1.0-dupelens",
         "[done] [fase8·release] Merge a main resolviendo colisiones con épica testlens (F-006)"
       ]
@@ -165,14 +165,14 @@
       "passes": false,
       "epic": true,
       "steps": [
-        "[fase0·scaffold·secretlens] [test] node npm/@open-harness/secretlens/bin/secretlens.js version imprime 'secretlens 0.1.0' y retorna 0",
-        "[fase0·scaffold·secretlens] [impl] Crear npm/@open-harness/secretlens/package.json con optionalDependencies a los 4 platform packages",
-        "[fase0·scaffold·secretlens] [impl] Crear npm/@open-harness/secretlens/bin/secretlens.js (mismo patrón que linelens.js)",
-        "[fase0·scaffold·secretlens] [impl] Crear npm/@open-harness/secretlens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/package.json con os/cpu filters",
-        "[fase0·scaffold·testlens]   [test] node npm/@open-harness/testlens/bin/testlens.js version imprime 'testlens 0.1.0' y retorna 0",
-        "[fase0·scaffold·testlens]   [impl] Crear npm/@open-harness/testlens/package.json con optionalDependencies a los 4 platform packages",
-        "[fase0·scaffold·testlens]   [impl] Crear npm/@open-harness/testlens/bin/testlens.js",
-        "[fase0·scaffold·testlens]   [impl] Crear npm/@open-harness/testlens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/package.json",
+        "[fase0·scaffold·secretlens] [test] node npm/@open_harness/secretlens/bin/secretlens.js version imprime 'secretlens 0.1.0' y retorna 0",
+        "[fase0·scaffold·secretlens] [impl] Crear npm/@open_harness/secretlens/package.json con optionalDependencies a los 4 platform packages",
+        "[fase0·scaffold·secretlens] [impl] Crear npm/@open_harness/secretlens/bin/secretlens.js (mismo patrón que linelens.js)",
+        "[fase0·scaffold·secretlens] [impl] Crear npm/@open_harness/secretlens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/package.json con os/cpu filters",
+        "[fase0·scaffold·testlens]   [test] node npm/@open_harness/testlens/bin/testlens.js version imprime 'testlens 0.1.0' y retorna 0",
+        "[fase0·scaffold·testlens]   [impl] Crear npm/@open_harness/testlens/package.json con optionalDependencies a los 4 platform packages",
+        "[fase0·scaffold·testlens]   [impl] Crear npm/@open_harness/testlens/bin/testlens.js",
+        "[fase0·scaffold·testlens]   [impl] Crear npm/@open_harness/testlens-{linux-x64,darwin-arm64,darwin-x64,win32-x64}/package.json",
         "[fase1·binarios] [test] Verificar que scripts/build-npm.sh linelens genera bin/linelens en los 4 platform dirs",
         "[fase1·binarios] bash scripts/build-npm.sh linelens — compila cross-platform para los 4 OS/arch",
         "[fase1·binarios] bash scripts/build-npm.sh dupelens — los platform packages de dupelens no tienen binarios aún",
@@ -180,9 +180,9 @@
         "[fase1·binarios] bash scripts/build-npm.sh testlens",
         "[fase1·binarios] [impl] Crear scripts/build-npm-all.sh que corre build-npm.sh para los 4 tools en secuencia",
         "[fase1·binarios] Agregar bin/ de platform packages de secretlens y testlens al .gitignore (binarios no van al repo)",
-        "[fase2·meta-package] [test] npm install ./npm/@open-harness/open-harness en proyecto demo instala las 4 herramientas y todos sus binarios",
-        "[fase2·meta-package] [impl] Crear npm/@open-harness/open-harness/package.json con dependencies a los 4 wrappers (no optionalDependencies)",
-        "[fase2·meta-package] [impl] Crear npm/open-harness/package.json (sin scope) como alias público — re-exporta @open-harness/open-harness",
+        "[fase2·meta-package] [test] npm install ./npm/@open_harness/open-harness en proyecto demo instala las 4 herramientas y todos sus binarios",
+        "[fase2·meta-package] [impl] Crear npm/@open_harness/open-harness/package.json con dependencies a los 4 wrappers (no optionalDependencies)",
+        "[fase2·meta-package] [impl] Crear npm/open-harness/package.json (sin scope) como alias público — re-exporta @open_harness/open-harness",
         "[fase2·meta-package] [test] npm pack en npm/open-harness/ genera tarball correcto con los 4 tools en dependencies",
         "[fase3·smoke-local] [test] Crear scripts/smoke-test-npm.sh — instala cada wrapper desde ruta local y corre 'version'",
         "[fase3·smoke-local] node_modules/.bin/linelens version retorna 0 y el string correcto",
@@ -193,11 +193,11 @@
         "[fase4·ts-integration] Documentar uso en README: sección 'Usage in Node/TS projects' con package.json scripts y Husky config",
         "[fase4·ts-integration] Ejemplo de lint-staged + open-harness para pre-commit en proyectos TS",
         "[fase4·ts-integration] Ejemplo de GitHub Actions CI usando npx linelens / dupelens / secretlens / testlens",
-        "[fase5·publish] [MANUAL] Registrar organización @open-harness en npmjs.com",
-        "[fase5·publish] [MANUAL] npm login con cuenta npmjs que tenga acceso a @open-harness",
+        "[fase5·publish] [MANUAL] Registrar organización @open_harness en npmjs.com",
+        "[fase5·publish] [MANUAL] npm login con cuenta npmjs que tenga acceso a @open_harness",
         "[fase5·publish] Publicar platform packages primero (16 paquetes: 4 tools × 4 plataformas) — npm publish --access public",
-        "[fase5·publish] Publicar wrappers (4 paquetes): @open-harness/{linelens,dupelens,secretlens,testlens}",
-        "[fase5·publish] Publicar meta-package: @open-harness/open-harness y open-harness",
+        "[fase5·publish] Publicar wrappers (4 paquetes): @open_harness/{linelens,dupelens,secretlens,testlens}",
+        "[fase5·publish] Publicar meta-package: @open_harness/open-harness y open-harness",
         "[fase5·publish] [test] npm install -g open-harness && linelens version && dupelens version && secretlens version && testlens version — todos retornan 0",
         "[fase5·publish] Actualizar README con badges npm y comandos de instalación"
       ]

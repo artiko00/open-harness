@@ -106,7 +106,7 @@ open-harness/
 │   ├── dupelens/        ← v0.1.0 (duplicate detector, Rabin-Karp)
 │   ├── secretlens/      ← v0.1.0 (secret/credential detector)
 │   └── testlens/        ← v0.1.0 (test coverage detector, multi-language)
-├── npm/@open-harness/   ← wrappers npm por plataforma
+├── npm/@open_harness/   ← wrappers npm por plataforma
 ├── docs/                ← ADRs (decisiones arquitectónicas)
 ├── scripts/             ← build.sh, build-npm.sh, bench-vs-jscpd.sh
 ├── .agent/              ← harness: feature-list, progress, init
@@ -135,7 +135,7 @@ open-harness/
 
 ## 8. Cómo agregar un nuevo tool al monorepo
 
-1. `mkdir tools/<name>` con `go.mod` (module path: `github.com/jassencastillo/open-harness/tools/<name>`)
+1. `mkdir tools/<name>` con `go.mod` (module path: `github.com/artiko00/open-harness/tools/<name>`)
 2. Agregar al `go.work` con `use ./tools/<name>`
 3. Registrar en `open-harness.json`
 4. Agregar entradas al `.gitignore` para los binarios (`<name>` y `<name>.exe`)

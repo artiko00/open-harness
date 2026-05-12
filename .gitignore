@@ -10,16 +10,16 @@ tools/testlens/testlens
 tools/testlens/testlens.exe
 
 # Binarios npm cross-compiled
-npm/@open-harness/secretlens-*/bin/secretlens
-npm/@open-harness/secretlens-win32-x64/bin/secretlens.exe
-npm/@open-harness/testlens-*/bin/testlens
-npm/@open-harness/testlens-win32-x64/bin/testlens.exe
+npm/@open_harness/secretlens-*/bin/secretlens
+npm/@open_harness/secretlens-win32-x64/bin/secretlens.exe
+npm/@open_harness/testlens-*/bin/testlens
+npm/@open_harness/testlens-win32-x64/bin/testlens.exe
 
 # Binarios de distribución npm (se generan con scripts/build-npm.sh)
-npm/@open-harness/linelens-*/bin/linelens
-npm/@open-harness/linelens-win32-x64/bin/linelens.exe
-npm/@open-harness/dupelens-*/bin/dupelens
-npm/@open-harness/dupelens-win32-x64/bin/dupelens.exe
+npm/@open_harness/linelens-*/bin/linelens
+npm/@open_harness/linelens-win32-x64/bin/linelens.exe
+npm/@open_harness/dupelens-*/bin/dupelens
+npm/@open_harness/dupelens-win32-x64/bin/dupelens.exe
 
 # Carpeta de distribución general
 dist/

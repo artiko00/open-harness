@@ -1,0 +1,15 @@
+{
+  "name": "@open_harness/dupelens-linux-x64",
+  "version": "0.1.0",
+  "description": "dupelens binary for Linux x64",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "license": "MIT",
+  "bin": {
+    "dupelens": "bin/dupelens"
+  }
+}

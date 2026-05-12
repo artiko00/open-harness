@@ -1,0 +1,15 @@
+{
+  "name": "@open_harness/testlens-win32-x64",
+  "version": "0.1.0",
+  "description": "testlens binary for Windows x64",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "license": "MIT",
+  "bin": {
+    "testlens": "bin/testlens.exe"
+  }
+}
