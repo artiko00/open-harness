@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 type Config struct {
@@ -37,6 +38,13 @@ func loadConfig(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
+			cfg, found, perr := loadConfigFromPackageJSON(filepath.Dir(path))
+			if perr != nil {
+				return defaultConfig, perr
+			}
+			if found {
+				return cfg, nil
+			}
 			return defaultConfig, nil
 		}
 		return defaultConfig, fmt.Errorf("reading config %q: %w", path, err)
@@ -46,7 +54,11 @@ func loadConfig(path string) (Config, error) {
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return defaultConfig, fmt.Errorf("parsing config %q: %w (run 'dupelens init' to regenerate)", path, err)
 	}
+	applyConfigDefaults(&cfg)
+	return cfg, nil
+}
 
+func applyConfigDefaults(cfg *Config) {
 	if cfg.Default.MinTokens == 0 {
 		cfg.Default.MinTokens = defaultConfig.Default.MinTokens
 	}
@@ -56,8 +68,6 @@ func loadConfig(path string) (Config, error) {
 	if len(cfg.Exclude) == 0 {
 		cfg.Exclude = defaultConfig.Exclude
 	}
-
-	return cfg, nil
 }
 
 func defaultConfigJSON() string {

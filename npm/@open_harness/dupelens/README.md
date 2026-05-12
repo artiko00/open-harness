@@ -48,6 +48,23 @@ Place a `dupelens.json` at the repo root:
 - `minLines` — filters short matches (e.g. back-to-back identical imports).
 - `rules` — per-pattern `skip`. The first matching entry wins.
 
+### Alternative: configure inside `package.json`
+
+If you prefer not to keep a separate `dupelens.json`, add a `dupelens` key in your `package.json` with the same shape:
+
+```json
+{
+  "name": "my-project",
+  "dupelens": {
+    "default": { "minTokens": 50, "minLines": 5 },
+    "rules": [{ "pattern": "**/*_test.go", "skip": true }],
+    "exclude": ["node_modules", "dist"]
+  }
+}
+```
+
+Precedence: `--config <path>` > `dupelens.json` > `package.json` key > built-in defaults. CLI flags (`--min-tokens`, `--format`, etc.) always win.
+
 ## Output (console)
 
 ```
@@ -153,6 +170,10 @@ Colocá un `dupelens.json` en la raíz del repo (ver ejemplo arriba).
 - `minTokens` — tamaño de la ventana del hash rodante. Valores más altos detectan solo duplicaciones más grandes.
 - `minLines` — filtra matches cortos (ej. imports idénticos consecutivos).
 - `rules` — `skip` por patrón. Gana la primera regla coincidente.
+
+#### Alternativa: configurar dentro de `package.json`
+
+Si preferís no tener un `dupelens.json` separado, agregá una key `dupelens` en tu `package.json` con la misma forma del archivo dedicado. Precedencia: `--config <path>` > `dupelens.json` > key en `package.json` > defaults. Los flags CLI (`--min-tokens`, `--format`, etc.) siempre ganan.
 
 ### Salida
 

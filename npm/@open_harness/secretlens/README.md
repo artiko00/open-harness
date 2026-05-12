@@ -52,6 +52,22 @@ Place a `secretlens.json` at the repo root:
 - `allowlist` skips any line containing the listed strings (case-insensitive) — useful to suppress false positives in docs or examples.
 - `exclude` skips matching directories entirely.
 
+### Alternative: configure inside `package.json`
+
+If you prefer not to keep a separate `secretlens.json`, add a `secretlens` key in your `package.json` with the same shape:
+
+```json
+{
+  "name": "my-project",
+  "secretlens": {
+    "allowlist": ["example", "your_key_here"],
+    "exclude": ["node_modules", "dist"]
+  }
+}
+```
+
+Precedence: `--config <path>` > `secretlens.json` > `package.json` key > built-in defaults. CLI flags (`--no-color`, etc.) always win.
+
 ## Integrations
 
 ```bash
@@ -110,6 +126,10 @@ Colocá un `secretlens.json` en la raíz del repo (ver ejemplo arriba).
 - `patterns: []` usa los 8 patrones built-in. Sobrescribí el array para agregar regexes propias.
 - `allowlist` salta cualquier línea que contenga los strings indicados (case-insensitive) — útil para suprimir falsos positivos en docs o ejemplos.
 - `exclude` ignora completamente los directorios que matcheen.
+
+#### Alternativa: configurar dentro de `package.json`
+
+Si preferís no tener un `secretlens.json` separado, agregá una key `secretlens` en tu `package.json` con la misma forma del archivo dedicado. Precedencia: `--config <path>` > `secretlens.json` > key en `package.json` > defaults. Los flags CLI siempre ganan.
 
 ### Integraciones
 

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
 
 type Config struct {
@@ -31,6 +32,13 @@ func loadConfig(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
+			cfg, found, perr := loadConfigFromPackageJSON(filepath.Dir(path))
+			if perr != nil {
+				return defaultConfig, perr
+			}
+			if found {
+				return cfg, nil
+			}
 			return defaultConfig, nil
 		}
 		return defaultConfig, err
@@ -40,7 +48,11 @@ func loadConfig(path string) (Config, error) {
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return defaultConfig, err
 	}
+	applyConfigDefaults(&cfg)
+	return cfg, nil
+}
 
+func applyConfigDefaults(cfg *Config) {
 	if len(cfg.Patterns) == 0 {
 		cfg.Patterns = defaultPatterns()
 	}
@@ -50,8 +62,6 @@ func loadConfig(path string) (Config, error) {
 	if len(cfg.Allowlist) == 0 {
 		cfg.Allowlist = defaultConfig.Allowlist
 	}
-
-	return cfg, nil
 }
 
 func defaultConfigJSON() string {
