@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/dupelens",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Code duplication detector for any language — Rabin-Karp fingerprinting, works with Husky, CI, and any git hook system",
   "keywords": [
     "duplication",
@@ -19,10 +19,10 @@
     "test": "node bin/dupelens.js version"
   },
   "optionalDependencies": {
-    "@open_harness/dupelens-linux-x64": "0.1.2",
-    "@open_harness/dupelens-darwin-arm64": "0.1.2",
-    "@open_harness/dupelens-darwin-x64": "0.1.2",
-    "@open_harness/dupelens-win32-x64": "0.1.2"
+    "@open_harness/dupelens-linux-x64": "0.1.3",
+    "@open_harness/dupelens-darwin-arm64": "0.1.3",
+    "@open_harness/dupelens-darwin-x64": "0.1.3",
+    "@open_harness/dupelens-win32-x64": "0.1.3"
   },
   "engines": {
     "node": ">=16"

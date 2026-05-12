@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/linelens",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "File length linter for any language — works with Husky, CI, and any git hook system",
   "keywords": [
     "linter",
@@ -18,10 +18,10 @@
     "test": "node bin/linelens.js version"
   },
   "optionalDependencies": {
-    "@open_harness/linelens-linux-x64": "0.1.2",
-    "@open_harness/linelens-darwin-arm64": "0.1.2",
-    "@open_harness/linelens-darwin-x64": "0.1.2",
-    "@open_harness/linelens-win32-x64": "0.1.2"
+    "@open_harness/linelens-linux-x64": "0.1.3",
+    "@open_harness/linelens-darwin-arm64": "0.1.3",
+    "@open_harness/linelens-darwin-x64": "0.1.3",
+    "@open_harness/linelens-win32-x64": "0.1.3"
   },
   "engines": {
     "node": ">=16"

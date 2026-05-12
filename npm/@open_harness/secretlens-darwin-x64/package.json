@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/secretlens-darwin-x64",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "secretlens binary for macOS Intel (x64)",
   "os": [
     "darwin"
