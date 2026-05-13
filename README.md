@@ -6,10 +6,10 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 
 | Tool | Description | Status |
 |---|---|---|
-| [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.1.0` |
-| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.1.0` |
-| [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.1.0` |
-| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.1.0` |
+| [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.1.3` |
+| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.1.3` |
+| [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.1.2` |
+| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.1.2` |
 | bigo | Big O complexity analyzer | `planned` |
 
 ---
@@ -235,10 +235,10 @@ Top duplicated files:
 
 ## Usage in Node/TS/JS projects
 
-Install all tools with a single command (once `open-harness` is published to npm):
+Install all four tools at once via the meta-package:
 
 ```bash
-npm install --save-dev open-harness
+npm install --save-dev @open_harness/open-harness
 ```
 
 Or install individual tools:
@@ -248,19 +248,28 @@ npm install --save-dev @open_harness/linelens @open_harness/dupelens \
   @open_harness/secretlens @open_harness/testlens
 ```
 
-Add to your `package.json`:
+### Configure everything from `package.json`
+
+Each tool reads its configuration from a dedicated key inside your `package.json`:
 
 ```json
 {
+  "name": "my-project",
   "scripts": {
-    "lint:lines":   "linelens check --fail",
-    "lint:dupes":   "dupelens check --fail",
+    "lint:lines":   "linelens   check --fail",
+    "lint:dupes":   "dupelens   check --fail",
     "lint:secrets": "secretlens check --fail",
-    "lint:tests":   "testlens check --fail",
+    "lint:tests":   "testlens   check --fail",
     "lint":         "npm run lint:lines && npm run lint:dupes && npm run lint:secrets && npm run lint:tests"
-  }
+  },
+  "linelens":   { "default": { "maxLines": 100 } },
+  "dupelens":   { "default": { "minTokens": 50, "minLines": 5 } },
+  "secretlens": { "allowlist": ["example", "placeholder"] },
+  "testlens":   { "language": "typescript", "exclude": ["node_modules", "dist"] }
 }
 ```
+
+You can mix dedicated `*.json` files with `package.json` keys per tool. Precedence: `--config <path>` > `<tool>.json` > `package.json` key > built-in defaults. See [ADR-014](docs/adr-014-config-en-package-json.md) for the design rationale.
 
 With [lint-staged](https://github.com/okonet/lint-staged) + Husky pre-commit:
 
@@ -278,11 +287,13 @@ GitHub Actions CI:
 - name: Install open-harness
   run: npm install -g @open_harness/open-harness
 
-- run: linelens check --fail
-- run: dupelens check --fail
+- run: linelens   check --fail
+- run: dupelens   check --fail
 - run: secretlens check --fail
-- run: testlens check --fail --lang typescript --dir src/
+- run: testlens   check --fail --lang typescript --dir src/
 ```
+
+> Configuration for all four lints lives inside `package.json` under the `linelens`, `dupelens`, `secretlens` and `testlens` keys — no extra `*.json` files needed.
 
 ---
 
