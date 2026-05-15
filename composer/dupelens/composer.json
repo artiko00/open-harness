@@ -1,0 +1,42 @@
+{
+  "name": "open-harness/dupelens",
+  "description": "Code duplication detector (Rabin-Karp, language-agnostic) \u2014 single native binary.",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "linter",
+    "duplication",
+    "dry",
+    "code-quality",
+    "pre-commit",
+    "ci"
+  ],
+  "homepage": "https://github.com/artiko00/open-harness",
+  "authors": [
+    {
+      "name": "Jassen Castillo",
+      "email": "castillo.cristianj@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "bin": [
+    "bin/dupelens"
+  ],
+  "autoload": {
+    "psr-4": {
+      "OpenHarness\\Dupelens\\": "src/"
+    }
+  },
+  "scripts": {
+    "post-install-cmd": "OpenHarness\\Dupelens\\BinaryDownloader::install",
+    "post-update-cmd": "OpenHarness\\Dupelens\\BinaryDownloader::install"
+  },
+  "extra": {
+    "open-harness": {
+      "tool": "dupelens",
+      "version": "0.1.3"
+    }
+  }
+}

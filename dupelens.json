@@ -11,6 +11,8 @@
     { "pattern": "**/*.generated.*", "skip": true },
     { "pattern": "**/*.min.*",       "skip": true },
     { "pattern": "**/*.md",          "skip": true },
+    { "pattern": "composer/**/src/*.php", "skip": true },
+    { "pattern": "composer/**/bin/*",     "skip": true },
     { "pattern": ".agent/feature-list.json", "skip": true }
   ],
   "exclude": [

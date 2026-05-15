@@ -1,0 +1,42 @@
+{
+  "name": "open-harness/testlens",
+  "description": "Test coverage detector \u2014 finds source files without tests, 9 languages.",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "linter",
+    "testing",
+    "coverage",
+    "tdd",
+    "pre-commit",
+    "ci"
+  ],
+  "homepage": "https://github.com/artiko00/open-harness",
+  "authors": [
+    {
+      "name": "Jassen Castillo",
+      "email": "castillo.cristianj@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "bin": [
+    "bin/testlens"
+  ],
+  "autoload": {
+    "psr-4": {
+      "OpenHarness\\Testlens\\": "src/"
+    }
+  },
+  "scripts": {
+    "post-install-cmd": "OpenHarness\\Testlens\\BinaryDownloader::install",
+    "post-update-cmd": "OpenHarness\\Testlens\\BinaryDownloader::install"
+  },
+  "extra": {
+    "open-harness": {
+      "tool": "testlens",
+      "version": "0.1.2"
+    }
+  }
+}

@@ -1,0 +1,155 @@
+# open-harness-testlens
+
+Test coverage detector. Finds source files that don't have a corresponding test file, across 9 languages. Single native binary, zero runtime dependencies.
+
+Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
+
+## Install
+
+```bash
+pip install open-harness-testlens
+```
+
+pip picks the right native wheel for your platform automatically (Linux x86_64, macOS arm64, macOS x86_64, Windows x86_64). Each wheel embeds the Go binary — no runtime deps.
+
+## Usage
+
+```bash
+testlens check                       # auto-detect language and scan
+testlens check --lang typescript     # force a specific language
+testlens check --dir ./src           # scan a specific directory
+testlens check --config my.json      # use a specific config file
+testlens check --fail                # exit 1 if files without tests are found
+testlens init                        # generate a default config
+testlens version                     # print version
+```
+
+## Supported languages
+
+| Language | Source extensions | Test patterns |
+|---|---|---|
+| Go | `.go` | `*_test.go` |
+| TypeScript | `.ts`, `.tsx` | `*.test.ts`, `*.spec.ts`, `test_*.ts` |
+| JavaScript | `.js`, `.jsx` | `*.test.js`, `*.spec.js`, `test_*.js` |
+| Python | `.py` | `*_test.py`, `test_*.py` |
+| Ruby | `.rb` | `*_spec.rb`, `*_test.rb` |
+| Rust | `.rs` | `*_test.rs` |
+| Java | `.java` | `*Test.java` |
+| Kotlin | `.kt`, `.kts` | `*Test.kt` |
+| C# | `.cs` | `*Tests.cs` |
+
+## Configuration
+
+Place a `testlens.json` at the repo root:
+
+```json
+{
+  "language": "auto",
+  "exclude": ["node_modules", ".git", "vendor", "dist", "build", "testdata"]
+}
+```
+
+- `language` — `auto` (default), `go`, `typescript`, `javascript`, `python`, `ruby`, `rust`, `java`, `kotlin`, `csharp`.
+- `exclude` — directories to skip during the scan.
+
+### Alternative: configure inside `pyproject.toml` or the dedicated `testlens.json`
+
+If you prefer not to keep a separate `testlens.json`, add a `testlens` key in your `package.json` with the same shape:
+
+```json
+{
+  "name": "my-project",
+  "testlens": {
+    "language": "typescript",
+    "exclude": ["node_modules", "dist", "fixtures"]
+  }
+}
+```
+
+Precedence: `--config <path>` > `testlens.json` > `package.json` key > built-in defaults. CLI flags win **when passed explicitly** (`fs.Visit`); if you don't pass `--lang`, the value from the config is used.
+
+## Why this exists
+
+Coverage tools tell you which **lines** are tested. testlens tells you which **files** have no test at all — a different and complementary check. It surfaces orphan modules early, when adding a first test is cheapest. Combine both for a complete picture.
+
+## Integrations
+
+```bash
+# Husky pre-commit
+testlens check --fail
+```
+
+```yaml
+# GitHub Actions
+- name: Detect source files without tests
+  run: npx @open_harness/testlens check --fail --lang typescript --dir src/
+```
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | All source files have tests (or `--fail` not passed) |
+| `1` | Files without tests found and `--fail` was passed, or config error |
+
+---
+
+## Español
+
+Detector de cobertura de tests. Encuentra archivos fuente que no tienen un archivo de test correspondiente, en 9 lenguajes. Un solo binario nativo, cero dependencias.
+
+Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
+
+### Instalación
+
+```bash
+pip install open-harness-testlens
+```
+
+pip descarga automáticamente la wheel nativa correcta para tu plataforma.
+
+### Uso
+
+```bash
+testlens check                       # autodetecta lenguaje y escanea
+testlens check --lang typescript     # fuerza un lenguaje específico
+testlens check --dir ./src           # escanea un directorio específico
+testlens check --config my.json      # usa un archivo de config específico
+testlens check --fail                # exit 1 si hay archivos sin test
+testlens init                        # genera la config por defecto
+testlens version                     # imprime la versión
+```
+
+### Lenguajes soportados
+
+Go, TypeScript, JavaScript, Python, Ruby, Rust, Java, Kotlin, C#. Ver la tabla arriba para las extensiones y patrones de naming de test que reconoce cada uno.
+
+### Configuración
+
+Colocá un `testlens.json` en la raíz del repo (ver ejemplo arriba).
+
+- `language` — `auto` (default), `go`, `typescript`, `javascript`, `python`, `ruby`, `rust`, `java`, `kotlin`, `csharp`.
+- `exclude` — directorios a ignorar durante el escaneo.
+
+#### Alternativa: configurar dentro de `pyproject.toml` o `testlens.json`
+
+Si preferís no tener un `testlens.json` separado, agregá una key `testlens` en tu `package.json` con la misma forma. Precedencia: `--config <path>` > `testlens.json` > key en `package.json` > defaults. Los flags CLI ganan **solo cuando se pasan explícitamente**; si omitís `--lang`, se usa el valor de la config.
+
+### Por qué existe
+
+Las herramientas tradicionales de cobertura te dicen qué **líneas** están testeadas. testlens te dice qué **archivos** no tienen ningún test — una verificación distinta y complementaria. Detecta módulos huérfanos temprano, cuando agregar el primer test es más barato. Combinalos para tener una vista completa.
+
+### Integraciones
+
+Sirve con Husky, lefthook o GitHub Actions usando los snippets de la sección en inglés.
+
+### Códigos de salida
+
+| Código | Significado |
+|---|---|
+| `0` | Todos los archivos fuente tienen tests (o no se pasó `--fail`) |
+| `1` | Hay archivos sin test con `--fail`, o error de configuración |
+
+## License
+
+MIT — see the [main repository](https://github.com/artiko00/open-harness).
