@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "open-harness-testlens"
-version = "0.1.2"
+version = "0.2.1"
 description = "Test coverage detector — finds source files without tests, 9 languages"
 readme = "README.md"
 license = { text = "MIT" }
