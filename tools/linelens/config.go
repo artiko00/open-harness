@@ -36,14 +36,7 @@ func loadConfig(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			cfg, found, perr := loadConfigFromPackageJSON(filepath.Dir(path))
-			if perr != nil {
-				return defaultConfig, perr
-			}
-			if found {
-				return cfg, nil
-			}
-			return defaultConfig, nil
+			return loadConfigFallbackChain(filepath.Dir(path))
 		}
 		return defaultConfig, err
 	}
@@ -55,6 +48,7 @@ func loadConfig(path string) (Config, error) {
 	applyConfigDefaults(&cfg)
 	return cfg, nil
 }
+
 
 func applyConfigDefaults(cfg *Config) {
 	if cfg.Default.MaxLines == 0 {
