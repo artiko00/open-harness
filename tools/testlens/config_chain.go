@@ -11,5 +11,10 @@ func loadConfigFallbackChain(dir string) (Config, error) {
 	} else if found {
 		return cfg, nil
 	}
+	if cfg, found, err := loadConfigFromComposerJSON(dir); err != nil {
+		return defaultConfig, err
+	} else if found {
+		return cfg, nil
+	}
 	return defaultConfig, nil
 }
