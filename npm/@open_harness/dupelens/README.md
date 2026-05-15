@@ -120,7 +120,7 @@ npx dupelens check --fail
 
 The trade-off is documented in [ADR-012](https://github.com/artiko00/open-harness/blob/main/docs/adr-012-dupelens-rabin-karp-sobre-ast.md).
 
-## Limitations (v0.1.1)
+## Limitations (v0.2.0)
 
 - Detects only **literal** or near-literal duplication (token-by-token). Refactors with renamed variables are not flagged — that requires AST analysis.
 - The algorithm is binary (match or no match); there is no similarity threshold flag.
@@ -191,7 +191,7 @@ Sirve con Husky, lefthook o GitHub Actions usando los mismos snippets de la secc
 
 El trade-off está documentado en [ADR-012](https://github.com/artiko00/open-harness/blob/main/docs/adr-012-dupelens-rabin-karp-sobre-ast.md).
 
-### Limitaciones (v0.1.1)
+### Limitaciones (v0.2.0)
 
 - Solo detecta duplicación **literal** o cuasi-literal (token a token). Refactors con variables renombradas no se detectan — eso requiere análisis AST.
 - El algoritmo es binario (hay match o no hay); no existe un flag de umbral de similitud.

@@ -102,10 +102,10 @@ func run(args []string) int {
 ```
 open-harness/
 ├── tools/
-│   ├── linelens/        ← v0.1.3 (file length linter)
-│   ├── dupelens/        ← v0.1.3 (duplicate detector, Rabin-Karp)
-│   ├── secretlens/      ← v0.1.2 (secret/credential detector)
-│   └── testlens/        ← v0.1.2 (test coverage detector, multi-language)
+│   ├── linelens/        ← v0.2.0 (file length linter)
+│   ├── dupelens/        ← v0.2.0 (duplicate detector, Rabin-Karp)
+│   ├── secretlens/      ← v0.2.0 (secret/credential detector)
+│   └── testlens/        ← v0.2.0 (test coverage detector, multi-language)
 ├── npm/@open_harness/   ← wrappers npm por plataforma
 ├── docs/                ← ADRs (decisiones arquitectónicas)
 ├── scripts/             ← build.sh, build-npm.sh, bench-vs-jscpd.sh
@@ -208,3 +208,4 @@ lefthook `pre-commit` automatiza los 3 primeros. El cuarto corre en `pre-push`. 
 | Bumpear versión sin re-compilar binarios | `package.json` dice 0.1.X pero `bin/` tiene el binario viejo | Correr `scripts/build-npm.sh <tool>` antes de cada publish |
 | Cambiar `module path` en `go.mod` sin actualizar wrappers | Tests rompen porque imports cruzados no resuelven | Usar `grep -r 'github.com/' tools/` antes y después del rename |
 | Olvidar `--access public` en `npm publish` de scope | npm tira `402 Payment Required` | El script imprime el comando completo; copiar y pegar |
+| Agregar campo nuevo al `Config` struct sin actualizar todos los formatos | `linelens.json` lo lee pero `pyproject.toml` no, y los tests pasan porque cada fuente solo testea su propio happy-path | Cuando toques un `Config`, ejecutá los 8+8+8+7 tests de `config_pyproject_test.go`, `config_pkg_test.go`, `config_composer_test.go` y `config_test.go` por tool antes de commitear |

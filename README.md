@@ -6,10 +6,10 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 
 | Tool | Description | Status |
 |---|---|---|
-| [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.1.3` |
-| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.1.3` |
-| [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.1.2` |
-| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.1.2` |
+| [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.2.0` |
+| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.2.0` |
+| [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.2.0` |
+| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.2.0` |
 | bigo | Big O complexity analyzer | `planned` |
 
 ---
@@ -225,7 +225,7 @@ Top duplicated files:
 }
 ```
 
-### Limitations (v0.1.0)
+### Limitations (v0.2.0)
 
 - Detects only **literal** or near-literal duplication (token-by-token). Refactors with renamed variables are not flagged — that requires AST analysis ([ADR-012](docs/adr-012-dupelens-rabin-karp-sobre-ast.md) explains the trade-off).
 - `--threshold` flag is not implemented; the algorithm is binary (match or not). See `[skip]` note in F-006.
@@ -269,7 +269,20 @@ Each tool reads its configuration from a dedicated key inside your `package.json
 }
 ```
 
-You can mix dedicated `*.json` files with `package.json` keys per tool. Precedence: `--config <path>` > `<tool>.json` > `package.json` key > built-in defaults. See [ADR-014](docs/adr-014-config-en-package-json.md) for the design rationale.
+### Config sources by ecosystem
+
+Each tool resolves its configuration through the following chain, stopping at the first match:
+
+| # | Source | When to use |
+|---|---|---|
+| 1 | CLI flags (`--max`, `--min-tokens`, …) | Always win, useful for ad-hoc overrides |
+| 2 | `<tool>.json` at repo root (`linelens.json`, `dupelens.json`, …) | Polyglot projects with no central manifest |
+| 3 | `pyproject.toml` → `[tool.<name>]` | Python projects (PEP 518 idiom) |
+| 4 | `package.json` → `"<name>": { ... }` | Node / TypeScript projects |
+| 5 | `composer.json` → `"extra": { "open-harness": { "<name>": ... } }` | PHP projects |
+| 6 | Built-in defaults | Fallback when nothing else matches |
+
+Mix freely — the chain is **per-tool**. You can have `linelens` configured in `pyproject.toml`, `dupelens` in `linelens.json`, and `secretlens` in `package.json` simultaneously. The precedence above is documented in [ADR-018](docs/adr-018-config-multi-ecosistema.md) (with [ADR-014](docs/adr-014-config-en-package-json.md) covering the original `package.json` fallback).
 
 With [lint-staged](https://github.com/okonet/lint-staged) + Husky pre-commit:
 
