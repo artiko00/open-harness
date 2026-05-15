@@ -53,3 +53,11 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+
+# Native binaries staged for pypi wheel builds
+pypi/open_harness_*/src/open_harness_*/bin/*
+!pypi/open_harness_*/src/open_harness_*/bin/.gitkeep
+pypi/open_harness*/dist/
+pypi/open_harness*/build/
+pypi/open_harness*/*.egg-info/
