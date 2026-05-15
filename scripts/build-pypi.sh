@@ -19,7 +19,7 @@ if [ "$TOOL" = "open-harness" ] || [ "$TOOL" = "open_harness" ]; then
   cd "$ROOT/pypi/open_harness"
   echo "Building open-harness meta (pure-Python wheel + sdist)..."
   rm -rf dist build *.egg-info
-  python3 -m build
+  pyproject-build --no-isolation
   echo ""
   echo "Done. Upload with: twine upload pypi/open_harness/dist/*"
   exit 0
@@ -68,10 +68,11 @@ for entry in "${BUILDS[@]}"; do
   GOOS=$goos GOARCH=$goarch go build -ldflags="-s -w" \
     -o "$BIN_DIR/${TOOL}${ext}" "$ROOT/tools/${TOOL}"
 
-  # 2. build the wheel with the forced platform tag
-  python3 -m build --wheel --no-isolation \
-    -C--build-option=--plat-name="$plat" 2>/dev/null \
-    || python3 setup.py bdist_wheel --plat-name "$plat"
+  # 2. build the wheel with the forced platform tag.
+  # --no-isolation reuses the current env (pipx-injected setuptools+wheel);
+  # -C--build-option=--plat-name=<tag> forwards to bdist_wheel via PEP 517.
+  pyproject-build --wheel --no-isolation \
+    -C--build-option=--plat-name="$plat" >/dev/null
 done
 
 # Clean staging binary (last platform); the wheels already contain copies

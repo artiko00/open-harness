@@ -11,6 +11,8 @@
     { "pattern": "**/*.min.*",         "skip": true },
     { "pattern": "**/*.md",            "skip": true },
     { "pattern": "**/*.out",           "skip": true },
+    { "pattern": "**/*.egg-info/**",   "skip": true },
+    { "pattern": "**/__pycache__/**",  "skip": true },
     { "pattern": ".agent/feature-list.json", "maxLines": 500 }
   ],
   "exclude": [
