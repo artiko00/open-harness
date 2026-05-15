@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/dupelens-linux-x64",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "dupelens binary for Linux x64",
   "os": [
     "linux"

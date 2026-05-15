@@ -1,18 +1,29 @@
 {
   "name": "open-harness/open-harness",
-  "description": "The full open-harness suite — linelens, dupelens, secretlens, testlens — in one composer require.",
+  "description": "The full open-harness suite \u2014 linelens, dupelens, secretlens, testlens \u2014 in one composer require.",
   "type": "metapackage",
   "license": "MIT",
-  "keywords": ["linter", "code-quality", "duplication", "secrets", "testing", "pre-commit", "ci"],
+  "keywords": [
+    "linter",
+    "code-quality",
+    "duplication",
+    "secrets",
+    "testing",
+    "pre-commit",
+    "ci"
+  ],
   "homepage": "https://github.com/artiko00/open-harness",
   "authors": [
-    { "name": "Jassen Castillo", "email": "castillo.cristianj@gmail.com" }
+    {
+      "name": "Jassen Castillo",
+      "email": "castillo.cristianj@gmail.com"
+    }
   ],
   "require": {
     "php": ">=7.4",
-    "open-harness/linelens": "0.1.3",
-    "open-harness/dupelens": "0.1.3",
-    "open-harness/secretlens": "0.1.2",
-    "open-harness/testlens": "0.1.2"
+    "open-harness/linelens": "0.2.0",
+    "open-harness/dupelens": "0.2.0",
+    "open-harness/secretlens": "0.2.0",
+    "open-harness/testlens": "0.2.0"
   }
 }
