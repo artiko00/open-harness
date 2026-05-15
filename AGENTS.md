@@ -102,19 +102,18 @@ func run(args []string) int {
 ```
 open-harness/
 ├── tools/
-│   ├── linelens/        ← v0.1.0 (file length linter)
-│   ├── dupelens/        ← v0.1.0 (duplicate detector, Rabin-Karp)
-│   ├── secretlens/      ← v0.1.0 (secret/credential detector)
-│   └── testlens/        ← v0.1.0 (test coverage detector, multi-language)
+│   ├── linelens/        ← v0.1.3 (file length linter)
+│   ├── dupelens/        ← v0.1.3 (duplicate detector, Rabin-Karp)
+│   ├── secretlens/      ← v0.1.2 (secret/credential detector)
+│   └── testlens/        ← v0.1.2 (test coverage detector, multi-language)
 ├── npm/@open_harness/   ← wrappers npm por plataforma
 ├── docs/                ← ADRs (decisiones arquitectónicas)
 ├── scripts/             ← build.sh, build-npm.sh, bench-vs-jscpd.sh
-├── .agent/              ← harness: feature-list, progress, init
+├── .agent/              ← harness: feature-list, claude-progress, init, .gitignore
+├── openspec/            ← Spec-Driven Development (config + propuestas)
 ├── go.work              ← Go workspace (4 tools)
 ├── lefthook.yml         ← git hooks (pre-commit: 3 tools, pre-push: tests x4)
-├── linelens.json        ← linelens config for this repo
-├── dupelens.json        ← dupelens config for this repo
-└── secretlens.json      ← secretlens config for this repo
+└── {linelens,dupelens,secretlens,testlens}.json  ← configs de los 4 tools (auto-protección)
 ```
 
 ---
@@ -165,8 +164,10 @@ open-harness/
 ### Always do
 - TDD para cada cambio de comportamiento (sección 3)
 - `go test ./...` antes de commitear
-- `linelens check --fail` antes de cada commit (lefthook lo hace automático)
+- Quality gates de auto-protección (los 4 tools sobre sí mismos) antes de cada commit — lefthook lo hace automático
 - Mantener 100% coverage en código nuevo
+- **Una feature por sesión** — terminar (tests + lint + commit) antes de abrir otra
+- Antes de marcar listo: actualizar `.agent/claude-progress.txt` con qué se hizo y próximos pasos
 
 ### Ask first
 - Antes de agregar dependencias externas
@@ -180,3 +181,30 @@ open-harness/
 - `os.Exit` directo en business logic (usar `osExit` variable)
 - Push directo a `main` — todo va por PR
 - Skipear hooks con `--no-verify` salvo emergencia justificada
+
+---
+
+## 11. Quality gates (auto-protección)
+
+El repo aplica sus 4 tools sobre sí mismo. Antes de abrir PR todos deben pasar:
+
+```bash
+./tools/linelens/linelens   check --fail   # archivos ≤ límites (linelens.json)
+./tools/dupelens/dupelens   check --fail   # cero duplicación significativa (dupelens.json)
+./tools/secretlens/secretlens check --fail # cero secretos hardcodeados (secretlens.json)
+./tools/testlens/testlens   check --fail   # cero archivos Go sin tests
+```
+
+lefthook `pre-commit` automatiza los 3 primeros. El cuarto corre en `pre-push`. Cualquier excepción a estos gates va vía ADR.
+
+---
+
+## 12. Errores recurrentes a evitar
+
+| Error | Síntoma | Solución |
+|---|---|---|
+| Modificar `feature-list.json` sin terminar la feature | `steps` marcados `[done]` con tests rojos | Re-correr `go test`, revertir el `[done]` si falla |
+| `npm publish` del wrapper antes que los 4 paquetes de plataforma | Usuarios instalan y reciben "platform not supported" | Publicar siempre `linelens-linux-x64`, `…-darwin-arm64`, `…-darwin-x64`, `…-win32-x64` antes del wrapper |
+| Bumpear versión sin re-compilar binarios | `package.json` dice 0.1.X pero `bin/` tiene el binario viejo | Correr `scripts/build-npm.sh <tool>` antes de cada publish |
+| Cambiar `module path` en `go.mod` sin actualizar wrappers | Tests rompen porque imports cruzados no resuelven | Usar `grep -r 'github.com/' tools/` antes y después del rename |
+| Olvidar `--access public` en `npm publish` de scope | npm tira `402 Payment Required` | El script imprime el comando completo; copiar y pegar |

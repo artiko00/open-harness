@@ -1,0 +1,5 @@
+# Archivos temporales del agente — nunca commitear
+*.tmp
+*.local
+scratch/
+notes-*.md
