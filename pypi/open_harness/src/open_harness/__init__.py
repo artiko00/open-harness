@@ -9,4 +9,4 @@ Installing this package brings in:
 After `pip install open-harness`, the four CLI commands (linelens, dupelens,
 secretlens, testlens) are available in your virtualenv.
 """
-__version__ = "0.2.0"
+__version__ = "0.2.1"

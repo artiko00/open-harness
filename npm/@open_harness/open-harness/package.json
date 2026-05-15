@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/open-harness",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "All open-harness linting tools in one package \u2014 linelens, dupelens, secretlens, testlens",
   "keywords": [
     "linter",
@@ -15,10 +15,10 @@
   "homepage": "https://github.com/artiko00/open-harness",
   "license": "MIT",
   "dependencies": {
-    "@open_harness/linelens": "0.2.0",
-    "@open_harness/dupelens": "0.2.0",
-    "@open_harness/secretlens": "0.2.0",
-    "@open_harness/testlens": "0.2.0"
+    "@open_harness/linelens": "0.2.1",
+    "@open_harness/dupelens": "0.2.1",
+    "@open_harness/secretlens": "0.2.1",
+    "@open_harness/testlens": "0.2.1"
   },
   "engines": {
     "node": ">=16"
