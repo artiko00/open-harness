@@ -4,6 +4,8 @@ File length linter for any language. Reports files that exceed a configured line
 
 Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
+> **Same tool, other ecosystems**: also available on **npm** ([`@open_harness/linelens`](https://www.npmjs.com/package/@open_harness/linelens)) and on **Packagist** (`open-harness/linelens`). Identical binary, identical config; pick the registry that matches your stack.
+
 ## Install
 
 ```bash

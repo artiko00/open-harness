@@ -4,6 +4,8 @@ Test coverage detector. Finds source files that don't have a corresponding test 
 
 Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
+> **Same tool, other ecosystems**: also available on **PyPI** ([`open-harness-testlens`](https://pypi.org/project/open-harness-testlens/)) and on **Packagist** (`open-harness/testlens`). Identical binary, identical config; pick the registry that matches your stack.
+
 ## Install
 
 ```bash

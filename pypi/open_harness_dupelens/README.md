@@ -4,6 +4,8 @@ Code duplication detector. Uses **Rabin-Karp** rolling-hash fingerprinting over 
 
 Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
+> **Same tool, other ecosystems**: also available on **npm** ([`@open_harness/dupelens`](https://www.npmjs.com/package/@open_harness/dupelens)) and on **Packagist** (`open-harness/dupelens`). Identical binary, identical config; pick the registry that matches your stack.
+
 ## Install
 
 ```bash

@@ -4,6 +4,8 @@ The full **open-harness** suite in a single package. Installs all four code-qual
 
 Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
+> **Same suite, other ecosystems**: the binaries shipped here are also published on **PyPI** ([`open-harness`](https://pypi.org/project/open-harness/)) for Python projects and on **Packagist** (`open-harness/open-harness`) for PHP/Composer projects. Pick the registry that matches your stack — the underlying tools and config formats are identical.
+
 ## Install
 
 ```bash
@@ -76,12 +78,14 @@ npx testlens   check --fail
 
 ## Tool-level docs
 
-Each tool has its own README with full flags, configuration shape and integration examples:
+Each tool ships in three ecosystems with identical behavior. Pick the registry that matches your project's stack:
 
-- [@open_harness/linelens](https://www.npmjs.com/package/@open_harness/linelens)
-- [@open_harness/dupelens](https://www.npmjs.com/package/@open_harness/dupelens)
-- [@open_harness/secretlens](https://www.npmjs.com/package/@open_harness/secretlens)
-- [@open_harness/testlens](https://www.npmjs.com/package/@open_harness/testlens)
+| Tool | npm (Node/TS) | PyPI (Python) | Packagist (PHP) |
+|---|---|---|---|
+| linelens   | [@open_harness/linelens](https://www.npmjs.com/package/@open_harness/linelens)     | [open-harness-linelens](https://pypi.org/project/open-harness-linelens/)     | [open-harness/linelens](https://packagist.org/packages/open-harness/linelens)     |
+| dupelens   | [@open_harness/dupelens](https://www.npmjs.com/package/@open_harness/dupelens)     | [open-harness-dupelens](https://pypi.org/project/open-harness-dupelens/)     | [open-harness/dupelens](https://packagist.org/packages/open-harness/dupelens)     |
+| secretlens | [@open_harness/secretlens](https://www.npmjs.com/package/@open_harness/secretlens) | [open-harness-secretlens](https://pypi.org/project/open-harness-secretlens/) | [open-harness/secretlens](https://packagist.org/packages/open-harness/secretlens) |
+| testlens   | [@open_harness/testlens](https://www.npmjs.com/package/@open_harness/testlens)     | [open-harness-testlens](https://pypi.org/project/open-harness-testlens/)     | [open-harness/testlens](https://packagist.org/packages/open-harness/testlens)     |
 
 ---
 

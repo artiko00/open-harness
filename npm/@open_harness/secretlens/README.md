@@ -4,6 +4,8 @@ Secret and credential detector for any codebase. Scans source files for hardcode
 
 Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
+> **Same tool, other ecosystems**: also available on **PyPI** ([`open-harness-secretlens`](https://pypi.org/project/open-harness-secretlens/)) and on **Packagist** (`open-harness/secretlens`). Identical binary, identical config; pick the registry that matches your stack.
+
 ## Install
 
 ```bash
