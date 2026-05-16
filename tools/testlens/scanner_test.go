@@ -158,14 +158,14 @@ func TestTestExists(t *testing.T) {
 	
 	// Test exists
 	candidates := []string{"foo_test.go", "foo_spec.go"}
-	found := testExists(filepath.Join(tmpDir, "foo.go"), candidates, mapLanguageExtensions()["go"])
+	found := testExists(filepath.Join(tmpDir, "foo.go"), tmpDir, candidates, mapLanguageExtensions()["go"])
 	if found != "foo_test.go" {
 		t.Errorf("expected foo_test.go, got %s", found)
 	}
 	
 	// Test doesn't exist
 	candidates2 := []string{"bar_test.go", "bar_spec.go"}
-	found2 := testExists(filepath.Join(tmpDir, "bar.go"), candidates2, mapLanguageExtensions()["go"])
+	found2 := testExists(filepath.Join(tmpDir, "bar.go"), tmpDir, candidates2, mapLanguageExtensions()["go"])
 	if found2 != "" {
 		t.Errorf("expected empty, got %s", found2)
 	}

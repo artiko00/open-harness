@@ -8,12 +8,18 @@ import (
 // testSearchDirs returns the list of directories where the test for
 // sourcePath might live, according to the language's layout policy.
 // Order matters: cheaper / more specific lookups first.
-func testSearchDirs(sourcePath string, lang languageMapping) []string {
+//
+// When root is non-empty, ancestor walk-up is enabled: for each testDir,
+// every ancestor of the source between sourceDir and root is also probed
+// with the relative path appended, so that centralised __tests__/ layouts
+// that mirror the source tree (F-016) match.
+func testSearchDirs(sourcePath, root string, lang languageMapping) []string {
 	sourceDir := filepath.Dir(sourcePath)
 	dirs := []string{sourceDir}
 
 	for _, td := range lang.testDirs {
 		dirs = append(dirs, filepath.Join(sourceDir, td))
+		dirs = append(dirs, ancestorTestDirs(sourceDir, root, td)...)
 	}
 
 	for _, m := range lang.mirrors {
@@ -22,6 +28,33 @@ func testSearchDirs(sourcePath string, lang languageMapping) []string {
 		}
 	}
 
+	return dirs
+}
+
+// ancestorTestDirs returns dirs like <ancestor>/<testDir>/<rel> for each
+// ancestor of sourceDir (excluding sourceDir itself) up to (and including) root.
+func ancestorTestDirs(sourceDir, root, testDir string) []string {
+	if root == "" {
+		return nil
+	}
+	absSource, err1 := filepath.Abs(sourceDir)
+	absRoot, err2 := filepath.Abs(root)
+	if err1 != nil || err2 != nil || !strings.HasPrefix(absSource, absRoot) {
+		return nil
+	}
+
+	var dirs []string
+	rel := ""
+	ancestor := sourceDir
+	for ancestor != root && filepath.Dir(ancestor) != ancestor {
+		rel = filepath.Join(filepath.Base(ancestor), rel)
+		parent := filepath.Dir(ancestor)
+		dirs = append(dirs, filepath.Join(parent, testDir, rel))
+		if absParent, _ := filepath.Abs(parent); absParent == absRoot {
+			break
+		}
+		ancestor = parent
+	}
 	return dirs
 }
 
@@ -53,37 +86,3 @@ func applyMirror(path, fromPrefix, toPrefix string) (string, bool) {
 	return joined, true
 }
 
-func splitSegments(p string) []string {
-	if p == "" {
-		return nil
-	}
-	parts := strings.Split(filepath.ToSlash(p), "/")
-	out := parts[:0]
-	for _, s := range parts {
-		if s != "" {
-			out = append(out, s)
-		}
-	}
-	return out
-}
-
-func indexOfSubslice(haystack, needle []string) int {
-	if len(needle) == 0 || len(haystack) < len(needle) {
-		return -1
-	}
-	for i := 0; i <= len(haystack)-len(needle); i++ {
-		if equalSegments(haystack[i:i+len(needle)], needle) {
-			return i
-		}
-	}
-	return -1
-}
-
-func equalSegments(a, b []string) bool {
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}

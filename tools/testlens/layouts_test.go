@@ -19,7 +19,7 @@ func TestTestExists_Colocated(t *testing.T) {
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
-	got := testExists(src, cands, lang)
+	got := testExists(src, "", cands, lang)
 	if got == "" {
 		t.Errorf("expected colocated foo.test.ts to match, got empty")
 	}
@@ -35,7 +35,7 @@ func TestTestExists_TestsDirSubdir(t *testing.T) {
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
-	got := testExists(src, cands, lang)
+	got := testExists(src, "", cands, lang)
 	if got == "" {
 		t.Errorf("expected __tests__/foo.test.ts to match, got empty")
 	}
@@ -52,7 +52,7 @@ func TestTestExists_TestsDirAlternative(t *testing.T) {
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
-	got := testExists(src, cands, lang)
+	got := testExists(src, "", cands, lang)
 	if got == "" {
 		t.Errorf("expected tests/foo.spec.ts to match, got empty")
 	}
@@ -71,7 +71,7 @@ func TestTestExists_PythonTestsMirror(t *testing.T) {
 
 	lang := mapLanguageExtensions()["python"]
 	cands := findTestCandidates("user.py", lang)
-	got := testExists(src, cands, lang)
+	got := testExists(src, "", cands, lang)
 	if got == "" {
 		t.Errorf("expected tests/auth/test_user.py (python mirror) to match, got empty")
 	}
@@ -90,7 +90,7 @@ func TestTestExists_MavenMirror(t *testing.T) {
 
 	lang := mapLanguageExtensions()["java"]
 	cands := findTestCandidates("Bar.java", lang)
-	got := testExists(src, cands, lang)
+	got := testExists(src, "", cands, lang)
 	if got == "" {
 		t.Errorf("expected src/test/java/com/foo/BarTest.java to match, got empty")
 	}
@@ -103,8 +103,15 @@ func TestTestExists_NoMatchAnywhere(t *testing.T) {
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
-	if got := testExists(src, cands, lang); got != "" {
+	if got := testExists(src, "", cands, lang); got != "" {
 		t.Errorf("expected no match, got %q", got)
+	}
+}
+
+func TestAncestorTestDirs_SourceOutsideRoot(t *testing.T) {
+	// Defensive: when sourceDir is not a descendant of root, walk-up returns nothing.
+	if got := ancestorTestDirs("/totally/unrelated/path", "/some/other/root", "__tests__"); got != nil {
+		t.Errorf("expected nil when source is outside root, got %v", got)
 	}
 }
 
@@ -122,6 +129,79 @@ func TestSplitSegments_Empty(t *testing.T) {
 	}
 }
 
+func TestTestExists_CentralizedTestsRoot(t *testing.T) {
+	// F-016: backend/src/services/foo.ts ↔ backend/src/__tests__/services/foo.test.ts
+	root := t.TempDir()
+	srcDir := filepath.Join(root, "backend", "src", "services")
+	tstDir := filepath.Join(root, "backend", "src", "__tests__", "services")
+	os.MkdirAll(srcDir, 0755)
+	os.MkdirAll(tstDir, 0755)
+	src := filepath.Join(srcDir, "foo.ts")
+	os.WriteFile(src, []byte(""), 0644)
+	os.WriteFile(filepath.Join(tstDir, "foo.test.ts"), []byte(""), 0644)
+
+	lang := mapLanguageExtensions()["typescript"]
+	cands := findTestCandidates("foo.ts", lang)
+	if got := testExists(src, root, cands, lang); got == "" {
+		t.Errorf("expected centralized __tests__/services/foo.test.ts to match")
+	}
+}
+
+func TestTestExists_WalkUpStopsAtRoot(t *testing.T) {
+	// A test file existing OUTSIDE cfg.root must not match (walk-up cannot leave the project).
+	parent := t.TempDir()
+	root := filepath.Join(parent, "project")
+	srcDir := filepath.Join(root, "src", "services")
+	outsideTests := filepath.Join(parent, "__tests__", "src", "services")
+	os.MkdirAll(srcDir, 0755)
+	os.MkdirAll(outsideTests, 0755)
+	src := filepath.Join(srcDir, "foo.ts")
+	os.WriteFile(src, []byte(""), 0644)
+	os.WriteFile(filepath.Join(outsideTests, "foo.test.ts"), []byte(""), 0644)
+
+	lang := mapLanguageExtensions()["typescript"]
+	cands := findTestCandidates("foo.ts", lang)
+	if got := testExists(src, root, cands, lang); got != "" {
+		t.Errorf("expected no match (walk-up must not leave root), got %q", got)
+	}
+}
+
+func TestTestExists_CentralizedTestsRoot_DeepNesting(t *testing.T) {
+	// Three levels: src/a/b/c/foo.ts ↔ src/__tests__/a/b/c/foo.test.ts
+	root := t.TempDir()
+	srcDir := filepath.Join(root, "src", "a", "b", "c")
+	tstDir := filepath.Join(root, "src", "__tests__", "a", "b", "c")
+	os.MkdirAll(srcDir, 0755)
+	os.MkdirAll(tstDir, 0755)
+	src := filepath.Join(srcDir, "foo.ts")
+	os.WriteFile(src, []byte(""), 0644)
+	os.WriteFile(filepath.Join(tstDir, "foo.test.ts"), []byte(""), 0644)
+
+	lang := mapLanguageExtensions()["typescript"]
+	cands := findTestCandidates("foo.ts", lang)
+	if got := testExists(src, root, cands, lang); got == "" {
+		t.Errorf("expected deep nested __tests__ mirror to match")
+	}
+}
+
+func TestTestExists_NoMatchWhenRelPathDiffers(t *testing.T) {
+	// __tests__/utils/foo.test.ts must NOT match src/services/foo.ts (different rel).
+	root := t.TempDir()
+	srcDir := filepath.Join(root, "src", "services")
+	wrongTstDir := filepath.Join(root, "src", "__tests__", "utils") // utils, no services
+	os.MkdirAll(srcDir, 0755)
+	os.MkdirAll(wrongTstDir, 0755)
+	src := filepath.Join(srcDir, "foo.ts")
+	os.WriteFile(src, []byte(""), 0644)
+	os.WriteFile(filepath.Join(wrongTstDir, "foo.test.ts"), []byte(""), 0644)
+
+	lang := mapLanguageExtensions()["typescript"]
+	cands := findTestCandidates("foo.ts", lang)
+	if got := testExists(src, root, cands, lang); got != "" {
+		t.Errorf("expected no match for wrong rel-path, got %q", got)
+	}
+}
+
 func TestTestExists_MirrorIgnoredWhenPathOutsidePrefix(t *testing.T) {
 	// Source NOT under "src/" → mirror to "tests/" should not apply.
 	dir := t.TempDir()
@@ -133,7 +213,7 @@ func TestTestExists_MirrorIgnoredWhenPathOutsidePrefix(t *testing.T) {
 
 	lang := mapLanguageExtensions()["python"]
 	cands := findTestCandidates("user.py", lang)
-	got := testExists(src, cands, lang)
+	got := testExists(src, "", cands, lang)
 	// The "tests/" subdir IS a configured testDir for Python, so this DOES match.
 	if got == "" {
 		t.Errorf("expected match via testDirs (tests/test_user.py), got empty")

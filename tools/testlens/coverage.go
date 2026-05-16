@@ -34,7 +34,7 @@ func checkCoverage(cfg config) (int, error) {
 			return nil
 		}
 		filename := filepath.Base(path)
-		if testExists(path, findTestCandidates(filename, lang), lang) == "" {
+		if testExists(path, cfg.root, findTestCandidates(filename, lang), lang) == "" {
 			relPath, _ := filepath.Rel(cfg.root, path)
 			fmt.Printf("  %s - no test found\n", relPath)
 			violations++

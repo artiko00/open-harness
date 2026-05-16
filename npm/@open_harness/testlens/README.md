@@ -73,6 +73,18 @@ Precedence: `--config <path>` > `testlens.json` > `package.json` key > built-in 
 
 ## Supported test layouts
 
+testlens recognises **colocated**, **adjacent** subdirs, **mirror trees**, and **centralised** test roots that mirror the source path:
+
+| Pattern | Example |
+|---|---|
+| Colocated | `src/foo.ts` ↔ `src/foo.test.ts` |
+| Adjacent subdir | `src/foo.ts` ↔ `src/__tests__/foo.test.ts` |
+| **Centralised tests root** (F-016) | `src/services/foo.ts` ↔ `src/__tests__/services/foo.test.ts` |
+| Mirror (Python) | `src/auth/user.py` ↔ `tests/auth/test_user.py` |
+| Mirror (Maven) | `src/main/java/com/X/Bar.java` ↔ `src/test/java/com/X/BarTest.java` |
+
+Per language defaults:
+
 testlens looks for tests in these locations (per language):
 
 | Language | Colocated | Subdir | Mirror |

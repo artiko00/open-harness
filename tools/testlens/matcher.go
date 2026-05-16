@@ -86,9 +86,9 @@ func isSourceFile(filename string, extensions []string) bool {
 	return true
 }
 
-// testExists checks if any candidate exists in any search dir (ADR-019).
-func testExists(sourcePath string, candidates []string, lang languageMapping) string {
-	for _, dir := range testSearchDirs(sourcePath, lang) {
+// testExists probes every layout-aware search dir (ADR-019, F-016).
+func testExists(sourcePath, root string, candidates []string, lang languageMapping) string {
+	for _, dir := range testSearchDirs(sourcePath, root, lang) {
 		for _, candidate := range candidates {
 			if fileExists(filepath.Join(dir, candidate)) {
 				return candidate
