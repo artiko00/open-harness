@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "open-harness"
-version = "0.2.1"
+version = "0.2.2"
 description = "The full open-harness suite — linelens, dupelens, secretlens, testlens — in one install"
 readme = "README.md"
 license = { text = "MIT" }
@@ -25,7 +25,7 @@ dependencies = [
   "open-harness-linelens==0.2.1",
   "open-harness-dupelens==0.2.1",
   "open-harness-secretlens==0.2.1",
-  "open-harness-testlens==0.2.1",
+  "open-harness-testlens==0.2.2",
 ]
 
 [project.urls]

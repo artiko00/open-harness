@@ -70,6 +70,34 @@ If you prefer not to keep a separate `testlens.json`, add a `testlens` key in yo
 
 Precedence: `--config <path>` > `testlens.json` > `package.json` key > built-in defaults. CLI flags win **when passed explicitly** (`fs.Visit`); if you don't pass `--lang`, the value from the config is used.
 
+
+## Supported test layouts
+
+testlens looks for tests in these locations (per language):
+
+| Language | Colocated | Subdir | Mirror |
+|---|---|---|---|
+| Go | `foo.go` ↔ `foo_test.go` | — | — |
+| TypeScript / JavaScript | `foo.ts` ↔ `foo.test.ts` | `__tests__/foo.test.ts`, `tests/foo.spec.ts` | — |
+| Python | `foo.py` ↔ `test_foo.py` | `tests/test_foo.py` | `src/foo.py` ↔ `tests/foo.py` |
+| Ruby | `foo.rb` ↔ `foo_spec.rb` | `spec/foo_spec.rb` | `lib/foo.rb` ↔ `spec/foo.rb` |
+| Java / Kotlin | — | — | `src/main/java/.../Bar.java` ↔ `src/test/java/.../BarTest.java` |
+| Rust | `foo.rs` ↔ `foo_test.rs` | `tests/foo_test.rs` | — |
+
+## testlens vs `vitest --coverage`, `jest`, `pytest-cov`
+
+These have **different goals** — use both:
+
+| | testlens | Real coverage tools |
+|---|---|---|
+| Speed | milliseconds (file walk) | seconds to minutes (compile + execute + instrument) |
+| Detects files without tests | ✅ | partial (only files actually loaded by a test) |
+| Detects untested lines | ❌ | ✅ |
+| Detects untested branches | ❌ | ✅ |
+| Works as pre-commit hook | ✅ | too slow |
+
+testlens is a fast **smoke test of test-file existence**, intended as a pre-flight gate. For real functional coverage metrics, run Vitest, Jest, pytest-cov, etc. as a separate (slower) CI step.
+
 ## Why this exists
 
 Coverage tools tell you which **lines** are tested. testlens tells you which **files** have no test at all — a different and complementary check. It surfaces orphan modules early, when adding a first test is cheapest. Combine both for a complete picture.
@@ -136,6 +164,26 @@ Colocá un `testlens.json` en la raíz del repo (ver ejemplo arriba).
 #### Alternativa: configurar dentro de `pyproject.toml` o `testlens.json`
 
 Si preferís no tener un `testlens.json` separado, agregá una key `testlens` en tu `package.json` con la misma forma. Precedencia: `--config <path>` > `testlens.json` > key en `package.json` > defaults. Los flags CLI ganan **solo cuando se pasan explícitamente**; si omitís `--lang`, se usa el valor de la config.
+
+
+### Layouts de test soportados
+
+testlens busca tests en estas ubicaciones (por lenguaje):
+
+| Lenguaje | Co-ubicado | Subdir | Mirror |
+|---|---|---|---|
+| Go | `foo.go` ↔ `foo_test.go` | — | — |
+| TypeScript / JavaScript | `foo.ts` ↔ `foo.test.ts` | `__tests__/foo.test.ts`, `tests/foo.spec.ts` | — |
+| Python | `foo.py` ↔ `test_foo.py` | `tests/test_foo.py` | `src/foo.py` ↔ `tests/foo.py` |
+| Ruby | `foo.rb` ↔ `foo_spec.rb` | `spec/foo_spec.rb` | `lib/foo.rb` ↔ `spec/foo.rb` |
+| Java / Kotlin | — | — | `src/main/java/.../Bar.java` ↔ `src/test/java/.../BarTest.java` |
+| Rust | `foo.rs` ↔ `foo_test.rs` | `tests/foo_test.rs` | — |
+
+### testlens vs `vitest --coverage`, `jest`, `pytest-cov`
+
+Tienen **finalidades distintas** — usá los dos:
+
+testlens es un **smoke test ultra-rápido de existencia de archivos de test**, pensado como gate de pre-commit. Para métricas funcionales de cobertura (líneas/branches ejercidas) corré Vitest, Jest, pytest-cov, etc. como step separado de CI. testlens corre en milisegundos; un coverage tool real toma segundos a minutos.
 
 ### Por qué existe
 

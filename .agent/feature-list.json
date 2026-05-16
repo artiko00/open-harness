@@ -330,6 +330,33 @@
       ]
     },
     {
+      "id": "F-015",
+      "category": "functional",
+      "description": "testlens: soportar layouts de test no co-ubicados (__tests__/ subdir, tests/ paralelo, mirror Maven src/main↔src/test). El v0.2.1 solo encuentra tests al lado del source (foo.ts ↔ foo.test.ts mismo dir), produciendo falsos positivos en proyectos JS/TS/Python/Java reales. Resuelve sin breaking change: solo SUMA matches, nunca quita.",
+      "passes": false,
+      "epic": true,
+      "steps": [
+        "[fase0·decisión] [doc] ADR-019 documentando la solución declarativa (testDirs[] + mirrors[][2]string en languageMapping) y por qué no usamos índice global (evita falsos positivos cross-módulo)",
+        "[fase0·decisión] [doc] Lista de patrones soportados por lenguaje: TS/JS (__tests__/, tests/), Python (tests/ mirror src/), Ruby (spec/ mirror lib/), Java/Kotlin (src/test mirror src/main), Go (solo co-ubicado, canónico), Rust (tests/ mirror), C# (solo co-ubicado por ahora)",
+        "[fase1·tests] [test] TestTestExists_Colocated: foo.ts + foo.test.ts mismo dir → match (regresión existing case)",
+        "[fase1·tests] [test] TestTestExists_TestsDirSubdir: foo.ts + __tests__/foo.test.ts → match (TS/JS default)",
+        "[fase1·tests] [test] TestTestExists_PythonTestsMirror: src/foo.py + tests/test_foo.py → match (pytest típico)",
+        "[fase1·tests] [test] TestTestExists_MavenMirror: src/main/java/com/X/Bar.java + src/test/java/com/X/BarTest.java → match (Java/Kotlin)",
+        "[fase1·tests] [test] TestTestExists_NoMatchAnywhere: source sin ningún test correspondiente → violation",
+        "[fase2·impl] [impl] Agregar testDirs []string y mirrors [][2]string al struct languageMapping en language.go",
+        "[fase2·impl] [impl] Actualizar mapLanguageExtensions() con configs por lenguaje (8 lenguajes total)",
+        "[fase2·impl] [impl] Refactor testExists en matcher.go: probar candidate en sourceDir → sourceDir/<testDir> → mirrored path para cada (from,to)",
+        "[fase2·impl] [impl] Helper applyMirror(sourcePath, from, to) string para reemplazar prefix de path",
+        "[fase3·integ] [test] Fixture testdata/layouts/ con 4 proyectos (TS __tests__, Python tests-mirror, Java src-test, Go co-ubicado) — un test E2E por layout",
+        "[fase3·integ] [test] 100% statement coverage según ADR-011",
+        "[fase4·docs] Actualizar README testlens (npm + pypi + composer) con sección 'Supported test layouts' + disclaimer 'testlens vs coverage tools' (vitest, jest, pytest-cov) explicando finalidades distintas",
+        "[fase5·release] Bump testlens a 0.2.2 — solo testlens, los otros 3 no cambian",
+        "[fase5·release] Build npm cross-platform + publish (5 paquetes testlens) + republish meta open-harness con testlens 0.2.2",
+        "[fase5·release] Build pypi + twine upload (1 paquete testlens + republish meta open-harness)",
+        "[fase5·release] [test] Smoke contra proyecto demo con layout __tests__/ → 0 violaciones (versus 0.2.1 que reportaba falsos positivos)"
+      ]
+    },
+    {
       "id": "F-009",
       "category": "functional",
       "description": "testlens: modo package para Go — un paquete (directorio) con al menos un *_test.go cuenta como cubierto, sin importar cuántos archivos fuente tenga",
