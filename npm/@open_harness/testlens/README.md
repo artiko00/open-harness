@@ -1,6 +1,6 @@
 # @open_harness/testlens
 
-Test coverage detector. Finds source files that don't have a corresponding test file, across 9 languages. Single native binary, zero runtime dependencies.
+Test coverage detector. Finds source files that don't have a corresponding test file, across 10 languages. Single native binary, zero runtime dependencies.
 
 Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
@@ -39,6 +39,7 @@ npx testlens version                     # print version
 | Java | `.java` | `*Test.java` |
 | Kotlin | `.kt`, `.kts` | `*Test.kt` |
 | C# | `.cs` | `*Tests.cs` |
+| Dart | `.dart` | `*_test.dart` (in `test/` mirror of `lib/`) |
 
 ## Configuration
 
@@ -51,7 +52,7 @@ Place a `testlens.json` at the repo root:
 }
 ```
 
-- `language` — `auto` (default), `go`, `typescript`, `javascript`, `python`, `ruby`, `rust`, `java`, `kotlin`, `csharp`.
+- `language` — `auto` (default), `go`, `typescript`, `javascript`, `python`, `ruby`, `rust`, `java`, `kotlin`, `csharp`, `dart`.
 - `exclude` — directories to skip during the scan.
 
 ### Alternative: configure inside `package.json`
@@ -138,7 +139,7 @@ npx testlens check --fail
 
 ## Español
 
-Detector de cobertura de tests. Encuentra archivos fuente que no tienen un archivo de test correspondiente, en 9 lenguajes. Un solo binario nativo, cero dependencias.
+Detector de cobertura de tests. Encuentra archivos fuente que no tienen un archivo de test correspondiente, en 10 lenguajes. Un solo binario nativo, cero dependencias.
 
 Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
 
@@ -164,13 +165,13 @@ npx testlens version                     # imprime la versión
 
 ### Lenguajes soportados
 
-Go, TypeScript, JavaScript, Python, Ruby, Rust, Java, Kotlin, C#. Ver la tabla arriba para las extensiones y patrones de naming de test que reconoce cada uno.
+Go, TypeScript, JavaScript, Python, Ruby, Rust, Java, Kotlin, C#, Dart. Ver la tabla arriba para las extensiones y patrones de naming de test que reconoce cada uno.
 
 ### Configuración
 
 Colocá un `testlens.json` en la raíz del repo (ver ejemplo arriba).
 
-- `language` — `auto` (default), `go`, `typescript`, `javascript`, `python`, `ruby`, `rust`, `java`, `kotlin`, `csharp`.
+- `language` — `auto` (default), `go`, `typescript`, `javascript`, `python`, `ruby`, `rust`, `java`, `kotlin`, `csharp`, `dart`.
 - `exclude` — directorios a ignorar durante el escaneo.
 
 #### Alternativa: configurar dentro de `package.json`

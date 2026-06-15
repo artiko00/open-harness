@@ -69,6 +69,13 @@ func mapLanguageExtensions() map[string]languageMapping {
 			testSuffixes:  []string{"Tests"},
 			testPrefixes:  []string{},
 		},
+		"dart": {
+			extensions:   []string{".dart"},
+			testSuffixes: []string{"_test"},
+			testPrefixes: []string{},
+			testDirs:     []string{"test"},
+			mirrors:      [][2]string{{"lib", "test"}},
+		},
 	}
 }
 
@@ -84,6 +91,6 @@ func extensionsForLanguage(lang string) []string {
 func supportedLanguages() []string {
 	return []string{
 		"go", "typescript", "javascript", "python",
-		"ruby", "rust", "java", "kotlin", "csharp",
+		"ruby", "rust", "java", "kotlin", "csharp", "dart",
 	}
 }

@@ -1,7 +1,7 @@
 {
   "name": "@open_harness/open-harness",
   "version": "0.2.4",
-  "description": "All open-harness linting tools in one package — linelens, dupelens, secretlens, testlens",
+  "description": "All open-harness linting tools in one package \u2014 linelens, dupelens, secretlens, testlens",
   "keywords": [
     "linter",
     "code-quality",
@@ -24,7 +24,7 @@
     "@open_harness/linelens": "0.2.1",
     "@open_harness/dupelens": "0.2.1",
     "@open_harness/secretlens": "0.2.1",
-    "@open_harness/testlens": "0.2.3"
+    "@open_harness/testlens": "0.2.4"
   },
   "engines": {
     "node": ">=16"
