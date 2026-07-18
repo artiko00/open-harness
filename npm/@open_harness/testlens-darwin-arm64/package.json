@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/testlens-darwin-arm64",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "testlens binary for macOS Apple Silicon (arm64)",
   "os": [
     "darwin"

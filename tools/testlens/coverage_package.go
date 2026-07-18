@@ -42,7 +42,7 @@ func checkCoveragePackage(cfg config, lang languageMapping) (int, error) {
 	for _, dir := range dirs {
 		if !packageHasTests(dir, lang.testSuffixes, lang.extensions) {
 			relPath, _ := filepath.Rel(cfg.root, dir)
-			fmt.Printf("  %s/ - no tests found\n", relPath)
+			fmt.Println(violationLine(relPath+"/", "- no tests found", cfg.noColor))
 			violations++
 		}
 	}
