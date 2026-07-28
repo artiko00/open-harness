@@ -5,6 +5,14 @@ All notable changes to `dupelens` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-07-28
+
+### Added
+
+- **`--tutorial`** flag: prints a static configuration guide to stdout — every
+  config key with its default and an example, plus the tool's flags. Exit `0`;
+  `--no-color` strips ANSI. Onboarding release (F-020).
+
 ## [0.3.0] - 2026-07-27
 
 Part of the `fix-audit-findings` release (adversarial audit F-018). See
@@ -20,8 +28,6 @@ Part of the `fix-audit-findings` release (adversarial audit F-018). See
   trip the `--fail` gate.
 - **`windowSize`** config key (in `default`, `0` = built-in default of 25): the
   detection window of the rolling hash, now independent of `minTokens`.
-- **`--tutorial`** flag: prints a static configuration guide to stdout; exit `0`,
-  `--no-color` strips ANSI.
 - Unified CLI contract: `--format console|json`, `--config <path>`, `--no-color`,
   and `--output <file>` on `init`.
 

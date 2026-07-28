@@ -116,10 +116,10 @@ En `pre-commit`, el `2` también aborta el commit: una medición rota nunca se t
 ```
 open-harness/
 ├── tools/
-│   ├── linelens/        ← v0.3.0 (file length linter)
-│   ├── dupelens/        ← v0.3.0 (duplicate detector, Rabin-Karp)
-│   ├── secretlens/      ← v0.3.0 (secret/credential detector)
-│   ├── testlens/        ← v0.3.0 (test coverage detector, multi-language)
+│   ├── linelens/        ← v0.3.1 (file length linter)
+│   ├── dupelens/        ← v0.3.1 (duplicate detector, Rabin-Karp)
+│   ├── secretlens/      ← v0.3.1 (secret/credential detector)
+│   ├── testlens/        ← v0.3.1 (test coverage detector, multi-language)
 │   └── scopelens/       ← v0.1.0 (per-PR file-budget gate sobre git, exit 2 = no medible)
 ├── npm/@open_harness/   ← wrappers npm por plataforma
 ├── docs/                ← ADRs (decisiones arquitectónicas)

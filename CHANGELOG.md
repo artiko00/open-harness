@@ -22,6 +22,16 @@ dedicated **exit code 2** for "could not measure". The meta-package
 [scopelens changelog](tools/scopelens/CHANGELOG.md) and
 [ADR-023](docs/adr-023-scopelens-dependencia-git.md).
 
+## [0.3.1] - 2026-07-28
+
+### Added
+
+- **`open-harness init`**: new suite command that creates all five `<tool>.json`
+  config files at the project root in one run, delegating to each tool's `init`
+  (does not overwrite existing files).
+- **`--tutorial`** on all five tools: prints a static, per-tool configuration
+  guide in the terminal. Onboarding release (F-020).
+
 ## [0.3.0] - 2026-07-27
 
 The `fix-audit-findings` release (adversarial audit F-018): the four original
@@ -32,9 +42,6 @@ previously hidden. See [docs/UPGRADING.md](docs/UPGRADING.md).
 
 ### Added
 
-- **`--tutorial`** on all tools: prints a static, per-tool configuration guide
-  (each key with its default and an example) to stdout; exit `0`, `--no-color`
-  strips ANSI.
 - **Unified CLI contract** across the four tools: `--format console|json`,
   `--config <path>`, `--no-color`, and `--output <file>` on `init`.
 - **Shared internal modules** in `tools/_shared/*` (`pathmatch`, `langsyntax`,
