@@ -139,6 +139,48 @@ for tool in "${TOOLS[@]}"; do
   echo
 done
 
+# scopelens es un tool nuevo con su propio ciclo de versiones (0.1.0) y NO
+# comparte la version unificada de los cuatro nucleos. Se verifica que su const
+# version coincida con el manifiesto y con las menciones en docs, sin forzar la
+# igualdad contra REFERENCE.
+sl_main="tools/scopelens/main.go"
+if [[ -f "${sl_main}" ]]; then
+  sl_expected="$(const_version "${sl_main}")"
+  if [[ -z "${sl_expected}" ]]; then
+    fail "scopelens: no se pudo leer const version en ${sl_main}"
+  else
+    echo "[scopelens] const version (fuente de verdad) = ${sl_expected}"
+
+    sl_mtv="$(manifest_tool_version scopelens)"
+    if [[ "${sl_mtv}" == "${sl_expected}" ]]; then
+      pass "${MANIFEST} (tool scopelens) = ${sl_mtv}"
+    else
+      fail "${MANIFEST} (tool scopelens) = ${sl_mtv:-<vacio>} (esperado ${sl_expected})"
+    fi
+
+    # scopelens puede no estar todavia en todos los docs: se verifica solo donde
+    # aparece; su ausencia en un doc no es un fallo.
+    for doc in "${DOCS[@]}"; do
+      if [[ ! -f "${doc}" ]]; then
+        fail "${doc}: no existe"
+        continue
+      fi
+      versions="$(doc_tool_versions "${doc}" scopelens)"
+      [[ -z "${versions}" ]] && continue
+      while IFS= read -r v; do
+        [[ -z "${v}" ]] && continue
+        if [[ "${v}" == "${sl_expected}" ]]; then
+          pass "${doc} (scopelens) = ${v}"
+        else
+          fail "${doc} (scopelens) = ${v} (esperado ${sl_expected})"
+        fi
+      done <<< "${versions}"
+    done
+
+    echo
+  fi
+fi
+
 # Version del manifiesto a nivel raiz debe coincidir con la referencia.
 mtop="$(manifest_top_version)"
 echo "[manifiesto] version raiz = ${mtop} (referencia ${REFERENCE})"

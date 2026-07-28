@@ -1,0 +1,20 @@
+{
+  "maxFiles": 40,
+  "exclude": [
+    ".git/**",
+    "node_modules/**",
+    "vendor/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    "go.sum",
+    "**/*.pb.go",
+    "**/zz_generated*.go",
+    "**/testdata/**",
+    "tools/linelens/linelens",
+    "tools/dupelens/dupelens",
+    "tools/secretlens/secretlens",
+    "tools/testlens/testlens",
+    "tools/scopelens/scopelens"
+  ]
+}

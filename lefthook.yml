@@ -8,6 +8,8 @@ pre-commit:
       run: tools/secretlens/secretlens check --fail --no-color
     testlens:
       run: tools/testlens/testlens check --lang go --dir tools/ --fail
+    scopelens:
+      run: tools/scopelens/scopelens check --fail --no-color
 
 pre-push:
   parallel: true
@@ -20,3 +22,5 @@ pre-push:
       run: cd tools/secretlens && go test ./...
     test-testlens:
       run: cd tools/testlens && go test ./...
+    test-scopelens:
+      run: cd tools/scopelens && go test ./...

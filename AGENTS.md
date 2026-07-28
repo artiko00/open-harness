@@ -80,6 +80,20 @@ func run(args []string) int {
 - Usa `flag.ContinueOnError` (no `ExitOnError`) en subcomandos
 - Nunca `os.Exit` directo en business logic — usar `osExit` variable
 
+### 4.1 Exit codes
+
+Los primeros 4 tools (linelens, dupelens, secretlens, testlens) usan sólo **`0`** (ok) y **`1`** (violaciones encontradas, con `--fail`).
+
+**`scopelens` (v0.1.0) agrega el exit code `2`: "no se pudo medir".** El gate no puede inventar un conteo cuando le falta información, así que **nunca falla en verde**: cada condición que impide una medición confiable devuelve `2`, no `0`.
+
+| Code | Semántica |
+|---|---|
+| `0` | Medido y dentro del presupuesto (o fuera, sin `--fail`) |
+| `1` | Medido y excede el presupuesto (con `--fail`) |
+| `2` | **No se pudo medir**: `git` ausente del `PATH`, el cwd no es un repo, clon shallow (`merge-base` no resoluble), rama base no encontrada, config inválida, o error de uso (flag desconocido, `--max-files` negativo, `--dir` inaccesible, subcomando desconocido) |
+
+En `pre-commit`, el `2` también aborta el commit: una medición rota nunca se trata como aprobación silenciosa. El bypass deliberado sigue siendo `git commit --no-verify`.
+
 ---
 
 ## 5. Comandos esenciales
@@ -105,7 +119,8 @@ open-harness/
 │   ├── linelens/        ← v0.3.0 (file length linter)
 │   ├── dupelens/        ← v0.3.0 (duplicate detector, Rabin-Karp)
 │   ├── secretlens/      ← v0.3.0 (secret/credential detector)
-│   └── testlens/        ← v0.3.0 (test coverage detector, multi-language)
+│   ├── testlens/        ← v0.3.0 (test coverage detector, multi-language)
+│   └── scopelens/       ← v0.1.0 (per-PR file-budget gate sobre git, exit 2 = no medible)
 ├── npm/@open_harness/   ← wrappers npm por plataforma
 ├── docs/                ← ADRs (decisiones arquitectónicas)
 ├── scripts/             ← build.sh, build-npm.sh, bench-vs-jscpd.sh

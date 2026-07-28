@@ -24,6 +24,12 @@
       "description": "Detect source files missing tests (multi-language)",
       "path": "tools/testlens",
       "version": "0.3.0"
+    },
+    {
+      "name": "scopelens",
+      "description": "presupuesto de archivos por PR sobre git",
+      "path": "tools/scopelens",
+      "version": "0.1.0"
     }
   ]
 }
