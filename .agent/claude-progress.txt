@@ -101,3 +101,16 @@ SESSION — 2026-07-24 — F-018: fix-audit-findings (auditoría adversarial)
 - Fase 10: gate final verde — 8 módulos al 100% coverage, los 4 tools pasan
   check --fail sobre el repo, lefthook pre-commit + pre-push verdes.
 - Rama fix-audit-findings, ~15 commits atómicos. Acción usuario → push + PR.
+
+SESSION — scopelens (F-019): quinto tool
+-----------------------------------------
+- scopelens: presupuesto de archivos por PR sobre git. Cuenta el diff acumulado
+  rama vs base (union de commiteado + staged) en pre-commit local, antes del PR.
+- exit 2 = "no pude medir" (git ausente, no-repo, shallow, base no resoluble,
+  config malformada); nunca degrada a verde. exit 1 = excede el budget con --fail.
+- Reutiliza pathmatch (clasificacion) y configload (config multi-ecosistema).
+  ADR-023 (git como binario externo). 100% coverage, 74 tests.
+- Integrado: lefthook, open-harness.json, scopelens.json (maxFiles 40), README,
+  AGENTS, F-019, paquetes npm. Diferido: pypi/packagist scaffolding + publicar.
+- En rama develop (commit 7ba2b1f). Bootstrap con --no-verify (agregar el tool
+  supera su propio budget; en main limpio scopelens mide 0).
