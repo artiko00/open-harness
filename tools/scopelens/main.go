@@ -27,6 +27,8 @@ func run(args []string) int {
 		return runCheck(args[1:])
 	case "init":
 		return runInit(args[1:])
+	case "--tutorial", "tutorial":
+		return runTutorial(args[1:])
 	case "version", "--version", "-v":
 		fmt.Printf("scopelens %s\n", version)
 		return 0

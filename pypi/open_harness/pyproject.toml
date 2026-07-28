@@ -28,6 +28,9 @@ dependencies = [
   "open-harness-testlens==0.3.0",
 ]
 
+[project.scripts]
+open-harness = "open_harness.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/artiko00/open-harness"
 Repository = "https://github.com/artiko00/open-harness"

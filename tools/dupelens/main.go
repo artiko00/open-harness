@@ -30,6 +30,8 @@ func run(args []string) int {
 	case "help", "--help", "-h":
 		printUsage()
 		return 0
+	case "--tutorial", "tutorial":
+		return runTutorial(args[1:])
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", args[0])
 		printUsage()

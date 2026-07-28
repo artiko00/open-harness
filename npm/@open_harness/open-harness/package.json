@@ -15,6 +15,7 @@
   "homepage": "https://github.com/artiko00/open-harness",
   "license": "MIT",
   "bin": {
+    "open-harness": "bin/open-harness.js",
     "linelens": "bin/linelens.js",
     "dupelens": "bin/dupelens.js",
     "secretlens": "bin/secretlens.js",
@@ -24,7 +25,8 @@
     "@open_harness/linelens": "0.3.0",
     "@open_harness/dupelens": "0.3.0",
     "@open_harness/secretlens": "0.3.0",
-    "@open_harness/testlens": "0.3.0"
+    "@open_harness/testlens": "0.3.0",
+    "@open_harness/scopelens": "0.1.0"
   },
   "engines": {
     "node": ">=16"
