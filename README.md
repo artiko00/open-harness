@@ -10,6 +10,7 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 | [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.3.0` |
 | [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.3.0` |
 | [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.3.0` |
+| [scopelens](tools/scopelens/) | Per-PR file-budget gate — counts the branch-vs-base diff at local pre-commit | `v0.1.0` |
 | bigo | Big O complexity analyzer | `planned` |
 
 ---
@@ -276,6 +277,84 @@ Top duplicated files:
 ### Limitations (v0.3.0)
 
 - Detects contiguous **exact** and **alpha-renamed** clones (see `--fail-on`). Structural refactors — reordered statements, inserted or deleted lines (gapped/Type-3 clones), and behaviourally-equivalent rewrites (Type-4) — are still not detected; that requires AST analysis ([ADR-012](docs/adr-012-dupelens-rabin-karp-sobre-ast.md) explains the trade-off).
+
+---
+
+## scopelens
+
+Enforces a **per-PR file budget** ("no more than 15 files touched"). The unit of the policy is the **PR, not the commit**: scopelens counts the *union* of everything already committed on the branch (`git diff <merge-base>...HEAD`) and everything staged (`git diff --cached`). Five commits of 4 files each add up to 20 and fail.
+
+It runs **locally, over `git`, with no network and no token**, and aborts the `git commit` **before the PR even exists**. That is the key difference from the CI tools it replaces (see the comparison below).
+
+### Why not a CI size-labeler?
+
+| Tool | Where it runs | What it does | Can block | Reads the diff via |
+|---|---|---|---|---|
+| `pr-size-labeler` | GitHub Actions, on the open PR | Labels `size/xs…xl` from diff + file count | **No** — only labels; blocking needs branch protection on the label | GitHub API |
+| `Danger JS` | CI, needs `DANGER_GITHUB_API_TOKEN` + Node | Programmable rule in `dangerfile.ts`; only `fail()` breaks the build | Yes, but only in CI | GitHub API |
+| **scopelens** | **Local pre-commit** | Counts the branch-vs-base diff and aborts the commit | **Yes, before the PR exists** | **`git` (local)** |
+
+Both CI tools share three limitations that matter for a real gate: they **arrive late** (feedback minutes after the push, with the work already pushed), they **read the diff through the GitHub API** — which truncates to 300 files (HTTP 406) and the file list to 3000, so the budget breaks exactly on the large PRs the gate is meant to catch — and they **require network, a token and an open PR**, none of which exist at `git commit` time. They also only work inside GitHub Actions + Node; a Python or Go team installing from PyPI or `go install` will not stand up a Node runtime just to count files.
+
+### Usage
+
+```bash
+scopelens check                       # measure the current branch vs its base
+scopelens check --fail                # exit 1 if the budget is exceeded (git hooks / CI)
+scopelens check --max-files 20        # override the budget for this run
+scopelens check --base develop        # compare against an explicit base ref
+scopelens check --staged-only         # count only the index (staged changes)
+scopelens check --exclude-tests       # discount test files from the budget
+scopelens check --dir ./repo          # run against a specific repository directory
+scopelens check --no-color            # plain output for logs
+scopelens init                        # generate a default scopelens.json
+scopelens init --output custom.json   # write the config to a different file
+```
+
+Note: scopelens does **not** expose `--format json` or `--config` — the report is a single fixed console format, and configuration is resolved through the standard chain (see below).
+
+### Exit codes
+
+Unlike the other four tools (which only use `0`/`1`), scopelens adds **exit code 2** for "could not measure" — it never invents a count when it lacks the information to trust one.
+
+| Code | Meaning |
+|---|---|
+| `0` | Measured and within budget (or over budget without `--fail`) |
+| `1` | Measured and over budget (with `--fail`) |
+| `2` | **Could not measure**: `git` missing from `PATH`, cwd is not a repo, shallow clone (`merge-base` unresolvable), base ref not found, invalid config, or a usage error |
+
+### Configuration (`scopelens.json`)
+
+```json
+{
+  "maxFiles": 15,
+  "base": "",
+  "excludeTests": false,
+  "exclude": [
+    ".git/**", "node_modules/**", "vendor/**", "dist/**", "build/**",
+    "package-lock.json", "pnpm-lock.yaml", "yarn.lock",
+    "poetry.lock", "Pipfile.lock", "uv.lock",
+    "go.sum", "**/*.pb.go", "**/zz_generated*.go"
+  ]
+}
+```
+
+- `maxFiles` — the budget (default `15`). `0` falls back to the default.
+- `base` — base ref to diff against; empty means auto-discover (`origin/HEAD` → `main` → `master`). The `--base` flag overrides it.
+- `excludeTests` — discount test files from the count. Either the config field **or** the `--exclude-tests` flag turns it on.
+- `exclude` — glob patterns (`.gitignore` style) for paths that are **not review surface** and must not consume budget. The defaults already cover regenerated lockfiles and generated code across JS/TS, Python and Go; setting your own replaces the defaults.
+
+Configuration is resolved through the same per-tool chain as the other tools (`scopelens.json` → `pyproject.toml [tool.scopelens]` → `package.json "scopelens"` → `composer.json extra.open-harness.scopelens` → compiled defaults). See [Config sources by ecosystem](#config-sources-by-ecosystem).
+
+### lefthook integration
+
+```yaml
+pre-commit:
+  commands:
+    scopelens: { run: tools/scopelens/scopelens check --fail --no-color }
+```
+
+Exit `2` (could-not-measure) also blocks the commit, so a broken measurement is never silently treated as a pass. To bypass the gate deliberately, use `git commit --no-verify`, as with the other lenses.
 
 ---
 

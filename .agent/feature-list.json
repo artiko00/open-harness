@@ -456,6 +456,21 @@
         "[fase8·testlens] auto determinista con mapping real, --lang inválido = error, verificar contenido del test",
         "[fase9·metadatos] Versión con fuente única, README/AGENTS/ADR-018 al día, testlens.json y open-harness.json corregidos"
       ]
+    },
+    {
+      "id": "F-019",
+      "category": "functional",
+      "description": "scopelens: gate de presupuesto de archivos por PR sobre git — integración al monorepo (lefthook, manifiesto, config raíz, check-versions) y ADR-023 (git como dependencia de binario externo, ADR-002 intacto)",
+      "passes": true,
+      "steps": [
+        "[doc] ADR-023: git como dependencia de binario externo vía os/exec (--no-optional-locks + timeout), alternativa de parsear .git/ descartada, exit 2 = 'no pude medir'; extiende ADR-018 y ADR-009",
+        "[integ] lefthook pre-commit: tools/scopelens/scopelens check --fail --no-color",
+        "[integ] lefthook pre-push: test-scopelens (cd tools/scopelens && go test ./...)",
+        "[integ] open-harness.json: bloque scopelens (path tools/scopelens, version 0.1.0)",
+        "[integ] scopelens.json raíz: maxFiles 40, base autodetectada (origin/HEAD), exclude de defaults + binarios de tools",
+        "[integ] scripts/check-versions.sh: verificar scopelens (main.go vs manifiesto y docs) sin forzar la versión unificada 0.3.0",
+        "[test] scopelens compila y go test ./... pasa con 100% de cobertura"
+      ]
     }
   ]
 }

@@ -4,6 +4,7 @@
 /dupelens
 /secretlens
 /testlens
+/scopelens
 # Agregar una línea por cada tool al añadirlo al monorepo
 tools/linelens/linelens
 tools/linelens/linelens.exe
@@ -13,6 +14,8 @@ tools/secretlens/secretlens
 tools/secretlens/secretlens.exe
 tools/testlens/testlens
 tools/testlens/testlens.exe
+tools/scopelens/scopelens
+tools/scopelens/scopelens.exe
 
 # Binarios npm cross-compiled
 npm/@open_harness/secretlens-*/bin/secretlens
@@ -25,6 +28,8 @@ npm/@open_harness/linelens-*/bin/linelens
 npm/@open_harness/linelens-win32-x64/bin/linelens.exe
 npm/@open_harness/dupelens-*/bin/dupelens
 npm/@open_harness/dupelens-win32-x64/bin/dupelens.exe
+npm/@open_harness/scopelens-*/bin/scopelens
+npm/@open_harness/scopelens-win32-x64/bin/scopelens.exe
 
 # Carpeta de distribución general
 dist/

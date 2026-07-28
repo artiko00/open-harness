@@ -7,6 +7,7 @@ use (
 	./tools/_shared/tomlmin
 	./tools/dupelens
 	./tools/linelens
+	./tools/scopelens
 	./tools/secretlens
 	./tools/testlens
 )
