@@ -31,6 +31,9 @@ func run(args []string) int {
 	case "help", "--help", "-h":
 		printUsage()
 		return 0
+	case "tutorial", "--tutorial":
+		printTutorial(tieneFlag(args[1:], "--no-color"))
+		return 0
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", args[0])
 		printUsage()

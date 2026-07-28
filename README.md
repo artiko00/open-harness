@@ -27,6 +27,27 @@ Compatibility-preserving refinements: unknown config keys now print a **warning*
 
 **See [docs/UPGRADING.md](docs/UPGRADING.md) for the full upgrade guide**, including how to triage newly-surfaced findings in `secretlens`, `testlens` and `linelens`.
 
+Changelogs are per package: the suite [CHANGELOG.md](CHANGELOG.md) plus one per tool ([linelens](tools/linelens/CHANGELOG.md), [dupelens](tools/dupelens/CHANGELOG.md), [secretlens](tools/secretlens/CHANGELOG.md), [testlens](tools/testlens/CHANGELOG.md), [scopelens](tools/scopelens/CHANGELOG.md)).
+
+---
+
+## Configuration
+
+All five tools share a single, per-tool configuration model: an optional
+`<tool>.json` at the repo root, or your existing `pyproject.toml` /
+`package.json` / `composer.json`. **[docs/CONFIGURATION.md](docs/CONFIGURATION.md)**
+is the central reference — every config key with its default and description, the
+multi-ecosystem precedence chain, and per-ecosystem examples.
+
+Two shortcuts:
+
+- **`open-harness init`** (meta-package) creates all five `<tool>.json` config
+  files at the repo root in one run, delegating to each tool's own `init`. It does
+  not silently overwrite — it reports which files it created and which already
+  existed. Each tool still has its individual `<tool> init`.
+- **`<tool> --tutorial`** prints each tool's configuration guide right in the
+  terminal (keys, defaults, flags, and the relevant 0.3.0 behavior changes).
+
 ---
 
 ## linelens
@@ -45,9 +66,10 @@ linelens check --no-color    # plain output for logs
 linelens check --format json # machine-readable output (console | json)
 linelens init                # generate a default linelens.json
 linelens init --output custom.json  # write the config to a different file
+linelens --tutorial          # print the in-terminal configuration guide
 ```
 
-**Common flags** (shared by all tools): `--config <file>` (defaults to `<tool>.json`; when passed explicitly the file must exist), `--no-color`, `--format console|json`, and `--dir <path>`. Every `init` accepts `--output <file>` to choose the generated config path.
+**Common flags** (shared by all tools): `--config <file>` (defaults to `<tool>.json`; when passed explicitly the file must exist), `--no-color`, `--format console|json`, and `--dir <path>`. Every `init` accepts `--output <file>` to choose the generated config path. Every tool also has `--tutorial`, which prints a static configuration guide (each config key with its default and an example) to stdout — see [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the same content in one place.
 
 ### Configuration (`linelens.json`)
 
@@ -372,6 +394,16 @@ Or install individual tools:
 npm install --save-dev @open_harness/linelens @open_harness/dupelens \
   @open_harness/secretlens @open_harness/testlens
 ```
+
+Then scaffold every config file at once:
+
+```bash
+open-harness init   # creates linelens.json, dupelens.json, secretlens.json,
+                    # testlens.json and scopelens.json at the repo root
+```
+
+`open-harness init` never overwrites silently: it reports which files it created
+and which already existed. Each tool still has its own `<tool> init`.
 
 ### Configure everything from `package.json`
 

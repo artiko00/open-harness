@@ -31,11 +31,24 @@ func run(args []string) int {
 	case "help", "--help", "-h":
 		printUsage()
 		return 0
+	case "--tutorial", "tutorial":
+		printTutorial(hasNoColor(args[1:]))
+		return 0
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", args[0])
 		printUsage()
 		return 1
 	}
+}
+
+// hasNoColor devuelve true si "--no-color" aparece en args.
+func hasNoColor(args []string) bool {
+	for _, a := range args {
+		if a == "--no-color" {
+			return true
+		}
+	}
+	return false
 }
 
 func runInit(args []string) int {

@@ -1,0 +1,52 @@
+# Changelog
+
+All notable changes to `dupelens` are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.3.0] - 2026-07-27
+
+Part of the `fix-audit-findings` release (adversarial audit F-018). See
+[docs/UPGRADING.md](../../docs/UPGRADING.md) and
+[ADR-020](../../docs/adr-020-modulos-compartidos-y-duplicacion-estructural.md).
+
+### Added
+
+- **Renamed-clone detection.** In addition to token-for-token `exact` clones,
+  `dupelens` now detects alpha-renamed clones (same structure, different
+  identifiers) and labels them `renamed`.
+- **`--fail-on exact|renamed|all`** (default `exact`) selects which clone kinds
+  trip the `--fail` gate.
+- **`windowSize`** config key (in `default`, `0` = built-in default of 25): the
+  detection window of the rolling hash, now independent of `minTokens`.
+- **`--tutorial`** flag: prints a static configuration guide to stdout; exit `0`,
+  `--no-color` strips ANSI.
+- Unified CLI contract: `--format console|json`, `--config <path>`, `--no-color`,
+  and `--output <file>` on `init`.
+
+### Changed
+
+- **`minTokens` is now the report threshold only**; detection uses the separate
+  `windowSize`. Lowering `minTokens` to reduce noise no longer changes how blocks
+  are hashed.
+- **`dupelens.json` returns to the honest default `minTokens: 50`** (was `200`,
+  which silently hid 38 real duplicate blocks over this repo). The accepted
+  structural duplication of the per-tool CLI skeleton is now marked with explicit,
+  enumerated `skip` rules instead (see ADR-020).
+- **Strict config loading:** an unknown config key now prints a warning to stderr
+  and continues, instead of being silently dropped.
+
+### Fixed
+
+- Skipped files are now reported and can break `--fail`; duplication no longer
+  "passes green" by omission.
+- Shared path-matching, binary detection and config-chain loading were extracted
+  to `tools/_shared/*` (`pathmatch`, `langsyntax`, `configload`), removing
+  byte-for-byte duplication flagged by the audit.
+
+### BREAKING
+
+- None for the default `--fail` behavior: it still counts only `exact` clones, so
+  literal-duplication gates are unchanged. `renamed` clones are new and
+  informational unless you opt in with `--fail-on renamed|all`.

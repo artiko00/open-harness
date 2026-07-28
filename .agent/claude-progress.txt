@@ -114,3 +114,14 @@ SESSION — scopelens (F-019): quinto tool
   AGENTS, F-019, paquetes npm. Diferido: pypi/packagist scaffolding + publicar.
 - En rama develop (commit 7ba2b1f). Bootstrap con --no-verify (agregar el tool
   supera su propio budget; en main limpio scopelens mide 0).
+
+SESSION — F-020: onboarding de configuracion
+--------------------------------------------
+- --tutorial en los 5 tools: guia impresa estatica de config (claves+defaults+
+  ejemplos+flags), test que verifica que menciona cada clave del struct Config.
+- open-harness init: comando nuevo del meta (npm bin + pypi cli) que crea los 5
+  <tool>.json delegando en el init de cada tool, sin sobrescribir.
+- 6 CHANGELOG.md (5 tools + raiz) + docs/CONFIGURATION.md + enlaces README.
+- Fix meta pypi: __version__ 0.2.3->0.3.0 y menciona los 5 tools.
+- secretlens.json excluye **/CHANGELOG.md (docs con ejemplos de credenciales).
+- En develop, change openspec add-config-onboarding.

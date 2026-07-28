@@ -1,4 +1,4 @@
-"""open-harness — meta-package that pulls the 4 linters into your project.
+"""open-harness — meta-package that pulls the linters into your project.
 
 Installing this package brings in:
     - open-harness-linelens
@@ -6,7 +6,9 @@ Installing this package brings in:
     - open-harness-secretlens
     - open-harness-testlens
 
-After `pip install open-harness`, the four CLI commands (linelens, dupelens,
-secretlens, testlens) are available in your virtualenv.
+After `pip install open-harness`, those CLI commands are available in your
+virtualenv, plus the `open-harness` command whose `init` subcommand delegates
+to each tool's own init to scaffold the config files (including scopelens.json
+when the scopelens command is available).
 """
-__version__ = "0.2.3"
+__version__ = "0.3.0"
