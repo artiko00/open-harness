@@ -5,6 +5,14 @@ All notable changes to `testlens` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-07-28
+
+### Added
+
+- **`--tutorial`** flag: prints a static configuration guide to stdout — every
+  config key with its default and an example, plus the tool's flags. Exit `0`;
+  `--no-color` strips ANSI. Onboarding release (F-020).
+
 ## [0.3.0] - 2026-07-27
 
 Part of the `fix-audit-findings` release (adversarial audit F-018). See
@@ -25,8 +33,6 @@ Part of the `fix-audit-findings` release (adversarial audit F-018). See
   do not require their own test. Defaults cover `__init__.py`, `conftest.py`,
   `settings.py`, `*_pb2.py`, `*.pb.go`, `*_gen.go`, `*.g.dart`, `main.go`,
   `doc.go`, plus `migrations/` directories.
-- **`--tutorial`** flag: prints a static configuration guide to stdout; exit `0`,
-  `--no-color` strips ANSI.
 - Unified CLI contract: `--format console|json`, `--config <path>`, `--no-color`,
   and `--output <file>` on `init`.
 

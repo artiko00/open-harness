@@ -3,13 +3,13 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "open-harness-dupelens"
-version = "0.3.1"
-description = "Code duplication detector (Rabin-Karp, language-agnostic) — single native binary"
+name = "open-harness-scopelens"
+version = "0.1.0"
+description = "File length linter for any language — single native binary, zero runtime deps"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Jassen Castillo", email = "castillo.cristianj@gmail.com" }]
-keywords = ["linter", "duplication", "dry", "code-quality", "pre-commit", "ci"]
+keywords = ["linter", "code-quality", "lines", "pre-commit", "ci"]
 requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -28,7 +28,7 @@ Repository = "https://github.com/artiko00/open-harness"
 Issues = "https://github.com/artiko00/open-harness/issues"
 
 [project.scripts]
-dupelens = "open_harness_dupelens.__main__:main"
+scopelens = "open_harness_scopelens.__main__:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -38,4 +38,4 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-open_harness_dupelens = ["bin/*"]
+open_harness_scopelens = ["bin/*"]
