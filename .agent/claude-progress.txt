@@ -73,3 +73,31 @@ Pendiente:
   F-006 → dupelens (cerrado, 44/45 done; falta solo push + PR)
   F-007 → extraer helpers compartidos a tools/_shared/ (planificado)
   Acción usuario → push branch + tag + abrir PR
+
+SESSION — 2026-07-24 — F-018: fix-audit-findings (auditoría adversarial)
+-----------------------------------------------------------------------
+- Change openspec fix-audit-findings: corrige los 20 hallazgos de la auditoría
+  adversarial de los 4 tools. 133/134 tareas (1 skip justificado), bump a v0.3.0.
+- Fase 1: módulo tools/_shared/pathmatch (glob por segmento, ** a cualquier
+  profundidad, UTF-16 como texto, IsRegular/Skip/FailsGate). Los 4 tools migrados.
+- Fase 2: dejar de fallar en verde — FIFO ya no cuelga, archivos omitidos se
+  reportan (SKIPPED) y afectan el exit code, buffer de línea a 4 MB.
+- Fase 3: contrato de CLI unificado — --format json en los 4, validación de flags,
+  OK:/SUMMARY: homogéneo, diagnóstico a stderr.
+- Fase 4: config estricta — --config inexistente falla, claves desconocidas error
+  (DisallowUnknownFields), merge por campo en la cadena (ADR-018).
+- Fase 5: secretlens recall 25% → 100% (entropía Shannon, prefijos de proveedor,
+  allowlist por valor, patterns aditivos, UTF-16). ADR-021.
+- Fase 6: dupelens memoria ~100x → ~20x, clones Type-2 (exact/renamed,
+  --fail-on), módulo tools/_shared/langsyntax. ADR-012 extendido.
+- Fase 7: linelens cuenta líneas de código (no físicas) vía langsyntax + maxNesting.
+- Fase 8: testlens determinista (orden fijo, sin umbral >5), mapping real en auto,
+  verifica contenido del test, prefijo test_, soporta Dart.
+- Config: extraído tools/_shared/configload (generics) — decisión del usuario de
+  extraer en vez de esconder dups. ADR-020 (módulos compartidos + duplicación
+  estructural aceptada del esqueleto de 4 binarios standalone).
+- Fase 9: versiones sincronizadas a 0.3.0 (scripts/check-versions.sh como gate),
+  docs al día, adr-014-testlens → adr-022, F-016/F-017 registradas.
+- Fase 10: gate final verde — 8 módulos al 100% coverage, los 4 tools pasan
+  check --fail sobre el repo, lefthook pre-commit + pre-push verdes.
+- Rama fix-audit-findings, ~15 commits atómicos. Acción usuario → push + PR.

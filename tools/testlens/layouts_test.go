@@ -15,7 +15,7 @@ func TestTestExists_Colocated(t *testing.T) {
 	src := filepath.Join(dir, "foo.ts")
 	tst := filepath.Join(dir, "foo.test.ts")
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(tst, []byte(""), 0644)
+	os.WriteFile(tst, []byte("it('t',()=>{})"), 0644)
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
@@ -31,7 +31,7 @@ func TestTestExists_TestsDirSubdir(t *testing.T) {
 	tdir := filepath.Join(dir, "__tests__")
 	os.MkdirAll(tdir, 0755)
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(tdir, "foo.test.ts"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(tdir, "foo.test.ts"), []byte("it('t',()=>{})"), 0644)
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
@@ -48,7 +48,7 @@ func TestTestExists_TestsDirAlternative(t *testing.T) {
 	tdir := filepath.Join(dir, "tests")
 	os.MkdirAll(tdir, 0755)
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(tdir, "foo.spec.ts"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(tdir, "foo.spec.ts"), []byte("it('t',()=>{})"), 0644)
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
@@ -67,7 +67,7 @@ func TestTestExists_PythonTestsMirror(t *testing.T) {
 	os.MkdirAll(tstDir, 0755)
 	src := filepath.Join(srcDir, "user.py")
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(tstDir, "test_user.py"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(tstDir, "test_user.py"), []byte("def test_user(): pass"), 0644)
 
 	lang := mapLanguageExtensions()["python"]
 	cands := findTestCandidates("user.py", lang)
@@ -86,7 +86,7 @@ func TestTestExists_MavenMirror(t *testing.T) {
 	os.MkdirAll(testDir, 0755)
 	src := filepath.Join(mainDir, "Bar.java")
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(testDir, "BarTest.java"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(testDir, "BarTest.java"), []byte("class BarTest { @Test void t(){} }"), 0644)
 
 	lang := mapLanguageExtensions()["java"]
 	cands := findTestCandidates("Bar.java", lang)
@@ -138,7 +138,7 @@ func TestTestExists_CentralizedTestsRoot(t *testing.T) {
 	os.MkdirAll(tstDir, 0755)
 	src := filepath.Join(srcDir, "foo.ts")
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(tstDir, "foo.test.ts"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(tstDir, "foo.test.ts"), []byte("it('t',()=>{})"), 0644)
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
@@ -157,7 +157,7 @@ func TestTestExists_WalkUpStopsAtRoot(t *testing.T) {
 	os.MkdirAll(outsideTests, 0755)
 	src := filepath.Join(srcDir, "foo.ts")
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(outsideTests, "foo.test.ts"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(outsideTests, "foo.test.ts"), []byte("it('t',()=>{})"), 0644)
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
@@ -175,7 +175,7 @@ func TestTestExists_CentralizedTestsRoot_DeepNesting(t *testing.T) {
 	os.MkdirAll(tstDir, 0755)
 	src := filepath.Join(srcDir, "foo.ts")
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(tstDir, "foo.test.ts"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(tstDir, "foo.test.ts"), []byte("it('t',()=>{})"), 0644)
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
@@ -193,7 +193,7 @@ func TestTestExists_NoMatchWhenRelPathDiffers(t *testing.T) {
 	os.MkdirAll(wrongTstDir, 0755)
 	src := filepath.Join(srcDir, "foo.ts")
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(wrongTstDir, "foo.test.ts"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(wrongTstDir, "foo.test.ts"), []byte("it('t',()=>{})"), 0644)
 
 	lang := mapLanguageExtensions()["typescript"]
 	cands := findTestCandidates("foo.ts", lang)
@@ -209,7 +209,7 @@ func TestTestExists_MirrorIgnoredWhenPathOutsidePrefix(t *testing.T) {
 	os.WriteFile(src, []byte(""), 0644)
 	// Test file under another arbitrary dir — should NOT count.
 	os.MkdirAll(filepath.Join(dir, "tests"), 0755)
-	os.WriteFile(filepath.Join(dir, "tests", "test_user.py"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(dir, "tests", "test_user.py"), []byte("def test_user(): pass"), 0644)
 
 	lang := mapLanguageExtensions()["python"]
 	cands := findTestCandidates("user.py", lang)

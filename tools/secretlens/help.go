@@ -16,6 +16,7 @@ COMMANDS:
 CHECK OPTIONS:
   --config    path to config file    (default: secretlens.json)
   --dir       directory to scan      (default: .)
+  --format    output format          (console | json, default: console)
   --fail      exit 1 if secrets found (use in git hooks)
   --no-color  disable colored output
 

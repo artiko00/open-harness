@@ -1,9 +1,11 @@
 package main
 
 import (
-	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/artiko00/open-harness/tools/_shared/configload"
 )
 
 type Config struct {
@@ -13,7 +15,8 @@ type Config struct {
 }
 
 type DefaultConfig struct {
-	MaxLines int `json:"maxLines"`
+	MaxLines   int `json:"maxLines"`
+	MaxNesting int `json:"maxNesting"`
 }
 
 type Rule struct {
@@ -29,6 +32,8 @@ var defaultConfig = Config{
 		"node_modules", "vendor", ".git", "dist", "build",
 		"coverage", "__pycache__", "target", ".next", ".nuxt",
 		"out", ".cache",
+		// Generados: no son código escrito a mano.
+		"*.pb.go", "*_gen.go", "*.g.dart", "*-lock.json",
 	},
 }
 
@@ -42,8 +47,12 @@ func loadConfig(path string) (Config, error) {
 	}
 
 	var cfg Config
-	if err := json.Unmarshal(data, &cfg); err != nil {
-		return defaultConfig, err
+	unknown, err := configload.Strict(data, &cfg)
+	if err != nil {
+		return defaultConfig, fmt.Errorf("config %q: %w", path, err)
+	}
+	if unknown != "" {
+		fmt.Fprintf(os.Stderr, "warning: config %q: clave desconocida %q (ignorada)\n", path, unknown)
 	}
 	applyConfigDefaults(&cfg)
 	return cfg, nil
@@ -62,7 +71,8 @@ func applyConfigDefaults(cfg *Config) {
 func defaultConfigJSON() string {
 	return `{
   "default": {
-    "maxLines": 100
+    "maxLines": 100,
+    "maxNesting": 0
   },
   "rules": [
     { "pattern": "**/*.spec.*",  "maxLines": 300 },
@@ -80,7 +90,11 @@ func defaultConfigJSON() string {
     "__pycache__",
     "target",
     ".next",
-    "out"
+    "out",
+    "*.pb.go",
+    "*_gen.go",
+    "*.g.dart",
+    "*-lock.json"
   ]
 }
 `

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "open-harness-linelens"
-version = "0.2.1"
+version = "0.3.0"
 description = "File length linter for any language — single native binary, zero runtime deps"
 readme = "README.md"
 license = { text = "MIT" }

@@ -69,13 +69,41 @@
       "epic": true,
       "branch": "epic/testlens",
       "subtasks": [
-        { "id": "F-006.1", "description": "Implementar testlens: estructura base y mapeo de extensiones por lenguaje", "status": "done" },
-        { "id": "F-006.2", "description": "Implementar detección de archivos sin test (matching por nombre y ubicación)", "status": "done" },
-        { "id": "F-006.3", "description": "Implementar output CLI: lista legible + exit codes (0=OK, 1=violations)", "status": "done" },
-        { "id": "F-006.4", "description": "Agregar tests unitarios para matcher de extensiones y detección de coverage", "status": "done" },
-        { "id": "F-006.5", "description": "Verificar linelens check --fail pasa sobre el código de testlens", "status": "done" },
-        { "id": "F-006.6", "description": "Agregar testlens al go.work y actualizar open-harness.json", "status": "done" },
-        { "id": "F-006.7", "description": "Documentar uso en README.md (ejemplos, flags, lenguajes soportados)", "status": "done" }
+        {
+          "id": "F-006.1",
+          "description": "Implementar testlens: estructura base y mapeo de extensiones por lenguaje",
+          "status": "done"
+        },
+        {
+          "id": "F-006.2",
+          "description": "Implementar detección de archivos sin test (matching por nombre y ubicación)",
+          "status": "done"
+        },
+        {
+          "id": "F-006.3",
+          "description": "Implementar output CLI: lista legible + exit codes (0=OK, 1=violations)",
+          "status": "done"
+        },
+        {
+          "id": "F-006.4",
+          "description": "Agregar tests unitarios para matcher de extensiones y detección de coverage",
+          "status": "done"
+        },
+        {
+          "id": "F-006.5",
+          "description": "Verificar linelens check --fail pasa sobre el código de testlens",
+          "status": "done"
+        },
+        {
+          "id": "F-006.6",
+          "description": "Agregar testlens al go.work y actualizar open-harness.json",
+          "status": "done"
+        },
+        {
+          "id": "F-006.7",
+          "description": "Documentar uso en README.md (ejemplos, flags, lenguajes soportados)",
+          "status": "done"
+        }
       ],
       "steps": [
         "Leer docs/adr/adr-001-testlens.md para especificación",
@@ -357,6 +385,38 @@
       ]
     },
     {
+      "id": "F-016",
+      "category": "functional",
+      "description": "testlens: walk-up search en ancestros para testDirs — encuentra tests centralizados que espejean la estructura del source (backend/src/services/foo.ts ↔ backend/src/__tests__/services/foo.test.ts), no solo el __tests__/ adyacente. No-breaking: SUMA candidatos, nunca quita matches; el walk se limita a cfg.root y exige rel-path exacto para evitar falsos positivos cross-módulo.",
+      "passes": true,
+      "steps": [
+        "[test] TestTestExists_AncestorTestsDir: src/services/foo.ts + src/__tests__/services/foo.test.ts → match (walk-up hasta ancestro con __tests__/)",
+        "[test] TestTestExists_AncestorRelPathMismatch: __tests__/utils/foo.test.ts NO matchea src/services/foo.ts → sigue violación",
+        "[test] TestTestExists_WalkStopsAtRoot: el walk-up no sale de cfg.root",
+        "[impl] testSearchDirs(sourcePath, root, lang): por cada testDir recorre ancestores del source hasta cfg.root y prueba <ancestor>/<testDir>/<rel-path>/<candidate>",
+        "[impl] testExists pasa cfg.root como límite del walk-up",
+        "[refactor] Partir layouts.go en layouts.go (testSearchDirs + ancestorTestDirs + applyMirror) y layouts_helpers.go (splitSegments, indexOfSubslice, equalSegments), ambos ≤100 líneas",
+        "[test] 100% statement coverage mantenido"
+      ]
+    },
+    {
+      "id": "F-017",
+      "category": "functional",
+      "description": "testlens: soporte de Dart/Flutter como 10º lenguaje — cubre el layout canónico de proyectos Flutter (lib/services/foo.dart ↔ test/services/foo_test.dart mirror lib→test, y foo.dart ↔ foo_test.dart co-ubicado). Reusa la infra de layouts de F-015/F-016; las otras 3 herramientas ya funcionan en Flutter por ser agnósticas al lenguaje.",
+      "passes": true,
+      "steps": [
+        "[test] TestLanguage_DartRegistered: 'dart' registrado con extensions .dart y testSuffixes _test",
+        "[test] TestSupportedLanguages_IncludesDart",
+        "[test] TestTestExists_DartMirror: lib/services/foo.dart + test/services/foo_test.dart → match (mirror lib→test)",
+        "[test] TestTestExists_DartColocated: foo.dart + foo_test.dart mismo dir → match",
+        "[test] TestTestExists_DartOrphan: orphan.dart sin test → violación",
+        "[impl] language.go: entrada 'dart' (extensions .dart, testSuffixes _test, testDirs test, mirrors lib↔test)",
+        "[impl] supportedLanguages() incluye 'dart'",
+        "[release] Bump testlens 0.2.3 → 0.2.4",
+        "[test] 100% statement coverage mantenido"
+      ]
+    },
+    {
       "id": "F-009",
       "category": "functional",
       "description": "testlens: modo package para Go — un paquete (directorio) con al menos un *_test.go cuenta como cubierto, sin importar cuántos archivos fuente tenga",
@@ -376,6 +436,25 @@
         "[integ] Agregar testlens check --lang go --dir tools/ --fail a lefthook.yml pre-push",
         "[integ] Verificar que los 4 hooks pre-push pasan",
         "[doc] ADR-014: package-mode vs file-mode y criterio para cuándo un lenguaje es packageBased"
+      ]
+    },
+    {
+      "id": "F-018",
+      "category": "quality",
+      "description": "auditoría adversarial: corregir los 18 defectos de linelens/dupelens/secretlens/testlens (gates que fallan en verde, motor de paths duplicado, recall de secretlens, memoria de dupelens)",
+      "passes": false,
+      "epic": true,
+      "change": "openspec/changes/fix-audit-findings",
+      "steps": [
+        "[fase1·pathmatch] Extraer matchGlob/isExcluded/isBinary* a tools/_shared/pathmatch y migrar los 4 tools",
+        "[fase2·traversal] Solo archivos regulares (FIFO), líneas >1MB y errores de lectura reportados como SKIPPED",
+        "[fase3·cli] --format json en los 4, validar --format y --dir, unificar reporte y stderr",
+        "[fase4·config] --config inexistente = error, rechazar claves desconocidas, resolver ADR-018",
+        "[fase5·secretlens] KEY=VALUE sin comillas + entropía + prefijos de proveedor + allowlist por match + merge de patterns",
+        "[fase6·dupelens] Eliminar Fingerprint.Window, clones Type-2 (exact/renamed), separar windowSize de minTokens",
+        "[fase7·linelens] Contar líneas de código en vez de líneas de archivo",
+        "[fase8·testlens] auto determinista con mapping real, --lang inválido = error, verificar contenido del test",
+        "[fase9·metadatos] Versión con fuente única, README/AGENTS/ADR-018 al día, testlens.json y open-harness.json corregidos"
       ]
     }
   ]

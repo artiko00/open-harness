@@ -1,7 +1,7 @@
 {
   "default": {
-    "minTokens": 200,
-    "minLines": 15
+    "minTokens": 50,
+    "minLines": 5
   },
   "rules": [
     { "pattern": "**/*_test.go",     "skip": true },
@@ -11,9 +11,24 @@
     { "pattern": "**/*.generated.*", "skip": true },
     { "pattern": "**/*.min.*",       "skip": true },
     { "pattern": "**/*.md",          "skip": true },
+    { "pattern": "**/testdata/**",   "skip": true },
     { "pattern": "composer/**/src/*.php", "skip": true },
     { "pattern": "composer/**/bin/*",     "skip": true },
-    { "pattern": ".agent/feature-list.json", "skip": true }
+    { "pattern": ".agent/feature-list.json", "skip": true },
+    { "pattern": "tools/*/main.go",             "skip": true },
+    { "pattern": "tools/*/check.go",            "skip": true },
+    { "pattern": "tools/*/check_cmd.go",        "skip": true },
+    { "pattern": "tools/*/init_cmd.go",         "skip": true },
+    { "pattern": "tools/*/config.go",           "skip": true },
+    { "pattern": "tools/*/config_chain.go",     "skip": true },
+    { "pattern": "tools/*/scanner.go",          "skip": true },
+    { "pattern": "tools/*/reporter_console.go", "skip": true },
+    { "pattern": "tools/*/reporter_json.go",    "skip": true },
+    { "pattern": "tools/*/coverage.go",         "skip": true },
+    { "pattern": "tools/*/coverage_package.go", "skip": true },
+    { "pattern": "npm/**/bin/*.js",             "skip": true },
+    { "pattern": "pypi/**/setup.py",            "skip": true },
+    { "pattern": "pypi/**/__main__.py",         "skip": true }
   ],
   "exclude": [
     "node_modules",

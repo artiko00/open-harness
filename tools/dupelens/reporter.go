@@ -1,16 +1,22 @@
 package main
 
-import "io"
+import (
+	"io"
+
+	"github.com/artiko00/open-harness/tools/_shared/pathmatch"
+)
 
 // ReportOpts agrupa todas las opciones de salida del reporter.
 // Format: "console" (default) o "json". NoColor desactiva ANSI.
 // Snippet: callback opcional que devuelve un fragmento de N líneas
 // formateado para mostrar contexto. Si nil, no se imprimen snippets.
+// Skips: archivos no analizados, con su motivo.
 type ReportOpts struct {
 	Format       string
 	NoColor      bool
 	ScannedCount int
 	Snippet      func(file string, startLine, count int) string
+	Skips        []pathmatch.Skip
 }
 
 // report despacha al backend correspondiente según opts.Format.
@@ -32,8 +38,33 @@ const (
 	colorGray  = "\033[90m"
 )
 
-func boldOpt(no bool) string  { if no { return "" }; return colorBold }
-func redOpt(no bool) string   { if no { return "" }; return colorRed }
-func greenOpt(no bool) string { if no { return "" }; return colorGreen }
-func grayOpt(no bool) string  { if no { return "" }; return colorGray }
-func resetOpt(no bool) string { if no { return "" }; return colorReset }
+func boldOpt(no bool) string {
+	if no {
+		return ""
+	}
+	return colorBold
+}
+func redOpt(no bool) string {
+	if no {
+		return ""
+	}
+	return colorRed
+}
+func greenOpt(no bool) string {
+	if no {
+		return ""
+	}
+	return colorGreen
+}
+func grayOpt(no bool) string {
+	if no {
+		return ""
+	}
+	return colorGray
+}
+func resetOpt(no bool) string {
+	if no {
+		return ""
+	}
+	return colorReset
+}

@@ -3,19 +3,19 @@ package main
 import "testing"
 
 func TestReport_Empty(t *testing.T) {
-	if count := report([]Finding{}, true); count != 0 {
+	if count := report([]Finding{}, nil, true); count != 0 {
 		t.Errorf("expected 0, got %d", count)
 	}
 }
 
 func TestReport_NoFindingsNoColor(t *testing.T) {
-	if count := report([]Finding{}, true); count != 0 {
+	if count := report([]Finding{}, nil, true); count != 0 {
 		t.Errorf("expected 0, got %d", count)
 	}
 }
 
 func TestReport_NoFindingsColor(t *testing.T) {
-	if count := report([]Finding{}, false); count != 0 {
+	if count := report([]Finding{}, nil, false); count != 0 {
 		t.Errorf("expected 0, got %d", count)
 	}
 }
@@ -24,7 +24,7 @@ func TestReport_FindingsNoColor(t *testing.T) {
 	findings := []Finding{
 		{RelPath: "a.go", Line: 1, Content: "secret=abc", RuleName: "Generic", Severity: "high"},
 	}
-	if count := report(findings, true); count != 1 {
+	if count := report(findings, nil, true); count != 1 {
 		t.Errorf("expected 1, got %d", count)
 	}
 }
@@ -36,7 +36,7 @@ func TestReport_AllSeveritiesColor(t *testing.T) {
 		{RelPath: "a.go", Line: 3, Content: "x", RuleName: "r3", Severity: "medium"},
 		{RelPath: "a.go", Line: 4, Content: "x", RuleName: "r4", Severity: "low"},
 	}
-	if count := report(findings, false); count != 4 {
+	if count := report(findings, nil, false); count != 4 {
 		t.Errorf("expected 4, got %d", count)
 	}
 }
@@ -50,7 +50,7 @@ func TestReport_SortingByPriority(t *testing.T) {
 		// same severity, different RelPaths (covers RelPath comparison branch)
 		{RelPath: "a.go", Line: 9, Content: "x", RuleName: "r5", Severity: "medium"},
 	}
-	count := report(findings, true)
+	count := report(findings, nil, true)
 	if count != 5 {
 		t.Errorf("expected 5, got %d", count)
 	}

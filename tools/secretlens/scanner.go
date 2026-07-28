@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/artiko00/open-harness/tools/_shared/pathmatch"
 )
 
 type Finding struct {
@@ -19,13 +21,15 @@ type compiledRule struct {
 	re   *regexp.Regexp
 }
 
-func scan(root string, cfg Config) ([]Finding, error) {
+func scan(root string, cfg Config) ([]Finding, []pathmatch.Skip, int, error) {
 	compiled, err := compilePatterns(cfg.Patterns)
 	if err != nil {
-		return nil, err
+		return nil, nil, 0, err
 	}
 
 	var findings []Finding
+	var skips []pathmatch.Skip
+	scanned := 0
 
 	err = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -38,25 +42,39 @@ func scan(root string, cfg Config) ([]Finding, error) {
 		relPath, _ := filepath.Rel(root, path)
 		relPath = filepath.ToSlash(relPath)
 
-		if isExcluded(relPath, cfg.Exclude) {
+		if pathmatch.IsExcluded(relPath, cfg.Exclude) {
 			if d.IsDir() {
 				return filepath.SkipDir
 			}
 			return nil
 		}
 
-		if d.IsDir() || isBinaryPath(path) || isBinaryContent(path) {
+		if d.IsDir() {
 			return nil
 		}
 
-		ff, err := scanFile(path, relPath, compiled, cfg.Allowlist)
-		if err != nil {
+		// El chequeo de archivo regular va antes de mirar el contenido: abrir un
+		// FIFO para detectar binarios colgaría el proceso.
+		if !pathmatch.IsRegular(d) {
+			skips = append(skips, pathmatch.Skip{Path: relPath, Reason: pathmatch.ReasonNotRegular})
 			return nil
 		}
 
+		if pathmatch.IsBinaryPath(path) || pathmatch.IsBinaryContent(path) {
+			skips = append(skips, pathmatch.Skip{Path: relPath, Reason: pathmatch.ReasonBinary})
+			return nil
+		}
+
+		ff, reason := scanFile(path, relPath, compiled, cfg)
+		if reason != "" {
+			skips = append(skips, pathmatch.Skip{Path: relPath, Reason: reason})
+			return nil
+		}
+
+		scanned++
 		findings = append(findings, ff...)
 		return nil
 	})
 
-	return findings, err
+	return findings, skips, scanned, err
 }

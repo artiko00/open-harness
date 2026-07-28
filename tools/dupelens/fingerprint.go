@@ -1,13 +1,16 @@
 package main
 
-import "sync"
-
-// Fingerprint representa una ventana de tokens con su hash Rabin-Karp.
+// Fingerprint identifica una ventana de tokens por su hash Rabin-Karp y por su
+// posición (FileID + StartIdx) en el slice de tokens del archivo. NO copia los
+// tokens: la verificación literal se hace por índice contra el slice del
+// archivo (ver sameTokens), de modo que la memoria es proporcional al fuente y
+// no a N*windowSize.
 type Fingerprint struct {
 	Hash      uint64
+	FileID    int
+	StartIdx  int
 	StartLine int
 	EndLine   int
-	Window    []string
 }
 
 // rkBase y rkMod son la base y módulo del rolling hash.
@@ -20,13 +23,8 @@ const (
 
 // fingerprint genera todas las ventanas de tamaño windowSize sobre los tokens
 // con su hash Rabin-Karp asociado. Vacío si tokens<windowSize o windowSize≤0.
-//
-// Algoritmo:
-//  1. Pre-hashear cada token a uint64 con hashToken
-//  2. Calcular hash inicial de la primera ventana (suma con base/mod)
-//  3. Deslizar: h = (h - tokens[i-1]*pow)*base + tokens[i+w-1]
-//  4. Emitir Fingerprint con hash, líneas y copia del window
-func fingerprint(tokens []Token, windowSize int) []Fingerprint {
+// fileID identifica el archivo dueño de estos tokens.
+func fingerprint(tokens []Token, fileID, windowSize int) []Fingerprint {
 	if windowSize <= 0 || len(tokens) < windowSize {
 		return nil
 	}
@@ -49,48 +47,37 @@ func fingerprint(tokens []Token, windowSize int) []Fingerprint {
 	for i := 0; i < windowSize; i++ {
 		h = (h*rkBase + hashes[i]) % rkMod
 	}
-	out = append(out, makeFP(tokens, 0, windowSize, h))
+	out = append(out, makeFP(tokens, fileID, 0, windowSize, h))
 
-	// Sliding window
+	// Sliding window: restar saliente (sumando rkMod evita underflow) y sumar entrante.
 	for i := 1; i <= len(tokens)-windowSize; i++ {
-		// Restar el token saliente (multiplicado por pow para reposicionarlo)
-		// Sumar rkMod previo a restar evita underflow en uint64.
 		h = (h + rkMod - (hashes[i-1]*pow)%rkMod) % rkMod
 		h = (h*rkBase + hashes[i+windowSize-1]) % rkMod
-		out = append(out, makeFP(tokens, i, windowSize, h))
+		out = append(out, makeFP(tokens, fileID, i, windowSize, h))
 	}
 
 	return out
 }
 
-// makeFP construye un Fingerprint copiando los token values y rangos de líneas.
-func makeFP(tokens []Token, start, size int, h uint64) Fingerprint {
-	w := make([]string, size)
-	for j := 0; j < size; j++ {
-		w[j] = tokens[start+j].Value
-	}
+// makeFP construye un Fingerprint con su posición y rango de líneas (sin copiar tokens).
+func makeFP(tokens []Token, fileID, start, size int, h uint64) Fingerprint {
 	return Fingerprint{
 		Hash:      h,
+		FileID:    fileID,
+		StartIdx:  start,
 		StartLine: tokens[start].Line,
 		EndLine:   tokens[start+size-1].Line,
-		Window:    w,
 	}
 }
 
-// tokenHashCache memoiza hashToken — los mismos identifiers aparecen
-// repetidamente en codebases reales, evitar re-hashear ahorra trabajo.
-var tokenHashCache sync.Map
-
 // hashToken aplica un hash determinístico a un token individual.
-// Polinomial sobre runes con base/mod del Rabin-Karp, con cache thread-safe.
+// Polinomial sobre runes con base/mod del Rabin-Karp. Pura y sin estado: no
+// memoiza para mantener la memoria proporcional al fuente (una caché global
+// crecería sin cota con identificadores únicos, rompiendo esa garantía).
 func hashToken(token string) uint64 {
-	if v, ok := tokenHashCache.Load(token); ok {
-		return v.(uint64)
-	}
 	var h uint64
 	for _, r := range token {
 		h = (h*rkBase + uint64(r)) % rkMod
 	}
-	tokenHashCache.Store(token, h)
 	return h
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"strings"
 	"unicode"
+
+	"github.com/artiko00/open-harness/tools/_shared/langsyntax"
 )
 
 // Token representa una unidad léxica extraída del código fuente.
@@ -16,10 +18,11 @@ type Token struct {
 // Es language-agnostic — suficiente para detectar duplicados estructurales
 // sin parsear gramática específica de cada lenguaje.
 //
-// Pre-procesa con stripCommentsAndStrings para descartar contenido literal
-// y comentarios, que generan ruido (false positives) en duplicate detection.
-func tokenize(src string) []Token {
-	src = stripCommentsAndStrings(src)
+// Recibe la extensión del archivo para que langsyntax.StripComments decida la
+// sintaxis de comentarios (p. ej. '#' es comentario en .py pero no en .rs) y
+// descarte comentarios y contenido de strings, que generan ruido.
+func tokenize(src, ext string) []Token {
+	src = langsyntax.StripComments(src, ext)
 	var tokens []Token
 	line := 1
 	var current strings.Builder

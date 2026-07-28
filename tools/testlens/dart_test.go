@@ -38,7 +38,8 @@ func TestDart_TestMirrorLibToTest(t *testing.T) {
 	os.MkdirAll(tstDir, 0755)
 	src := filepath.Join(srcDir, "foo.dart")
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(tstDir, "foo_test.dart"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(tstDir, "foo_test.dart"),
+		[]byte("void main(){ test('x', (){}); }"), 0644)
 
 	lang := mapLanguageExtensions()["dart"]
 	cands := findTestCandidates("foo.dart", lang)
@@ -52,7 +53,8 @@ func TestDart_Colocated(t *testing.T) {
 	dir := t.TempDir()
 	src := filepath.Join(dir, "foo.dart")
 	os.WriteFile(src, []byte(""), 0644)
-	os.WriteFile(filepath.Join(dir, "foo_test.dart"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(dir, "foo_test.dart"),
+		[]byte("void main(){ test('x', (){}); }"), 0644)
 
 	lang := mapLanguageExtensions()["dart"]
 	cands := findTestCandidates("foo.dart", lang)

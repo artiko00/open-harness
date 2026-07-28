@@ -19,6 +19,7 @@ CHECK OPTIONS:
   --dir         directory to scan         (default: .)
   --format      output format             (default: console; "json" available)
   --fail        exit 1 if duplicates      (use in git hooks)
+  --fail-on     kinds that break --fail   (default: exact; "renamed"|"all")
   --no-color    disable colored output
   --verbose     print scan timings to stderr
 

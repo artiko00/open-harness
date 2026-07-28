@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const version = "0.2.1"
+const version = "0.3.0"
 
 var osExit = os.Exit
 
@@ -36,36 +36,6 @@ func run(args []string) int {
 		printUsage()
 		return 1
 	}
-}
-
-func runCheck(args []string) int {
-	fs := flag.NewFlagSet("check", flag.ContinueOnError)
-	configPath := fs.String("config", "linelens.json", "path to config file")
-	maxLines := fs.Int("max", 0, "override max lines for all files")
-	failOnViolation := fs.Bool("fail", false, "exit with code 1 if violations found")
-	noColor := fs.Bool("no-color", false, "disable colored output")
-	root := fs.String("dir", ".", "directory to scan")
-	if err := fs.Parse(args); err != nil {
-		return 1
-	}
-
-	cfg, err := loadConfig(*configPath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error loading config: %v\n", err)
-		return 1
-	}
-
-	results, err := scan(*root, cfg, *maxLines)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "scan error: %v\n", err)
-		return 1
-	}
-
-	violations := report(results, *noColor)
-	if *failOnViolation && violations > 0 {
-		return 1
-	}
-	return 0
 }
 
 func runInit(args []string) int {

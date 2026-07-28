@@ -1,4 +1,9 @@
 # ─── Binarios compilados de tools ───────────────────────────────────────────
+# Binarios sueltos en la raíz (go build ./tools/<t> desde la raíz deja el binario acá)
+/linelens
+/dupelens
+/secretlens
+/testlens
 # Agregar una línea por cada tool al añadirlo al monorepo
 tools/linelens/linelens
 tools/linelens/linelens.exe

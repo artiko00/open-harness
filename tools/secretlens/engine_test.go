@@ -65,9 +65,9 @@ func TestIsAllowed_NoMatch(t *testing.T) {
 
 func TestScanFile_Error(t *testing.T) {
 	compiled, _ := compilePatterns(defaultPatterns())
-	_, err := scanFile("/nonexistent/file.go", "file.go", compiled, nil)
-	if err == nil {
-		t.Error("expected error for nonexistent file")
+	_, reason := scanFile("/nonexistent/file.go", "file.go", compiled, Config{})
+	if reason == "" {
+		t.Error("expected skip reason for nonexistent file")
 	}
 }
 
@@ -77,9 +77,9 @@ func TestScanFile_FindsSecrets(t *testing.T) {
 	os.WriteFile(path, []byte(`const key = "AKIAQNB7Q7AIIVSMBGPF"`), 0644)
 
 	compiled, _ := compilePatterns(defaultPatterns())
-	findings, err := scanFile(path, "config.go", compiled, []string{})
-	if err != nil {
-		t.Fatal(err)
+	findings, reason := scanFile(path, "config.go", compiled, Config{})
+	if reason != "" {
+		t.Fatalf("unexpected skip reason %q", reason)
 	}
 	if len(findings) == 0 {
 		t.Error("expected findings")
@@ -92,9 +92,9 @@ func TestScanFile_AllowlistFilters(t *testing.T) {
 	os.WriteFile(path, []byte(`KEY="your_key_here"`), 0644)
 
 	compiled, _ := compilePatterns(defaultPatterns())
-	findings, err := scanFile(path, "example.env", compiled, []string{"your_key_here"})
-	if err != nil {
-		t.Fatal(err)
+	findings, reason := scanFile(path, "example.env", compiled, Config{Allowlist: []string{"your_key_here"}})
+	if reason != "" {
+		t.Fatalf("unexpected skip reason %q", reason)
 	}
 	if len(findings) != 0 {
 		t.Errorf("expected 0 findings, got %d", len(findings))

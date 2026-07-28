@@ -3,19 +3,38 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/artiko00/open-harness/tools/_shared/pathmatch"
 )
 
-// scan recorre el árbol de archivos, tokeniza, calcula fingerprints,
-// y retorna los matches encontrados + cuenta de archivos escaneados.
-// Usa un único windowSize global — fingerprints con ventanas distintas
-// no son comparables entre archivos.
-func scan(root string, cfg Config, minOverride int) ([]Match, int, error) {
-	perFile := make(map[string][]Fingerprint)
-	scanned := 0
-	windowSize := cfg.Default.MinTokens
-	if minOverride > 0 {
-		windowSize = minOverride
+// defaultWindow es el tamaño de ventana de detección cuando la config no lo fija.
+// Independiente del umbral de reporte (minTokens): granularidad estable y barata.
+const defaultWindow = 25
+
+// deriveWindow resuelve el tamaño de ventana: el configurado, o defaultWindow.
+func deriveWindow(configured int) int {
+	if configured <= 0 {
+		return defaultWindow
 	}
+	return configured
+}
+
+// scan recorre el árbol de archivos, tokeniza los de código (según
+// pathmatch.CodeExtensions), calcula fingerprints crudos y normalizados, y
+// retorna los matches, la cuenta de escaneados y los omitidos. windowSize
+// (detección) y minTokens (reporte) son independientes.
+func scan(root string, cfg Config, minOverride int) ([]Match, int, []pathmatch.Skip, error) {
+	var files []fileData
+	var rawFps, normFps []Fingerprint
+	var skips []pathmatch.Skip
+	scanned := 0
+	minTokens := cfg.Default.MinTokens
+	if minOverride > 0 {
+		minTokens = minOverride
+	}
+	windowSize := deriveWindow(cfg.Default.WindowSize)
+	codeExts := pathmatch.CodeExtensions()
 
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -27,7 +46,7 @@ func scan(root string, cfg Config, minOverride int) ([]Match, int, error) {
 		relPath, _ := filepath.Rel(root, path)
 		relPath = filepath.ToSlash(relPath)
 
-		if isExcluded(relPath, cfg.Exclude) {
+		if pathmatch.IsExcluded(relPath, cfg.Exclude) {
 			if d.IsDir() {
 				return filepath.SkipDir
 			}
@@ -36,29 +55,34 @@ func scan(root string, cfg Config, minOverride int) ([]Match, int, error) {
 		if d.IsDir() {
 			return nil
 		}
-		if isBinaryPath(path) || isBinaryContent(path) {
+		if !pathmatch.IsRegular(d) {
+			skips = append(skips, pathmatch.Skip{Path: relPath, Reason: pathmatch.ReasonNotRegular})
 			return nil
 		}
-		rule := ruleForFile(relPath, cfg.Rules)
-		if rule != nil && rule.Skip {
+		if pathmatch.IsBinaryPath(path) || pathmatch.IsBinaryContent(path) {
+			skips = append(skips, pathmatch.Skip{Path: relPath, Reason: pathmatch.ReasonBinary})
+			return nil
+		}
+		if rule := ruleForFile(relPath, cfg.Rules); rule != nil && rule.Skip {
+			return nil
+		}
+		// Datos, fixtures y lockfiles no son código: no compiten en la detección.
+		if !codeExts[strings.ToLower(filepath.Ext(relPath))] {
 			return nil
 		}
 
 		data, readErr := os.ReadFile(path)
 		if readErr != nil {
+			skips = append(skips, pathmatch.Skip{Path: relPath, Reason: pathmatch.ReasonReadError})
 			return nil
 		}
 		scanned++
-		tokens := tokenize(string(data))
-		fps := fingerprint(tokens, windowSize)
-		if len(fps) > 0 {
-			perFile[relPath] = fps
-		}
+		addFile(&files, &rawFps, &normFps, relPath, string(data), windowSize)
 		return nil
 	})
 
 	if err != nil {
-		return nil, scanned, err
+		return nil, scanned, skips, err
 	}
-	return findDuplicates(perFile, windowSize, cfg.Default.MinLines), scanned, nil
+	return findDuplicates(files, rawFps, normFps, windowSize, cfg.Default.MinLines, minTokens), scanned, skips, nil
 }

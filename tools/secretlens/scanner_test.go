@@ -23,7 +23,7 @@ func TestScan_DetectsAWSKey(t *testing.T) {
 package main
 const key = "AKIAQNB7Q7AIIVSMBGPF"
 `)
-	findings, err := scan(dir, defaultConfig)
+	findings, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func TestScan_DetectsGenericSecret(t *testing.T) {
 	writeTestFile(t, dir, "app.py", `
 DB_PASSWORD = "supersecretpassword123"
 `)
-	findings, err := scan(dir, defaultConfig)
+	findings, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func TestScan_AllowlistSkipsPlaceholders(t *testing.T) {
 API_KEY="your_key_here"
 SECRET="changeme"
 `)
-	findings, err := scan(dir, defaultConfig)
+	findings, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestScan_SkipsExcludedDirs(t *testing.T) {
 	writeTestFile(t, dir, "node_modules/lib/config.js", `
 const token = "ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJ"
 `)
-	findings, err := scan(dir, defaultConfig)
+	findings, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestScan_DetectsPEMKey(t *testing.T) {
 MIIEowIBAAKCAQEA1234...
 -----END RSA PRIVATE KEY-----
 `)
-	findings, err := scan(dir, defaultConfig)
+	findings, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +102,7 @@ func TestScan_DetectsGitHubToken(t *testing.T) {
 env:
   TOKEN: ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij
 `)
-	findings, err := scan(dir, defaultConfig)
+	findings, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +122,7 @@ func main() {
 	fmt.Println("hello world")
 }
 `)
-	findings, err := scan(dir, defaultConfig)
+	findings, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +132,7 @@ func main() {
 }
 
 func TestScan_RootNotExist(t *testing.T) {
-	_, err := scan("/nonexistent/path/abc123", defaultConfig)
+	_, _, _, err := scan("/nonexistent/path/abc123", defaultConfig)
 	if err == nil {
 		t.Error("expected error for nonexistent root")
 	}
@@ -145,7 +145,7 @@ func TestScan_InvalidPatterns(t *testing.T) {
 		Allowlist: []string{},
 		Exclude:   []string{},
 	}
-	_, err := scan(dir, badCfg)
+	_, _, _, err := scan(dir, badCfg)
 	if err == nil {
 		t.Error("expected error for invalid regex pattern")
 	}
@@ -156,7 +156,7 @@ func TestScan_SkipsBinaryPath(t *testing.T) {
 	writeTestFile(t, dir, "image.jpg", "not really a jpg")
 	writeTestFile(t, dir, "clean.go", "package main\n")
 
-	findings, err := scan(dir, defaultConfig)
+	findings, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +172,7 @@ func TestScan_SkipsBinaryContent(t *testing.T) {
 	writeTestFile(t, dir, "disguised.go", string([]byte{0x00, 'h', 'i'}))
 	writeTestFile(t, dir, "clean.go", "package main\n")
 
-	findings, err := scan(dir, defaultConfig)
+	findings, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,7 +193,7 @@ func TestScan_SkipsExcludedFile(t *testing.T) {
 		Allowlist: defaultConfig.Allowlist,
 		Exclude:   []string{"*.lock"},
 	}
-	findings, err := scan(dir, cfg)
+	findings, _, _, err := scan(dir, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,7 +212,7 @@ func TestScan_ErrorInSubdir(t *testing.T) {
 	os.Chmod(subdir, 0000)
 	defer os.Chmod(subdir, 0755)
 
-	_, err := scan(dir, defaultConfig)
+	_, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,7 +226,7 @@ func TestScan_ScanFileError(t *testing.T) {
 	os.Chmod(locked, 0000)
 	defer os.Chmod(locked, 0644)
 
-	_, err := scan(dir, defaultConfig)
+	_, _, _, err := scan(dir, defaultConfig)
 	if err != nil {
 		t.Fatal(err)
 	}

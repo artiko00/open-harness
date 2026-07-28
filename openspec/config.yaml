@@ -2,37 +2,41 @@
 # Spec-Driven Development entry point for AI agents working on this repo.
 # See https://siemprelisto.cl/tecnologias/openspec/15-llm-mejores-practicas/
 
-context:
-  project: open-harness
-  description: >
-    Monorepo of 4 zero-dependency Go quality linters (linelens, dupelens,
-    secretlens, testlens) distributed as a single native binary per tool.
-    Each tool is also published to npm as @open_harness/<tool> with native
-    binary wheels per platform (linux-x64, darwin-arm64, darwin-x64,
-    win32-x64). Roadmap targets PyPI (pip) and Packagist (composer)
-    distribution.
-  stack:
+context: |
+  Project: open-harness
+
+  Monorepo of 4 zero-dependency Go quality linters (linelens, dupelens,
+  secretlens, testlens) distributed as a single native binary per tool.
+  Each tool is also published to npm as @open_harness/<tool> with native
+  binary wheels per platform (linux-x64, darwin-arm64, darwin-x64,
+  win32-x64). Roadmap targets PyPI (pip) and Packagist (composer)
+  distribution.
+
+  Stack:
     language: Go 1.22+
     runtime: native binaries (single static executable per tool)
     workspace: Go workspace (go.work)
     testing: Go stdlib testing package
-    dependencies: stdlib only (zero external runtime deps — ADR-002)
+    dependencies: stdlib only (zero external runtime deps - ADR-002)
     hooks: lefthook (pre-commit + pre-push)
     config: JSON files per tool + optional package.json key (ADR-014)
-    distribution_channels:
-      - npm (live): "@open_harness/{linelens, dupelens, secretlens, testlens, open-harness}"
-      - PyPI (planned, F-012)
-      - Packagist (planned, F-013)
-      - GitHub Releases (planned, F-011)
-  tools_versions:
-    linelens: 0.1.3
-    dupelens: 0.1.3
-    secretlens: 0.1.2
-    testlens: 0.1.2
-    open-harness-meta: 0.1.0
-  conventions:
+
+  Distribution channels:
+    - npm (live): @open_harness/{linelens, dupelens, secretlens, testlens, open-harness}
+    - PyPI (planned, F-012)
+    - Packagist (planned, F-013)
+    - GitHub Releases (planned, F-011)
+
+  Tool versions (source of truth: const version in tools/<tool>/main.go):
+    linelens: 0.2.1
+    dupelens: 0.2.1
+    secretlens: 0.2.1
+    testlens: 0.2.5
+    open-harness-meta: 0.2.5
+
+  Conventions:
     - All files MUST stay under 100 lines (linelens.json enforces; tests up to 300)
-    - All new code MUST follow TDD: red → green → refactor (ADR-013)
+    - All new code MUST follow TDD - red, green, refactor (ADR-013)
     - Tools MUST keep 100% statement coverage (ADR-011)
     - main.go MUST use osExit variable + run([]string) int pattern + flag.ContinueOnError
     - Errors MUST wrap with fmt.Errorf("context: %w", err)
@@ -60,7 +64,7 @@ rules:
     - SHOULD include a sequence or component diagram in mermaid when control flow is non-trivial
     - MUST NOT design for hypothetical future requirements (KISS / YAGNI)
   tasks:
-    - MUST be ordered: tests first (red) → implementation (green) → refactor → docs
+    - 'MUST be ordered: tests first (red), implementation (green), refactor, docs'
     - Each task SHOULD be ≤ 1 hour of focused work
     - MUST mark completed tasks with [done], skipped with [skip] + reason
     - MUST NOT mark [done] if tests are failing or coverage dropped below 100%

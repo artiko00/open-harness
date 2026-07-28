@@ -102,17 +102,17 @@ func run(args []string) int {
 ```
 open-harness/
 ├── tools/
-│   ├── linelens/        ← v0.2.0 (file length linter)
-│   ├── dupelens/        ← v0.2.0 (duplicate detector, Rabin-Karp)
-│   ├── secretlens/      ← v0.2.0 (secret/credential detector)
-│   └── testlens/        ← v0.2.0 (test coverage detector, multi-language)
+│   ├── linelens/        ← v0.3.0 (file length linter)
+│   ├── dupelens/        ← v0.3.0 (duplicate detector, Rabin-Karp)
+│   ├── secretlens/      ← v0.3.0 (secret/credential detector)
+│   └── testlens/        ← v0.3.0 (test coverage detector, multi-language)
 ├── npm/@open_harness/   ← wrappers npm por plataforma
 ├── docs/                ← ADRs (decisiones arquitectónicas)
 ├── scripts/             ← build.sh, build-npm.sh, bench-vs-jscpd.sh
 ├── .agent/              ← harness: feature-list, claude-progress, init, .gitignore
 ├── openspec/            ← Spec-Driven Development (config + propuestas)
 ├── go.work              ← Go workspace (4 tools)
-├── lefthook.yml         ← git hooks (pre-commit: 3 tools, pre-push: tests x4)
+├── lefthook.yml         ← git hooks (pre-commit: 4 tools, pre-push: tests x4)
 └── {linelens,dupelens,secretlens,testlens}.json  ← configs de los 4 tools (auto-protección)
 ```
 
@@ -195,7 +195,7 @@ El repo aplica sus 4 tools sobre sí mismo. Antes de abrir PR todos deben pasar:
 ./tools/testlens/testlens   check --fail   # cero archivos Go sin tests
 ```
 
-lefthook `pre-commit` automatiza los 3 primeros. El cuarto corre en `pre-push`. Cualquier excepción a estos gates va vía ADR.
+lefthook `pre-commit` automatiza los 4 gates (linelens, dupelens, secretlens y testlens); `pre-push` re-corre además la batería de tests de los 4 tools. Cualquier excepción a estos gates va vía ADR.
 
 ---
 

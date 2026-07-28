@@ -59,6 +59,23 @@ func filterByMinLines(matches []Match, minLines int) []Match {
 	return out
 }
 
+// filterByMinTokens descarta matches cuyo bloque fusionado tiene menos tokens
+// que el umbral de reporte. Separa el ruido de reporte (minTokens) del tamaño
+// de ventana de detección (windowSize): un umbral alto no obliga a agrandar la
+// ventana. minTokens≤0 actúa como passthrough.
+func filterByMinTokens(matches []Match, minTokens int) []Match {
+	if minTokens <= 0 {
+		return matches
+	}
+	var out []Match
+	for _, m := range matches {
+		if m.Tokens >= minTokens {
+			out = append(out, m)
+		}
+	}
+	return out
+}
+
 // sortMatches ordena por (FileA|FileB, StartLineA) para output reproducible.
 func sortMatches(matches []Match) {
 	sort.Slice(matches, func(i, j int) bool {

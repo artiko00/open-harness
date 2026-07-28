@@ -1,35 +1,44 @@
 package main
 
 import (
-	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
+
+	"github.com/artiko00/open-harness/tools/_shared/pathmatch"
 )
 
-func checkCoveragePackage(cfg config, lang languageMapping) (int, error) {
-	exclude := cfg.exclude
-	if len(exclude) == 0 {
-		exclude = defaultConfig.Exclude
-	}
+func checkCoveragePackage(cfg config, lang languageMapping) (coverage, error) {
+	exclude := excludeEfectivo(cfg)
+	notest := notestEfectivo(cfg)
 	seen := map[string]bool{}
-	err := filepath.Walk(cfg.root, func(path string, info os.FileInfo, err error) error {
+	cov := coverage{pkg: true}
+	err := filepath.WalkDir(cfg.root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if info.IsDir() {
-			if shouldSkipDir(path, exclude) {
+		rel, _ := filepath.Rel(cfg.root, path)
+		relSlash := filepath.ToSlash(rel)
+		if d.IsDir() {
+			if pathmatch.IsExcluded(relSlash, exclude) {
 				return filepath.SkipDir
 			}
 			return nil
 		}
-		if isSourceFile(path, lang.extensions) {
-			seen[filepath.Dir(path)] = true
+		if !isSourceFile(filepath.Base(path), lang) || noRequiereTest(relSlash, notest) {
+			return nil
 		}
+		cov.scanned++
+		if motivo := motivoOmision(path, d); motivo != "" {
+			cov.skips = append(cov.skips, pathmatch.Skip{Path: relSlash, Reason: motivo})
+			return nil
+		}
+		seen[filepath.Dir(path)] = true
 		return nil
 	})
 	if err != nil {
-		return 0, err
+		return cov, err
 	}
 
 	dirs := make([]string, 0, len(seen))
@@ -38,24 +47,27 @@ func checkCoveragePackage(cfg config, lang languageMapping) (int, error) {
 	}
 	sort.Strings(dirs)
 
-	violations := 0
 	for _, dir := range dirs {
-		if !packageHasTests(dir, lang.testSuffixes, lang.extensions) {
+		if !packageHasTests(dir, lang) {
 			relPath, _ := filepath.Rel(cfg.root, dir)
-			fmt.Println(violationLine(relPath+"/", "- no tests found", cfg.noColor))
-			violations++
+			cov.untested = append(cov.untested, filepath.ToSlash(relPath)+"/")
 		}
 	}
-	return violations, nil
+	return cov, nil
 }
 
-func packageHasTests(dir string, testSuffixes []string, extensions []string) bool {
+// packageHasTests indica si dir tiene al menos un archivo de test con un marcador
+// real del lenguaje. Un *_test vacío no cuenta (8.15, 8.9).
+func packageHasTests(dir string, lang languageMapping) bool {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return false
 	}
 	for _, e := range entries {
-		if !e.IsDir() && isTestFile(e.Name(), extensions, testSuffixes) {
+		if e.IsDir() || !isTestFile(e.Name(), lang.extensions, lang.testSuffixes) {
+			continue
+		}
+		if contieneMarcador(filepath.Join(dir, e.Name()), lang.testMarkers) {
 			return true
 		}
 	}

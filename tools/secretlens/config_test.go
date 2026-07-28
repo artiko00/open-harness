@@ -25,8 +25,12 @@ func TestLoadConfig_ValidJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cfg.Patterns) != 1 {
-		t.Errorf("expected 1 pattern, got %d", len(cfg.Patterns))
+	// Patterns aditivos: defaults + el custom.
+	if len(cfg.Patterns) != len(defaultPatterns())+1 {
+		t.Errorf("expected defaults+1 patterns, got %d", len(cfg.Patterns))
+	}
+	if cfg.Patterns[len(cfg.Patterns)-1].Name != "test" {
+		t.Errorf("expected custom pattern last, got %q", cfg.Patterns[len(cfg.Patterns)-1].Name)
 	}
 }
 

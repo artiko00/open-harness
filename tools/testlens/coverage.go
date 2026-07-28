@@ -2,66 +2,71 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/artiko00/open-harness/tools/_shared/pathmatch"
 )
 
-func checkCoverage(cfg config) (int, error) {
-	mappings := mapLanguageExtensions()
-	extensions := getExtensions(cfg.language, cfg.root, mappings)
-	lang := getLanguageMapping(cfg.language, mappings, extensions)
+// coverage es el resultado del análisis: archivos escaneados, rutas sin test,
+// omisiones y si el lenguaje analiza por paquete (afecta el sufijo de consola).
+type coverage struct {
+	scanned  int
+	untested []string
+	skips    []pathmatch.Skip
+	pkg      bool
+}
+
+func checkCoverage(cfg config) (coverage, error) {
+	exclude := excludeEfectivo(cfg)
+	lang := resolverLenguaje(cfg, exclude)
 
 	if lang.packageBased {
 		return checkCoveragePackage(cfg, lang)
 	}
 
-	exclude := cfg.exclude
-	if len(exclude) == 0 {
-		exclude = defaultConfig.Exclude
-	}
-	violations := 0
-	err := filepath.Walk(cfg.root, func(path string, info os.FileInfo, err error) error {
+	notest := notestEfectivo(cfg)
+	cov := coverage{}
+	err := filepath.WalkDir(cfg.root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if info.IsDir() {
-			if shouldSkipDir(path, exclude) {
+		rel, _ := filepath.Rel(cfg.root, path)
+		relSlash := filepath.ToSlash(rel)
+		if d.IsDir() {
+			if pathmatch.IsExcluded(relSlash, exclude) {
 				return filepath.SkipDir
 			}
 			return nil
 		}
-		if !isSourceFile(path, extensions) {
+		if !isSourceFile(filepath.Base(path), lang) || noRequiereTest(relSlash, notest) {
 			return nil
 		}
-		filename := filepath.Base(path)
-		if testExists(path, cfg.root, findTestCandidates(filename, lang), lang) == "" {
-			relPath, _ := filepath.Rel(cfg.root, path)
-			fmt.Println(violationLine(relPath, "- no test found", cfg.noColor))
-			violations++
+		cov.scanned++
+		if motivo := motivoOmision(path, d); motivo != "" {
+			cov.skips = append(cov.skips, pathmatch.Skip{Path: relSlash, Reason: motivo})
+			return nil
+		}
+		if testExists(path, cfg.root, findTestCandidates(filepath.Base(path), lang), lang) == "" {
+			cov.untested = append(cov.untested, relSlash)
 		}
 		return nil
 	})
-	return violations, err
+	return cov, err
 }
 
-func getExtensions(language, root string, mappings map[string]languageMapping) []string {
-	if language == "auto" {
-		extensions := detectLanguageFromFiles(root)
-		if extensions == nil {
-			fmt.Println("Could not detect language, using all extensions")
-			return allExtensions(mappings)
-		}
-		return extensions
+// resolverLenguaje devuelve el mapping REAL del lenguaje: el pedido por --lang o,
+// en modo "auto", el detectado por conteo de archivos. Si la detección falla
+// (ningún archivo soportado), cae a todas las extensiones sin patrones de test.
+func resolverLenguaje(cfg config, exclude []string) languageMapping {
+	mappings := mapLanguageExtensions()
+	if cfg.language != "auto" {
+		return mappings[cfg.language]
 	}
-	if m, ok := mappings[language]; ok {
-		return m.extensions
+	if key := detectLanguage(cfg.root, exclude); key != "" {
+		return mappings[key]
 	}
-	return nil
-}
-
-func getLanguageMapping(language string, mappings map[string]languageMapping, extensions []string) languageMapping {
-	if language != "auto" {
-		return mappings[language]
-	}
-	return languageMapping{extensions: extensions, testSuffixes: []string{"test", "spec", "Test", "Spec"}}
+	fmt.Fprintln(os.Stderr, "Could not detect language, using all extensions")
+	return languageMapping{extensions: allExtensions(mappings)}
 }

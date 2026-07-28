@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const version = "0.2.1"
+const version = "0.3.0"
 
 var osExit = os.Exit
 
@@ -36,35 +36,6 @@ func run(args []string) int {
 		printUsage()
 		return 1
 	}
-}
-
-func runCheck(args []string) int {
-	fs := flag.NewFlagSet("check", flag.ContinueOnError)
-	configPath := fs.String("config", "secretlens.json", "path to config file")
-	failOnFinding := fs.Bool("fail", false, "exit with code 1 if secrets found")
-	noColor := fs.Bool("no-color", false, "disable colored output")
-	root := fs.String("dir", ".", "directory to scan")
-	if err := fs.Parse(args); err != nil {
-		return 1
-	}
-
-	cfg, err := loadConfig(*configPath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error loading config: %v\n", err)
-		return 1
-	}
-
-	findings, err := scan(*root, cfg)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "scan error: %v\n", err)
-		return 1
-	}
-
-	count := report(findings, *noColor)
-	if *failOnFinding && count > 0 {
-		return 1
-	}
-	return 0
 }
 
 func runInit(args []string) int {

@@ -6,7 +6,18 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/artiko00/open-harness/tools/_shared/pathmatch"
 )
+
+// skipsNoGate arma n omisiones que NO rompen el gate (binarios).
+func skipsNoGate(n int) []pathmatch.Skip {
+	var s []pathmatch.Skip
+	for i := 0; i < n; i++ {
+		s = append(s, pathmatch.Skip{Path: "b", Reason: pathmatch.ReasonBinary})
+	}
+	return s
+}
 
 func TestViolationLine(t *testing.T) {
 	plain := violationLine("foo.go", "- no test found", true)
@@ -26,23 +37,54 @@ func TestViolationLine(t *testing.T) {
 func TestSummaryLine(t *testing.T) {
 	cases := []struct {
 		violations int
+		skipped    int
 		noColor    bool
 		wantANSI   bool
 		want       string
 	}{
-		{0, true, false, "All source files have tests"},
-		{0, false, true, "All source files have tests"},
-		{3, true, false, "3 file(s) without tests"},
-		{3, false, true, "3 file(s) without tests"},
+		{0, 0, true, false, "OK: all source files have tests"},
+		{0, 0, false, true, "OK: all source files have tests"},
+		{3, 0, true, false, "SUMMARY: 3 file(s) without tests"},
+		{3, 0, false, true, "SUMMARY: 3 file(s) without tests"},
+		// El resumen debe informar los archivos omitidos (tarea 2.9).
+		{0, 1, true, false, "OK: all source files have tests (1 skipped)"},
+		{0, 2, false, true, "(2 skipped)"},
+		{3, 1, true, false, "SUMMARY: 3 file(s) without tests, 1 skipped"},
+		{3, 2, false, true, ", 2 skipped"},
 	}
 	for _, c := range cases {
-		got := summaryLine(c.violations, c.noColor)
+		got := summaryLine(c.violations, skipsNoGate(c.skipped), c.noColor)
 		if !strings.Contains(got, c.want) {
-			t.Errorf("summaryLine(%d,%v) = %q, want substring %q", c.violations, c.noColor, got, c.want)
+			t.Errorf("summaryLine(%d,%d,%v) = %q, want substring %q", c.violations, c.skipped, c.noColor, got, c.want)
 		}
 		if strings.Contains(got, "\033") != c.wantANSI {
-			t.Errorf("summaryLine(%d,%v) ANSI presence = %v, want %v", c.violations, c.noColor, !c.wantANSI, c.wantANSI)
+			t.Errorf("summaryLine(%d,%d,%v) ANSI presence = %v, want %v", c.violations, c.skipped, c.noColor, !c.wantANSI, c.wantANSI)
 		}
+	}
+}
+
+// Con 0 violaciones pero un skip que rompe el gate, la línea es SUMMARY, no OK.
+func TestSummaryLine_GateRotoSinViolaciones(t *testing.T) {
+	skips := []pathmatch.Skip{{Path: "x", Reason: pathmatch.ReasonReadError}}
+	got := summaryLine(0, skips, true)
+	if !strings.HasPrefix(got, "SUMMARY:") {
+		t.Errorf("gate roto debe dar SUMMARY, got %q", got)
+	}
+	if strings.Contains(got, "OK:") {
+		t.Errorf("no debe contener OK: cuando el gate se rompe, got %q", got)
+	}
+}
+
+func TestUntestedHeader(t *testing.T) {
+	plain := untestedHeader(2, true)
+	if plain != "UNTESTED (2 file(s) without tests):" {
+		t.Errorf("header sin color = %q", plain)
+	}
+	if strings.Contains(plain, "\033") {
+		t.Errorf("header noColor no debe llevar ANSI: %q", plain)
+	}
+	if !strings.Contains(untestedHeader(2, false), "\033") {
+		t.Error("header con color debe llevar ANSI")
 	}
 }
 

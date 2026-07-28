@@ -6,11 +6,25 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 
 | Tool | Description | Status |
 |---|---|---|
-| [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.2.0` |
-| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.2.0` |
-| [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.2.0` |
-| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.2.0` |
+| [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.3.0` |
+| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.3.0` |
+| [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.3.0` |
+| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.3.0` |
 | bigo | Big O complexity analyzer | `planned` |
+
+---
+
+## Migration / breaking changes (0.3.0)
+
+The `0.2.x → 0.3.0` bump is designed to be backward-compatible — existing configs, flags and hooks keep working. The main thing to plan for is that the tools now analyze **more accurately** and may surface findings that were previously missed (especially `secretlens`, whose recall went from ~25% to ~100%). Run each tool once without `--fail` before enforcing it in CI.
+
+The one behaviour change to know about:
+
+- **secretlens — custom patterns are now additive.** Entries in `patterns` are **added on top of** the built-in patterns instead of replacing them. Previously a non-empty `patterns` array silently disabled all built-ins (a security footgun). To keep the old "only my patterns" behaviour, set `"disableDefaultPatterns": true`.
+
+Compatibility-preserving refinements: unknown config keys now print a **warning** (instead of being silently dropped) but do not fail; the `secretlens` allowlist matches the detected **value** rather than the whole line, and still includes `"example"` by default.
+
+**See [docs/UPGRADING.md](docs/UPGRADING.md) for the full upgrade guide**, including how to triage newly-surfaced findings in `secretlens`, `testlens` and `linelens`.
 
 ---
 
@@ -25,8 +39,14 @@ linelens check               # scan current directory
 linelens check --fail        # exit 1 if violations found (CI / git hooks)
 linelens check --dir ./src   # scan a specific directory
 linelens check --max 200     # override the line limit
+linelens check --config ci.json  # use a specific config file (must exist)
+linelens check --no-color    # plain output for logs
+linelens check --format json # machine-readable output (console | json)
 linelens init                # generate a default linelens.json
+linelens init --output custom.json  # write the config to a different file
 ```
+
+**Common flags** (shared by all tools): `--config <file>` (defaults to `<tool>.json`; when passed explicitly the file must exist), `--no-color`, `--format console|json`, and `--dir <path>`. Every `init` accepts `--output <file>` to choose the generated config path.
 
 ### Configuration (`linelens.json`)
 
@@ -63,9 +83,14 @@ Scans your codebase for hardcoded secrets and credentials. Detects AWS keys, Git
 secretlens check              # scan current directory
 secretlens check --fail       # exit 1 if secrets found (git hooks / CI)
 secretlens check --dir ./src  # scan a specific directory
+secretlens check --config ci.json  # use a specific config file (must exist)
 secretlens check --no-color   # plain output for logs
+secretlens check --format json  # machine-readable output (console | json)
 secretlens init               # generate a default secretlens.json
+secretlens init --output custom.json  # write the config to a different file
 ```
+
+**Common flags** (shared by all tools): `--config <file>`, `--no-color`, `--format console|json`, `--dir <path>`, and `--output <file>` on `init`. See the [linelens](#linelens) section for details.
 
 ### Built-in patterns
 
@@ -85,14 +110,15 @@ secretlens init               # generate a default secretlens.json
 ```json
 {
   "patterns": [],
+  "disableDefaultPatterns": false,
   "allowlist": ["example", "placeholder", "your_key_here", "changeme"],
   "exclude": ["node_modules", "vendor", ".git", "dist"]
 }
 ```
 
-`patterns: []` uses the 8 built-in patterns. Override to add custom rules.
+Custom `patterns` are **additive** — they run alongside the built-in patterns. Set `"disableDefaultPatterns": true` to run only your own patterns. (This changed in 0.3.0 — see [Migration / breaking changes](#migration--breaking-changes-030).)
 
-The `allowlist` skips any line containing those strings (case-insensitive) — useful to suppress false positives in documentation or example files.
+The `allowlist` suppresses a finding when the **detected secret value** (not the whole line, case-insensitive) matches one of the terms — useful for placeholders in documentation or example files. Note that `"example"` is no longer part of the default allowlist; add it explicitly if you need it.
 
 ---
 
@@ -116,9 +142,17 @@ testlens check --dir ./src
 # Exit with code 1 if violations found (for CI)
 testlens check --fail
 
-# Generate a default config
+# Use a specific config file (must exist), plain output, or JSON
+testlens check --config ci.json
+testlens check --no-color
+testlens check --format json
+
+# Generate a default config (optionally to a custom path)
 testlens init
+testlens init --output custom.json
 ```
+
+**Common flags** (shared by all tools): `--config <file>`, `--no-color`, `--format console|json`, `--dir <path>`, and `--output <file>` on `init`. See the [linelens](#linelens) section for details.
 
 ### Supported languages
 
@@ -133,6 +167,7 @@ testlens init
 | Java | `.java` | `*Test.java` |
 | Kotlin | `.kt`, `.kts` | `*Test.kt` |
 | C# | `.cs` | `*Tests.cs` |
+| Dart | `.dart` | `*_test.dart` |
 
 ### CI (GitHub Actions)
 
@@ -162,8 +197,15 @@ dupelens check
 # Fail with exit code 1 if duplicates found (CI / git hooks)
 dupelens check --fail
 
+# Choose which clone kinds break --fail: exact | renamed | all
+dupelens check --fail --fail-on renamed
+
 # Override the token threshold
 dupelens check --min-tokens 30
+
+# Use a specific config file (must exist), or plain output
+dupelens check --config ci.json
+dupelens check --no-color
 
 # JSON output for tooling integrations
 dupelens check --format=json > report.json
@@ -171,9 +213,14 @@ dupelens check --format=json > report.json
 # Verbose timings to stderr
 dupelens check --verbose
 
-# Generate default config
+# Generate default config (optionally to a custom path)
 dupelens init
+dupelens init --output custom.json
 ```
+
+**Common flags** (shared by all tools): `--config <file>`, `--no-color`, `--format console|json`, `--dir <path>`, and `--output <file>` on `init`. See the [linelens](#linelens) section for details.
+
+`--fail-on` selects which clone kinds trip the `--fail` gate: `exact` (default, only token-for-token clones), `renamed` (also alpha-renamed clones), or `all`.
 
 ### Configuration (`dupelens.json`)
 
@@ -181,7 +228,8 @@ dupelens init
 {
   "default": {
     "minTokens": 50,
-    "minLines": 5
+    "minLines": 5,
+    "windowSize": 0
   },
   "rules": [
     { "pattern": "**/*_test.go",     "skip": true },
@@ -191,7 +239,7 @@ dupelens init
 }
 ```
 
-`minTokens` is the window size of the rolling hash. Higher values catch only larger duplications. `minLines` filters short matches (e.g., back-to-back identical imports).
+`minTokens` is the **report threshold** — matches shorter than this are dropped. `windowSize` is the **detection window** of the rolling hash and is now independent of `minTokens` (`0` falls back to the built-in default), so you can lower `minTokens` to reduce noise without changing how blocks are hashed. `minLines` filters short matches (e.g., back-to-back identical imports).
 
 ### Output (console)
 
@@ -225,11 +273,9 @@ Top duplicated files:
 }
 ```
 
-### Limitations (v0.2.0)
+### Limitations (v0.3.0)
 
-- Detects only **literal** or near-literal duplication (token-by-token). Refactors with renamed variables are not flagged — that requires AST analysis ([ADR-012](docs/adr-012-dupelens-rabin-karp-sobre-ast.md) explains the trade-off).
-- `--threshold` flag is not implemented; the algorithm is binary (match or not). See `[skip]` note in F-006.
-- Per-rule `minTokens` override does not work cross-file because window sizes must be uniform. Skip via `rules` if you want per-pattern exclusion.
+- Detects contiguous **exact** and **alpha-renamed** clones (see `--fail-on`). Structural refactors — reordered statements, inserted or deleted lines (gapped/Type-3 clones), and behaviourally-equivalent rewrites (Type-4) — are still not detected; that requires AST analysis ([ADR-012](docs/adr-012-dupelens-rabin-karp-sobre-ast.md) explains the trade-off).
 
 ---
 
@@ -327,11 +373,21 @@ Via lefthook (this repo uses this pattern — see `lefthook.yml`):
 ```yaml
 pre-commit:
   commands:
-    linelens:   { run: linelens check --fail --no-color }
-    dupelens:   { run: dupelens check --fail --no-color }
-    secretlens: { run: secretlens check --fail --no-color }
-    testlens:   { run: testlens check --fail --lang typescript --dir src/ }
+    linelens:   { run: tools/linelens/linelens check --fail --no-color }
+    dupelens:   { run: tools/dupelens/dupelens check --fail --no-color }
+    secretlens: { run: tools/secretlens/secretlens check --fail --no-color }
+    testlens:   { run: tools/testlens/testlens check --lang go --dir tools/ --fail }
+
+pre-push:
+  parallel: true
+  commands:
+    test-linelens:   { run: cd tools/linelens && go test ./... }
+    test-dupelens:   { run: cd tools/dupelens && go test ./... }
+    test-secretlens: { run: cd tools/secretlens && go test ./... }
+    test-testlens:   { run: cd tools/testlens && go test ./... }
 ```
+
+The `pre-commit` hook runs all four lints; `pre-push` runs the test suite of each of the four tools in parallel.
 
 ---
 
@@ -340,10 +396,10 @@ pre-commit:
 ```
 open-harness/
 ├── tools/
-│   ├── linelens/          ← v0.1.0 (file length linter, 100% coverage)
-│   ├── dupelens/          ← v0.1.0 (duplicate detector, Rabin-Karp, 100% coverage)
-│   ├── secretlens/        ← v0.1.0 (secret/credential detector, 100% coverage)
-│   └── testlens/          ← v0.1.0 (test coverage detector, multi-language, 100% coverage)
+│   ├── linelens/          ← v0.3.0 (file length linter, 100% coverage)
+│   ├── dupelens/          ← v0.3.0 (duplicate detector, Rabin-Karp, 100% coverage)
+│   ├── secretlens/        ← v0.3.0 (secret/credential detector, 100% coverage)
+│   └── testlens/          ← v0.3.0 (test coverage detector, multi-language, 100% coverage)
 ├── npm/
 │   ├── open-harness/      ← meta-package (instala los 4 tools)
 │   └── @open_harness/
@@ -364,7 +420,7 @@ open-harness/
 ├── .agent/                ← agent harness (feature list, session log, init script)
 ├── AGENTS.md              ← agent instructions (TDD workflow, conventions)
 ├── go.work                ← Go workspace (4 tools)
-├── lefthook.yml           ← git hooks (pre-commit: 3 tools, pre-push: tests x4)
+├── lefthook.yml           ← git hooks (pre-commit: 4 tools, pre-push: tests x4)
 ├── linelens.json          ← linelens config for this repo
 ├── dupelens.json          ← dupelens config for this repo
 └── secretlens.json        ← secretlens config for this repo

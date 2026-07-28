@@ -1,8 +1,4 @@
 {
   "language": "auto",
-  "skip": ["node_modules", ".git", "vendor", "dist", "build"],
-  "languages": {
-    "go": { "extensions": [".go"], "testSuffixes": ["_test"] },
-    "typescript": { "extensions": [".ts", ".tsx"], "testSuffixes": [".test", ".spec"] }
-  }
+  "exclude": ["node_modules", ".git", "vendor", "dist", "build", "testdata", "openspec"]
 }

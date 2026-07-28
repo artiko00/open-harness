@@ -77,7 +77,7 @@ func TestCheckCoverage_SkipsNodeModules(t *testing.T) {
 	os.WriteFile(filepath.Join(nm, "foo.go"), []byte("package foo"), 0644)
 
 	cfg := config{language: "go", root: tmpDir, fail: false}
-	violations, err := checkCoverage(cfg)
+	violations, _, err := checkCoverageCounts(cfg)
 	if err != nil {
 		t.Fatalf("checkCoverage failed: %v", err)
 	}
@@ -101,24 +101,5 @@ func TestIsTestFile_WrongExtension(t *testing.T) {
 	// .txt no está en extensions → hasSourceExt = false → return false
 	if isTestFile("test_foo.txt", []string{".py"}, []string{"test_"}) {
 		t.Error("test_foo.txt should not be a test file for python (wrong extension)")
-	}
-}
-
-// scanDirectory — rama return err cuando err != nil en Walk callback
-
-func TestScanDirectory_ErrorInSubdir(t *testing.T) {
-	if os.Getuid() == 0 {
-		t.Skip("chmod test not reliable as root")
-	}
-	tmpDir := t.TempDir()
-	subdir := filepath.Join(tmpDir, "restricted")
-	os.Mkdir(subdir, 0755)
-	os.WriteFile(filepath.Join(subdir, "foo.go"), []byte("package main"), 0644)
-	os.Chmod(subdir, 0000)
-	defer os.Chmod(subdir, 0755)
-
-	_, err := scanDirectory(tmpDir, []string{}, []string{".go"})
-	if err == nil {
-		t.Error("expected error when subdirectory is unreadable")
 	}
 }

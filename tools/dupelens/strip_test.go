@@ -1,17 +1,18 @@
 package main
 
-import (
-	"strings"
-	"testing"
-)
+import "testing"
 
-func tokenValues(src string) []string {
-	tokens := tokenize(src)
+func tokenValuesExt(src, ext string) []string {
+	tokens := tokenize(src, ext)
 	out := make([]string, 0, len(tokens))
 	for _, t := range tokens {
 		out = append(out, t.Value)
 	}
 	return out
+}
+
+func tokenValues(src string) []string {
+	return tokenValuesExt(src, ".go")
 }
 
 func contains(slice []string, v string) bool {
@@ -75,14 +76,23 @@ func TestTokenize_stripsSingleLineCommentSlashSlash(t *testing.T) {
 	}
 }
 
-func TestTokenize_stripsHashCommentForPythonBash(t *testing.T) {
+func TestTokenize_stripsHashCommentForPython(t *testing.T) {
 	src := "code # python_comment_here\ndef foo"
-	got := tokenValues(src)
+	got := tokenValuesExt(src, ".py")
 	if contains(got, "python_comment_here") {
 		t.Errorf("contenido de # leaked: %v", got)
 	}
 	if !contains(got, "code") || !contains(got, "def") || !contains(got, "foo") {
 		t.Errorf("contexto debe preservarse: %v", got)
+	}
+}
+
+func TestTokenize_hashNotCommentForGo(t *testing.T) {
+	// En Go '#' no inicia comentario: el token posterior no se descarta.
+	src := "value #keepToken"
+	got := tokenValuesExt(src, ".go")
+	if !contains(got, "#keepToken") {
+		t.Errorf("'#' en .go no debe iniciar comentario: %v", got)
 	}
 }
 
@@ -98,10 +108,8 @@ func TestTokenize_stripsMultiLineBlockComment(t *testing.T) {
 }
 
 func TestTokenize_blockCommentPreservesLineNumbers(t *testing.T) {
-	// El bloque tiene 3 saltos de línea internos. El token "after"
-	// debe quedar reportado en la línea 4 (head está en 1).
 	src := "head /* a\nb\nc */ after"
-	tokens := tokenize(src)
+	tokens := tokenize(src, ".go")
 	var headLine, afterLine int
 	for _, tok := range tokens {
 		if tok.Value == "head" {
@@ -120,14 +128,14 @@ func TestTokenize_blockCommentPreservesLineNumbers(t *testing.T) {
 }
 
 func TestTokenize_emptyFileProducesNoTokens(t *testing.T) {
-	if got := tokenize(""); len(got) != 0 {
+	if got := tokenize("", ".go"); len(got) != 0 {
 		t.Errorf("empty input must produce 0 tokens, got %d", len(got))
 	}
 }
 
 func TestTokenize_onlyCommentsFile_producesNoTokens(t *testing.T) {
 	src := "// solo comentarios\n# otro\n/* y bloque\n a la vez */"
-	if got := tokenize(src); len(got) != 0 {
+	if got := tokenize(src, ".py"); len(got) != 0 {
 		t.Errorf("file con solo comments no debe producir tokens, got %d: %v", len(got), got)
 	}
 }
@@ -145,20 +153,10 @@ func TestTokenize_singleLineFileStillWorks(t *testing.T) {
 func TestTokenize_stringWithCommentSyntaxInsideNotRemoved_butStringContentStripped(t *testing.T) {
 	src := `outer "// not a comment, just text" tail`
 	got := tokenValues(src)
-	// El contenido de la string se descarta pero outer/tail siguen ahí.
 	if contains(got, "not") || contains(got, "comment") {
 		t.Errorf("contenido de string que parece comentario leaked: %v", got)
 	}
 	if !contains(got, "outer") || !contains(got, "tail") {
 		t.Errorf("outer/tail debe preservarse: %v", got)
-	}
-}
-
-func TestStripCommentsAndStrings_preservesNewlinesInsideBlockComment(t *testing.T) {
-	in := "x /* a\nb\nc */ y"
-	out := stripCommentsAndStrings(in)
-	if strings.Count(out, "\n") != 2 {
-		t.Errorf("strip debe preservar 2 saltos del bloque comment, got %d (out: %q)",
-			strings.Count(out, "\n"), out)
 	}
 }

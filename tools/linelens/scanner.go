@@ -1,24 +1,20 @@
 package main
 
 import (
-	"bufio"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/artiko00/open-harness/tools/_shared/pathmatch"
 )
 
-type FileResult struct {
-	RelPath  string
-	Lines    int
-	MaxLines int
-	Skipped  bool
-}
-
-func (r FileResult) IsViolation() bool {
-	return !r.Skipped && r.Lines > r.MaxLines
-}
-
-func scan(root string, cfg Config, maxOverride int) ([]FileResult, error) {
+// scan recorre el árbol y devuelve los archivos medidos junto con los que no
+// se pudieron analizar (omisiones), cada uno con su motivo canónico. Solo mide
+// archivos con extensión de código (pathmatch.CodeExtensions); los datos
+// (i18n.json, schema.sql, ...) se ignoran en silencio.
+func scan(root string, cfg Config, maxOverride int) ([]FileResult, []pathmatch.Skip, error) {
 	var results []FileResult
+	var skips []pathmatch.Skip
 
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -31,7 +27,7 @@ func scan(root string, cfg Config, maxOverride int) ([]FileResult, error) {
 		relPath, _ := filepath.Rel(root, path)
 		relPath = filepath.ToSlash(relPath)
 
-		if isExcluded(relPath, cfg.Exclude) {
+		if pathmatch.IsExcluded(relPath, cfg.Exclude) {
 			if d.IsDir() {
 				return filepath.SkipDir
 			}
@@ -42,7 +38,19 @@ func scan(root string, cfg Config, maxOverride int) ([]FileResult, error) {
 			return nil
 		}
 
-		if isBinaryPath(path) || isBinaryContent(path) {
+		// Antes de cualquier apertura: un FIFO o socket colgaría el proceso.
+		if !pathmatch.IsRegular(d) {
+			skips = append(skips, pathmatch.Skip{Path: relPath, Reason: pathmatch.ReasonNotRegular})
+			return nil
+		}
+
+		if pathmatch.IsBinaryPath(path) || pathmatch.IsBinaryContent(path) {
+			skips = append(skips, pathmatch.Skip{Path: relPath, Reason: pathmatch.ReasonBinary})
+			return nil
+		}
+
+		ext := strings.ToLower(filepath.Ext(relPath))
+		if !pathmatch.CodeExtensions()[ext] {
 			return nil
 		}
 
@@ -58,34 +66,22 @@ func scan(root string, cfg Config, maxOverride int) ([]FileResult, error) {
 			maxLines = rule.MaxLines
 		}
 
-		lines, err := countLines(path)
+		code, physical, nesting, err := countFile(path, ext)
 		if err != nil {
+			skips = append(skips, pathmatch.Skip{Path: relPath, Reason: motivoLectura(err)})
 			return nil
 		}
 
 		results = append(results, FileResult{
-			RelPath:  relPath,
-			Lines:    lines,
-			MaxLines: maxLines,
+			RelPath:    relPath,
+			Lines:      code,
+			Physical:   physical,
+			Nesting:    nesting,
+			MaxLines:   maxLines,
+			MaxNesting: cfg.Default.MaxNesting,
 		})
 		return nil
 	})
 
-	return results, err
-}
-
-func countLines(path string) (int, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return 0, err
-	}
-	defer f.Close()
-
-	count := 0
-	scanner := bufio.NewScanner(f)
-	scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
-	for scanner.Scan() {
-		count++
-	}
-	return count, scanner.Err()
+	return results, skips, err
 }

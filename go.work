@@ -1,6 +1,9 @@
 go 1.22.2
 
 use (
+	./tools/_shared/configload
+	./tools/_shared/langsyntax
+	./tools/_shared/pathmatch
 	./tools/_shared/tomlmin
 	./tools/dupelens
 	./tools/linelens

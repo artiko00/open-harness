@@ -1,0 +1,8 @@
+{
+  "users": [
+    { "id": 1, "name": "alpha", "role": "admin" },
+    { "id": 2, "name": "beta", "role": "editor" },
+    { "id": 3, "name": "gamma", "role": "viewer" },
+    { "id": 4, "name": "delta", "role": "viewer" }
+  ]
+}

@@ -1,9 +1,13 @@
 package main
 
-// defaultPatterns returns the built-in secret detection rules.
-// Patterns are intentionally broad enough to catch real secrets but
-// specific enough to avoid flooding with false positives.
+// defaultPatterns devuelve las reglas built-in. Las de prefijo fuerte (AKIA,
+// ghp_, PEM, JWT, proveedores, URIs) NO se filtran por entropía; solo las
+// genéricas KEY=VALUE llevan EntropyGate=true.
 func defaultPatterns() []PatternRule {
+	return append(corePatterns(), providerPatterns()...)
+}
+
+func corePatterns() []PatternRule {
 	return []PatternRule{
 		{
 			Name:     "AWS Access Key ID",
@@ -12,7 +16,7 @@ func defaultPatterns() []PatternRule {
 		},
 		{
 			Name:     "AWS Secret Access Key",
-			Pattern:  `(?i)(aws_secret_access_key|aws_secret)\s*[:=]\s*["']?[A-Za-z0-9/+]{40}["']?`,
+			Pattern:  `(?i)(?:aws_secret_access_key|aws_secret)\s*[:=]\s*["']?([A-Za-z0-9/+]{40})["']?`,
 			Severity: "critical",
 		},
 		{
@@ -36,14 +40,16 @@ func defaultPatterns() []PatternRule {
 			Severity: "high",
 		},
 		{
-			Name:     "Generic Secret Assignment",
-			Pattern:  `(?i)(secret|password|passwd|api_key|apikey|auth_token|private_key)\s*[:=]\s*["'][A-Za-z0-9+/\-_!@#$%^&*]{12,}["']`,
-			Severity: "high",
+			Name:        "Generic Secret Assignment",
+			Pattern:     `(?i)(?:secret|password|passwd|api_key|apikey|auth_token|private_key)["']?\s*[:=]\s*["']?([A-Za-z0-9+/\-_!@#$%^&*.]{8,})["']?`,
+			Severity:    "high",
+			EntropyGate: true,
 		},
 		{
-			Name:     "Generic Token Assignment",
-			Pattern:  `(?i)(token|access_token|bearer)\s*[:=]\s*["'][A-Za-z0-9+/\-_]{20,}["']`,
-			Severity: "medium",
+			Name:        "Generic Token Assignment",
+			Pattern:     `(?i)(?:token|access_token|bearer)["']?\s*[:=]\s*["']?([A-Za-z0-9+/\-_.]{16,})["']?`,
+			Severity:    "medium",
+			EntropyGate: true,
 		},
 	}
 }

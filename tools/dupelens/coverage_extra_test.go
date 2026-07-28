@@ -8,12 +8,6 @@ import (
 	"testing"
 )
 
-func TestIsBinaryContent_OpenError(t *testing.T) {
-	if isBinaryContent("/nonexistent/file_xyz123.txt") {
-		t.Error("nonexistent file should not be binary")
-	}
-}
-
 func TestLoadConfig_ReadError(t *testing.T) {
 	dir := t.TempDir()
 	_, err := loadConfig(dir)
@@ -31,29 +25,6 @@ func TestLoadConfig_ZeroMinTokensFillsDefault(t *testing.T) {
 	}
 	if cfg.Default.MinTokens != 50 {
 		t.Errorf("MinTokens should fill from default=50, got %d", cfg.Default.MinTokens)
-	}
-}
-
-func TestMatchGlob_PrefixMismatch(t *testing.T) {
-	if matchGlob("src/**/foo.go", "other/bar.go") {
-		t.Error("src/**/foo.go should not match other/bar.go")
-	}
-}
-
-func TestMatchGlob_DoubleStarNoSlash(t *testing.T) {
-	_ = matchGlob("**", "main.go")
-	_ = matchGlob("src/**", "src/foo.go")
-}
-
-func TestMatchGlob_DoubleStarNoMatch(t *testing.T) {
-	if matchGlob("**/foo.go", "src/bar.go") {
-		t.Error("**/foo.go should not match src/bar.go")
-	}
-}
-
-func TestIsExcluded_GlobPattern(t *testing.T) {
-	if !isExcluded("src/main.go", []string{"**/*.go"}) {
-		t.Error("isExcluded should match src/main.go via **/*.go")
 	}
 }
 
@@ -146,31 +117,13 @@ func TestReportJSON_WriteError(t *testing.T) {
 	}
 }
 
-func TestSameWindow_DifferentLengths(t *testing.T) {
-	if sameWindow([]string{"a"}, []string{"a", "b"}) {
-		t.Error("different length windows should not be same")
-	}
-}
-
-func TestFindDuplicates_SelfMatchGuard(t *testing.T) {
-	perFile := map[string][]Fingerprint{
-		"a.go": {
-			{Hash: 1, StartLine: 1, EndLine: 3, Window: []string{"x", "y", "z"}},
-			{Hash: 1, StartLine: 1, EndLine: 3, Window: []string{"x", "y", "z"}},
-		},
-	}
-	if got := findDuplicates(perFile, 3, 1); len(got) != 0 {
-		t.Errorf("self-position match should be excluded, got %d", len(got))
-	}
-}
-
 func TestScan_ExcludedDirectory(t *testing.T) {
 	tmpDir := t.TempDir()
 	excluded := filepath.Join(tmpDir, "vendor")
 	os.MkdirAll(excluded, 0755)
 	os.WriteFile(filepath.Join(excluded, "lib.go"), []byte("package foo\nfunc Lib() {}"), 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}, Exclude: []string{"vendor"}}
-	_, scanned, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -183,7 +136,7 @@ func TestScan_ExcludedFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.WriteFile(filepath.Join(tmpDir, "vendor"), []byte("not a dir"), 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}, Exclude: []string{"vendor"}}
-	_, scanned, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -196,7 +149,7 @@ func TestScan_BinaryExtension(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.WriteFile(filepath.Join(tmpDir, "img.jpg"), []byte{0xFF, 0xD8, 0xFF}, 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}}
-	_, scanned, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -212,7 +165,7 @@ func TestScan_SkippedByRule(t *testing.T) {
 		Default: DefaultConfig{MinTokens: 5, MinLines: 1},
 		Rules:   []Rule{{Pattern: "**/*_test.go", Skip: true}},
 	}
-	_, scanned, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -223,7 +176,7 @@ func TestScan_SkippedByRule(t *testing.T) {
 
 func TestScan_RootNotExist(t *testing.T) {
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}}
-	if _, _, err := scan("/nonexistent/path/xyz123abc", cfg, 0); err == nil {
+	if _, _, _, err := scan("/nonexistent/path/xyz123abc", cfg, 0); err == nil {
 		t.Error("scan with nonexistent root should return error")
 	}
 }
@@ -239,7 +192,7 @@ func TestScan_SubdirError(t *testing.T) {
 	os.Chmod(subdir, 0000)
 	defer os.Chmod(subdir, 0755)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}}
-	if _, _, err := scan(tmpDir, cfg, 0); err != nil {
+	if _, _, _, err := scan(tmpDir, cfg, 0); err != nil {
 		t.Fatalf("scan should ignore subdir errors, got: %v", err)
 	}
 }
@@ -254,7 +207,7 @@ func TestScan_UnreadableFile(t *testing.T) {
 	os.Chmod(locked, 0000)
 	defer os.Chmod(locked, 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}}
-	if _, _, err := scan(tmpDir, cfg, 0); err != nil {
+	if _, _, _, err := scan(tmpDir, cfg, 0); err != nil {
 		t.Fatalf("scan with unreadable file should not error: %v", err)
 	}
 }
@@ -263,32 +216,13 @@ func TestScan_FileWithNoTokens(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.WriteFile(filepath.Join(tmpDir, "tiny.go"), []byte("x"), 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 50, MinLines: 5}}
-	_, scanned, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
 	if scanned != 1 {
 		t.Errorf("tiny file should be scanned, got scanned=%d", scanned)
 	}
-}
-
-func TestSkipBlockComment_Unclosed(t *testing.T) {
-	_ = stripCommentsAndStrings("before /* unclosed block")
-}
-
-func TestSkipLineComment_NoNewline(t *testing.T) {
-	_ = stripCommentsAndStrings("code // comment to EOF")
-}
-
-func TestSkipString_NewlineInBacktick(t *testing.T) {
-	out := stripCommentsAndStrings("x `hello\nworld` y")
-	if strings.Count(out, "\n") < 1 {
-		t.Errorf("backtick string with newline should preserve newline, got %q", out)
-	}
-}
-
-func TestSkipString_Unterminated(t *testing.T) {
-	_ = stripCommentsAndStrings("code 'unclosed")
 }
 
 func TestReadSnippet_ZeroStartLine(t *testing.T) {

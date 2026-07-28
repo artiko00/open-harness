@@ -20,7 +20,7 @@ func e2eFixtureCfg() Config {
 
 func TestE2E_findsKnownDuplicateInFixture(t *testing.T) {
 	root := filepath.Join("testdata", "e2e_fixture")
-	matches, scanned, err := scan(root, e2eFixtureCfg(), 0)
+	matches, scanned, _, err := scan(root, e2eFixtureCfg(), 0)
 	if err != nil {
 		t.Fatalf("scan error: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestE2E_findsKnownDuplicateInFixture(t *testing.T) {
 
 func TestE2E_uniqueFileNotInAnyMatch(t *testing.T) {
 	root := filepath.Join("testdata", "e2e_fixture")
-	matches, _, err := scan(root, e2eFixtureCfg(), 0)
+	matches, _, _, err := scan(root, e2eFixtureCfg(), 0)
 	if err != nil {
 		t.Fatalf("scan error: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestE2E_uniqueFileNotInAnyMatch(t *testing.T) {
 func TestE2E_minTokensTooHigh_findsNothing(t *testing.T) {
 	root := filepath.Join("testdata", "e2e_fixture")
 	cfg := e2eFixtureCfg()
-	matches, _, err := scan(root, cfg, 500)
+	matches, _, _, err := scan(root, cfg, 500)
 	if err != nil {
 		t.Fatalf("scan error: %v", err)
 	}
@@ -77,7 +77,7 @@ func BenchmarkScan_e2eFixture(b *testing.B) {
 	cfg := e2eFixtureCfg()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _, err := scan(root, cfg, 0)
+		_, _, _, err := scan(root, cfg, 0)
 		if err != nil {
 			b.Fatal(err)
 		}

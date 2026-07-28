@@ -37,7 +37,7 @@ func TestScan_DetectsViolations(t *testing.T) {
 		Exclude: []string{"node_modules"},
 	}
 
-	results, err := scan(dir, cfg, 0)
+	results, _, err := scan(dir, cfg, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestScan_RuleOverride(t *testing.T) {
 		Exclude: []string{},
 	}
 
-	results, err := scan(dir, cfg, 0)
+	results, _, err := scan(dir, cfg, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +97,7 @@ func TestScan_SkipRule(t *testing.T) {
 		Exclude: []string{},
 	}
 
-	results, err := scan(dir, cfg, 0)
+	results, _, err := scan(dir, cfg, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +116,7 @@ func TestScan_MaxOverride(t *testing.T) {
 		Exclude: []string{},
 	}
 
-	results, err := scan(dir, cfg, 200)
+	results, _, err := scan(dir, cfg, 200)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,14 +133,14 @@ func TestScan_MaxOverride(t *testing.T) {
 
 func TestScan_RootNotExist(t *testing.T) {
 	cfg := Config{Default: DefaultConfig{MaxLines: 100}, Exclude: []string{}}
-	_, err := scan("/nonexistent/path/abc123", cfg, 0)
+	_, _, err := scan("/nonexistent/path/abc123", cfg, 0)
 	if err == nil {
 		t.Error("expected error for nonexistent root")
 	}
 }
 
-func TestCountLines_Error(t *testing.T) {
-	_, err := countLines("/nonexistent/file.txt")
+func TestCountFile_Error(t *testing.T) {
+	_, _, _, err := countFile("/nonexistent/file.txt", ".go")
 	if err == nil {
 		t.Error("expected error for nonexistent file")
 	}
@@ -152,7 +152,7 @@ func TestScan_SkipsBinaryPath(t *testing.T) {
 	writeFile(t, dir, "main.go", lines(10))
 
 	cfg := Config{Default: DefaultConfig{MaxLines: 100}, Exclude: []string{}}
-	results, err := scan(dir, cfg, 0)
+	results, _, err := scan(dir, cfg, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +172,7 @@ func TestScan_ErrorInSubdir(t *testing.T) {
 	defer os.Chmod(subdir, 0755)
 
 	cfg := Config{Default: DefaultConfig{MaxLines: 100}, Exclude: []string{}}
-	_, err := scan(dir, cfg, 0)
+	_, _, err := scan(dir, cfg, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -184,7 +184,7 @@ func TestScan_SkipsBinaryContent(t *testing.T) {
 	writeFile(t, dir, "main.go", lines(10))
 
 	cfg := Config{Default: DefaultConfig{MaxLines: 100}, Exclude: []string{}}
-	results, err := scan(dir, cfg, 0)
+	results, _, err := scan(dir, cfg, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,7 +201,7 @@ func TestScan_SkipsExcludedFile(t *testing.T) {
 	writeFile(t, dir, "main.go", lines(10))
 
 	cfg := Config{Default: DefaultConfig{MaxLines: 100}, Exclude: []string{"*.lock"}}
-	results, err := scan(dir, cfg, 0)
+	results, _, err := scan(dir, cfg, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -221,7 +221,7 @@ func TestScan_SkipsUnreadableFile(t *testing.T) {
 	defer os.Chmod(locked, 0644)
 
 	cfg := Config{Default: DefaultConfig{MaxLines: 100}, Exclude: []string{}}
-	_, err := scan(dir, cfg, 0)
+	_, _, err := scan(dir, cfg, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

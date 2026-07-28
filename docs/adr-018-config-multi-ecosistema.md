@@ -34,6 +34,25 @@ Si un proyecto tiene `pyproject.toml` **y** `package.json` simultáneamente (cas
 
 Esto NO es una fusión profunda; es un fallback secuencial: el primer archivo que tenga un valor para un campo gana. Los archivos posteriores en la chain solo se consultan para campos que los anteriores no definen.
 
+### Semántica verificable del merge por campo
+
+Esta es la semántica que hoy implementan `config_chain.go` (recorre la cadena `pyproject.toml → package.json → composer.json`) y `config_merge.go` (combina campo a campo) en cada tool. Se enuncia como invariantes verificables por test:
+
+1. **Gana el primer archivo de la cadena que define cada campo.** El merge es *por campo*, no *por archivo*: si `pyproject.toml` define `maxLines` y `package.json` define `exclude`, el resultado toma `maxLines` del primero y `exclude` del segundo. "Definir" significa aportar un valor no-cero / no-vacío; un campo ausente o en su valor cero (`0`, `""`, slice vacío) se considera **no definido** y deja pasar al siguiente archivo de la cadena.
+
+2. **Los arrays son atómicos.** Colecciones como `rules`, `exclude`, `patterns`, `allowlist` NO se concatenan ni se fusionan elemento a elemento: gana **entero** el array del primer archivo de la cadena que lo define (no-vacío). Un `package.json` con `exclude: ["vendor"]` no se suma a un `composer.json` con `exclude: ["node_modules"]`; se toma solo el primero de la cadena que traiga la lista.
+
+3. **Al agotar la cadena, defaults compilados.** Tras recorrer los tres archivos, los campos que ninguno definió los rellena `applyConfigDefaults` con los defaults compilados en el binario. Esto garantiza que el `Config` resultante siempre esté completo, aunque no exista ningún archivo de config.
+
+Consecuencias verificables de estas tres reglas:
+
+- Dos archivos con campos disjuntos producen la **unión** de sus campos (regla 1).
+- Dos archivos que definen el **mismo** campo escalar → gana el primero de la cadena; el segundo se ignora para ese campo (regla 1).
+- Dos archivos que definen el **mismo** array → gana el array del primero entero, sin mezcla (regla 2).
+- Cero archivos presentes → `Config` == defaults compilados (regla 3).
+
+`<tool>.json` dedicado y los CLI flags se resuelven **fuera** de esta cadena de fallback (niveles 1 y 2 de la precedencia de arriba, con mayor prioridad); la semántica descrita aquí gobierna exclusivamente los tres archivos idiomáticos de ecosistema y el relleno final con defaults.
+
 ### Por qué un parser TOML mínimo en Go puro
 
 Go stdlib no incluye `encoding/toml`. Tres opciones:

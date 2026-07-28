@@ -2,10 +2,13 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/artiko00/open-harness/tools/_shared/pathmatch"
 )
 
 func compilePatterns(rules []PatternRule) ([]compiledRule, error) {
@@ -20,44 +23,50 @@ func compilePatterns(rules []PatternRule) ([]compiledRule, error) {
 	return compiled, nil
 }
 
-func scanFile(path, relPath string, compiled []compiledRule, allowlist []string) ([]Finding, error) {
-	f, err := os.Open(path)
+// scanFile devuelve los hallazgos y, si el archivo no pudo analizarse, el
+// motivo de omisión. Motivo vacío significa que el archivo se leyó completo.
+// Decodifica UTF-16 (por BOM) a UTF-8 antes de aplicar las reglas y usa una
+// ventana de una línea de lookahead para asignaciones partidas.
+func scanFile(path, relPath string, compiled []compiledRule, cfg Config) ([]Finding, string) {
+	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, pathmatch.ReasonReadError
 	}
-	defer f.Close()
+
+	lines, reason := splitLines(decodeContent(data))
+	if reason != "" {
+		return nil, reason
+	}
 
 	var findings []Finding
-	lineNum := 0
-	s := bufio.NewScanner(f)
-	s.Buffer(make([]byte, 1024*1024), 1024*1024)
-
-	for s.Scan() {
-		lineNum++
-		line := s.Text()
-
-		if isAllowed(line, allowlist) {
-			continue
+	for i, line := range lines {
+		candidate := line
+		if i+1 < len(lines) && isDanglingKey(line) {
+			candidate = line + " " + strings.TrimSpace(lines[i+1])
 		}
-
-		for _, c := range compiled {
-			if c.re.MatchString(line) {
-				findings = append(findings, Finding{
-					RelPath:  relPath,
-					Line:     lineNum,
-					Content:  truncate(strings.TrimSpace(line), 80),
-					RuleName: c.rule.Name,
-					Severity: c.rule.Severity,
-				})
-			}
-		}
+		findings = append(findings, matchLine(candidate, i+1, relPath, compiled, cfg)...)
 	}
-
-	return findings, s.Err()
+	return findings, ""
 }
 
-func isAllowed(line string, allowlist []string) bool {
-	lower := strings.ToLower(line)
+func splitLines(data []byte) ([]string, string) {
+	s := bufio.NewScanner(bytes.NewReader(data))
+	s.Buffer(make([]byte, 64*1024), pathmatch.BufferLimit)
+
+	var lines []string
+	for s.Scan() {
+		lines = append(lines, s.Text())
+	}
+	// El único error posible sobre un bytes.Reader es bufio.ErrTooLong (línea
+	// que excede el buffer); io.EOF no cuenta como error para el Scanner.
+	if s.Err() != nil {
+		return nil, pathmatch.ReasonLineTooLong
+	}
+	return lines, ""
+}
+
+func isAllowed(value string, allowlist []string) bool {
+	lower := strings.ToLower(value)
 	for _, a := range allowlist {
 		if strings.Contains(lower, strings.ToLower(a)) {
 			return true

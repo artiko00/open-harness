@@ -5,96 +5,71 @@ import (
 	"strings"
 )
 
-// findTestCandidates returns possible test filenames for a given source file
+// findTestCandidates returns possible test filenames for a given source file.
+// Un archivo que ya es test no necesita candidatos.
 func findTestCandidates(filename string, lang languageMapping) []string {
-	// Get base name without extension
+	if !isSourceFile(filename, lang) {
+		return nil
+	}
 	ext := filepath.Ext(filename)
 	base := strings.TrimSuffix(filename, ext)
 
-	// If the file is already a test file, return empty (tests don't need tests)
-	if isTestFile(filename, lang.extensions, lang.testSuffixes) {
-		return nil
-	}
-
 	var candidates []string
-
-	// Generate candidates based on suffix patterns
 	for _, suffix := range lang.testSuffixes {
 		candidates = append(candidates, base+suffix+ext)
 	}
-
-	// Generate candidates based on prefix patterns
 	for _, prefix := range lang.testPrefixes {
 		candidates = append(candidates, prefix+filename)
 	}
-
 	return candidates
 }
 
-// isTestFile checks if a file is a test file based on extension and naming patterns
-func isTestFile(filename string, extensions []string, testIndicators []string) bool {
+// tieneExt indica si filename termina en alguna de las extensiones dadas.
+func tieneExt(filename string, extensions []string) bool {
 	ext := filepath.Ext(filename)
-
-	// Must have a source extension
-	hasSourceExt := false
 	for _, e := range extensions {
 		if ext == e {
-			hasSourceExt = true
-			break
-		}
-	}
-	if !hasSourceExt {
-		return false
-	}
-
-	// Check test indicators (suffixes/prefixes in the filename without extension)
-	base := strings.TrimSuffix(filename, ext)
-	for _, indicator := range testIndicators {
-		if strings.HasSuffix(base, indicator) || strings.HasPrefix(base, indicator) {
 			return true
 		}
 	}
-
 	return false
 }
 
-// isSourceFile checks if a file is a source file (not a test file)
-func isSourceFile(filename string, extensions []string) bool {
-	ext := filepath.Ext(filename)
-
-	// Must have a source extension
-	hasSourceExt := false
-	for _, e := range extensions {
-		if ext == e {
-			hasSourceExt = true
-			break
-		}
-	}
-	if !hasSourceExt {
+// isTestFile checks if a file is a test file based on extension and naming
+// patterns (sufijos O prefijos: reconoce tanto foo_test.py como test_foo.py).
+func isTestFile(filename string, extensions []string, indicators []string) bool {
+	if !tieneExt(filename, extensions) {
 		return false
 	}
-
-	// Check if it's actually a test file
-	base := strings.TrimSuffix(filename, ext)
-	testSuffixes := []string{"test", "spec", "Test", "Spec"}
-	for _, suffix := range testSuffixes {
-		if strings.HasSuffix(base, suffix) {
-			return false
+	base := strings.TrimSuffix(filename, filepath.Ext(filename))
+	for _, ind := range indicators {
+		if strings.HasSuffix(base, ind) || strings.HasPrefix(base, ind) {
+			return true
 		}
 	}
-
-	return true
+	return false
 }
 
-// testExists probes every layout-aware search dir (ADR-019, F-016).
+// isSourceFile indica si filename es fuente analizable: tiene extensión del
+// lenguaje y NO es un archivo de test (por sufijo o por prefijo, p.ej. test_x.py).
+func isSourceFile(filename string, lang languageMapping) bool {
+	if !tieneExt(filename, lang.extensions) {
+		return false
+	}
+	indicators := append(append([]string{}, lang.testSuffixes...), lang.testPrefixes...)
+	return !isTestFile(filename, lang.extensions, indicators)
+}
+
+// testExists probes every layout-aware search dir (ADR-019, F-016). Un candidato
+// solo cuenta si además contiene un marcador de test del lenguaje (8.15).
 func testExists(sourcePath, root string, candidates []string, lang languageMapping) string {
 	for _, dir := range testSearchDirs(sourcePath, root, lang) {
 		for _, candidate := range candidates {
-			if fileExists(filepath.Join(dir, candidate)) {
+			p := filepath.Join(dir, candidate)
+			if fileExists(p) && contieneMarcador(p, lang.testMarkers) {
 				return candidate
 			}
 		}
 	}
 	return ""
 }
-

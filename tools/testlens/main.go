@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const version = "0.2.5"
+const version = "0.3.0"
 
 var osExit = os.Exit
 
@@ -79,6 +79,7 @@ CHECK OPTIONS:
   --dir       directory to scan                   (default: .)
   --fail      exit 1 if untested files found     (for CI)
   --no-color  disable colored output
+  --format    output format: console | json      (default: console)
 
 LANGUAGES:
   go, typescript, javascript, python, ruby, rust, java, kotlin, csharp

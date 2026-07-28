@@ -11,7 +11,14 @@ type jsonReport struct {
 	ScannedFiles int             `json:"scannedFiles"`
 	MatchCount   int             `json:"matchCount"`
 	Matches      []jsonMatch     `json:"matches"`
+	Skipped      []jsonSkip      `json:"skipped"`
 	Summary      jsonReportStats `json:"summary"`
+}
+
+// jsonSkip es un archivo no analizado, con el motivo de la omisión.
+type jsonSkip struct {
+	Path   string `json:"path"`
+	Reason string `json:"reason"`
 }
 
 type jsonMatch struct {
@@ -22,6 +29,7 @@ type jsonMatch struct {
 	StartLineB int    `json:"startLineB"`
 	EndLineB   int    `json:"endLineB"`
 	Tokens     int    `json:"tokens"`
+	Kind       string `json:"kind"`
 }
 
 type jsonReportStats struct {
@@ -37,13 +45,18 @@ func reportJSON(matches []Match, opts ReportOpts, w io.Writer) int {
 		jms = append(jms, jsonMatch{
 			FileA: m.FileA, StartLineA: m.StartLineA, EndLineA: m.EndLineA,
 			FileB: m.FileB, StartLineB: m.StartLineB, EndLineB: m.EndLineB,
-			Tokens: m.Tokens,
+			Tokens: m.Tokens, Kind: m.Kind,
 		})
+	}
+	jss := make([]jsonSkip, 0, len(opts.Skips))
+	for _, s := range opts.Skips {
+		jss = append(jss, jsonSkip{Path: s.Path, Reason: s.Reason})
 	}
 	rep := jsonReport{
 		ScannedFiles: opts.ScannedCount,
 		MatchCount:   len(matches),
 		Matches:      jms,
+		Skipped:      jss,
 		Summary:      jsonReportStats{TopDuplicatedFiles: topDuplicatedFiles(matches, 5)},
 	}
 	enc := json.NewEncoder(w)
