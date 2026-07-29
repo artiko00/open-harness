@@ -19,10 +19,32 @@ Todo lo demás se **deriva** de ahí y `check-versions.sh` lo verifica:
 4 plataformas + pins), y los `pyproject.toml` de PyPI (tool + meta + pins) más el
 `__version__` del meta.
 
+## Changelog (git-cliff)
+
+Los `CHANGELOG.md` se redactan con ayuda de [git-cliff](https://github.com/orhun/git-cliff)
+(binario único, MIT/Apache-2.0, sin runtime — como los lenses) a partir de los
+commits convencionales (`feat:`/`fix:`/`refactor:`/`docs:`). La config vive en
+`cliff.toml` y el wrapper en `scripts/changelog.sh`:
+
+```bash
+scripts/changelog.sh                 # BORRADOR a stdout, por tool + suite (para revisar/curar)
+scripts/changelog.sh --write v0.3.2  # prepende la sección vX.Y.Z a cada CHANGELOG.md
+```
+
+El modo por defecto **imprime un borrador** de lo que cambió desde el último tag,
+scopeado por tool (`--include-path tools/<tool>/**`). Los `CHANGELOG.md` existentes
+están **curados a mano** (prosa, notas de BREAKING, links de upgrade): `--write`
+*prepende* la sección nueva sin tocar lo anterior, así que revisá y curá el borrador
+antes de publicar (los `BREAKING CHANGE` y el "por qué" van a mano si el commit no
+los trae). git-cliff necesita estar en PATH (`cargo install git-cliff`).
+
 ## Pasos
 
 1. **Bump.** Editar `const version` en el/los `tools/<tool>/main.go` que cambian.
    Los cuatro núcleos se mueven juntos; `scopelens` por separado.
+
+1b. **Changelog.** `scripts/changelog.sh --write vX.Y.Z` para prepender las entradas
+    de la versión nueva, y curar el resultado.
 
 2. **Sincronizar los manifiestos derivados** a la nueva versión:
    - `open-harness.json` (bloque de cada tool + `version` raíz del meta).
