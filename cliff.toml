@@ -1,0 +1,64 @@
+# git-cliff — configuracion de changelog para open-harness.
+#
+# Genera entradas de changelog desde los commits convencionales (feat/fix/...).
+# Formato Keep a Changelog, para calzar con los CHANGELOG.md ya curados a mano.
+#
+# Uso tipico (ver scripts/changelog.sh y docs/RELEASE.md): generar SOLO la seccion
+# de la version nueva y prependerla al changelog existente, preservando lo curado.
+#   git-cliff --include-path 'tools/<tool>/**' --unreleased --tag vX.Y.Z \
+#     --prepend tools/<tool>/CHANGELOG.md
+
+[changelog]
+# Encabezado del archivo (solo cuando se genera desde cero, no en --prepend).
+header = """
+# Changelog
+
+All notable changes are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+"""
+
+# Cuerpo: una seccion por version (tag), agrupada por tipo de cambio.
+body = """
+{% if version %}\
+## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group }}
+{% for commit in commits %}
+- {{ commit.message | upper_first }}\
+{% endfor %}
+{% endfor %}\n
+"""
+
+trim = true
+
+[git]
+# Solo commits convencionales; los que no lo son se descartan.
+conventional_commits = true
+filter_unconventional = true
+filter_commits = true
+
+# Mapeo tipo -> grupo (orden Keep a Changelog). skip=true los excluye.
+commit_parsers = [
+  { message = "^feat", group = "Added" },
+  { message = "^fix", group = "Fixed" },
+  { message = "^perf", group = "Performance" },
+  { message = "^refactor", group = "Changed" },
+  { message = "^docs", group = "Documentation" },
+  { message = "^(chore|test|ci|build|style|release)", skip = true },
+  { message = "^Merge", skip = true },
+]
+
+# Cambios que rompen compatibilidad (feat!/fix! o "BREAKING CHANGE" en el body).
+protect_breaking_commits = true
+
+# Solo cuentan tags de version vX.Y.Z (no otros tags eventuales).
+tag_pattern = "v[0-9]*"
+
+# Orden de commits dentro de cada grupo.
+sort_commits = "oldest"
