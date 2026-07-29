@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/open-harness",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "All open-harness linting tools in one package \u2014 linelens, dupelens, secretlens, testlens",
   "keywords": [
     "linter",
@@ -23,10 +23,10 @@
     "scopelens": "bin/scopelens.js"
   },
   "dependencies": {
-    "@open_harness/linelens": "0.3.1",
-    "@open_harness/dupelens": "0.3.1",
-    "@open_harness/secretlens": "0.3.1",
-    "@open_harness/testlens": "0.3.1",
+    "@open_harness/linelens": "0.3.2",
+    "@open_harness/dupelens": "0.3.2",
+    "@open_harness/secretlens": "0.3.2",
+    "@open_harness/testlens": "0.3.2",
     "@open_harness/scopelens": "0.1.0"
   },
   "engines": {

@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/secretlens",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Secret and credential detector for any language — works with Husky, CI, and any git hook system",
   "keywords": [
     "security",
@@ -19,10 +19,10 @@
     "test": "node bin/secretlens.js version"
   },
   "optionalDependencies": {
-    "@open_harness/secretlens-linux-x64": "0.3.1",
-    "@open_harness/secretlens-darwin-arm64": "0.3.1",
-    "@open_harness/secretlens-darwin-x64": "0.3.1",
-    "@open_harness/secretlens-win32-x64": "0.3.1"
+    "@open_harness/secretlens-linux-x64": "0.3.2",
+    "@open_harness/secretlens-darwin-arm64": "0.3.2",
+    "@open_harness/secretlens-darwin-x64": "0.3.2",
+    "@open_harness/secretlens-win32-x64": "0.3.2"
   },
   "engines": {
     "node": ">=16"

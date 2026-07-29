@@ -1,29 +1,29 @@
 {
-  "version": "0.3.1",
+  "version": "0.3.2",
   "tools": [
     {
       "name": "linelens",
       "description": "File length linter for any language",
       "path": "tools/linelens",
-      "version": "0.3.1"
+      "version": "0.3.2"
     },
     {
       "name": "dupelens",
       "description": "Code duplication detector (Rabin-Karp, language-agnostic)",
       "path": "tools/dupelens",
-      "version": "0.3.1"
+      "version": "0.3.2"
     },
     {
       "name": "secretlens",
       "description": "Secret and credential detector for any codebase",
       "path": "tools/secretlens",
-      "version": "0.3.1"
+      "version": "0.3.2"
     },
     {
       "name": "testlens",
       "description": "Detect source files missing tests (multi-language)",
       "path": "tools/testlens",
-      "version": "0.3.1"
+      "version": "0.3.2"
     },
     {
       "name": "scopelens",

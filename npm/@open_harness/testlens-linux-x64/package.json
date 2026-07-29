@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/testlens-linux-x64",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "testlens binary for Linux x64",
   "os": [
     "linux"
