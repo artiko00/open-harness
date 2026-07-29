@@ -9,7 +9,7 @@ Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [
 ## Install
 
 ```bash
-pip install open-harness
+pip install open-harness-suite
 ```
 
 pip resolves the dependency tree and downloads the right native wheel per platform for each tool (Linux x86_64, macOS arm64, macOS x86_64, Windows x86_64).
@@ -22,6 +22,7 @@ pip resolves the dependency tree and downloads the right native wheel per platfo
 | **dupelens**   | Code duplication detector (Rabin-Karp, language-agnostic). |
 | **secretlens** | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, …). |
 | **testlens**   | Test coverage detector — finds source files without tests, 9 languages. |
+| **scopelens**  | Per-PR file- and line-budget gate over `git` — counts the branch-vs-base diff at pre-commit. |
 
 After install, all five binaries live in your venv's `bin/`:
 
@@ -30,6 +31,7 @@ linelens   check
 dupelens   check
 secretlens check
 testlens   check --lang python
+scopelens  check
 ```
 
 ## Configure from `pyproject.toml`
@@ -47,11 +49,12 @@ Precedence per tool: `--config <path>` > dedicated `*.json` > `pyproject.toml` t
 
 ```yaml
 # GitHub Actions / GitLab CI / etc.
-- pip install open-harness
+- pip install open-harness-suite
 - linelens   check --fail
 - dupelens   check --fail
 - secretlens check --fail
 - testlens   check --fail --lang python
+- scopelens  check --fail
 ```
 
 ```yaml
@@ -91,6 +94,7 @@ Each tool ships in three ecosystems with identical behavior. Pick the registry t
 | dupelens   | [open-harness-dupelens](https://pypi.org/project/open-harness-dupelens/)     | [@open_harness/dupelens](https://www.npmjs.com/package/@open_harness/dupelens)     | [open-harness/dupelens](https://packagist.org/packages/open-harness/dupelens)     |
 | secretlens | [open-harness-secretlens](https://pypi.org/project/open-harness-secretlens/) | [@open_harness/secretlens](https://www.npmjs.com/package/@open_harness/secretlens) | [open-harness/secretlens](https://packagist.org/packages/open-harness/secretlens) |
 | testlens   | [open-harness-testlens](https://pypi.org/project/open-harness-testlens/)     | [@open_harness/testlens](https://www.npmjs.com/package/@open_harness/testlens)     | [open-harness/testlens](https://packagist.org/packages/open-harness/testlens)     |
+| scopelens  | [open-harness-scopelens](https://pypi.org/project/open-harness-scopelens/)   | [@open_harness/scopelens](https://www.npmjs.com/package/@open_harness/scopelens)   | [open-harness/scopelens](https://packagist.org/packages/open-harness/scopelens)   |
 
 ---
 
@@ -103,14 +107,14 @@ Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
 ### Instalación
 
 ```bash
-pip install open-harness
+pip install open-harness-suite
 ```
 
 pip descarga automáticamente la wheel nativa correcta para tu plataforma por cada tool (Linux x86_64, macOS arm64, macOS x86_64, Windows x86_64).
 
 ### Qué incluye
 
-Los 4 binarios disponibles en el `bin/` de tu venv tras el install: `linelens`, `dupelens`, `secretlens`, `testlens`.
+Los 5 binarios disponibles en el `bin/` de tu venv tras el install: `linelens`, `dupelens`, `secretlens`, `testlens`, `scopelens`.
 
 ### Configurá desde `pyproject.toml`
 

@@ -25,7 +25,7 @@ open_harness_linelens-0.1.3-py3-none-win_amd64.whl
 
 pip selects the matching wheel automatically based on `sys.platform` and `platform.machine()`. The `__main__.py` entry-point resolves to the bundled binary inside the wheel and `os.execv`'s into it — no Python startup cost per invocation past the entry-point.
 
-The meta-package `open-harness` is **pure Python** (no binary). It only declares dependencies on the 4 per-tool packages, so `pip install open-harness` installs the suite in one shot.
+The meta-package `open-harness-suite` (dir `pypi/open_harness/`) is **pure Python** (no binary). It only declares dependencies on the 5 per-tool packages, so `pip install open-harness-suite` installs the suite in one shot. (The bare `open-harness` name collides with PyPI's similar-name guard against the existing `openharness`, so the distribution ships as `open-harness-suite`.)
 
 ## Building
 
@@ -64,6 +64,6 @@ Order matters: publish the 4 per-tool packages **before** the meta. The meta has
 ## Roadmap (F-012 in `.agent/feature-list.json`)
 
 - [ ] `[tool.<name>]` table in `pyproject.toml` as an alternate config source (mirrors the `package.json` fallback on npm). Requires extending each tool's Go `config_pkg.go`.
-- [ ] Smoke test in a fresh venv: `pip install open-harness && linelens version && …`.
+- [ ] Smoke test in a fresh venv: `pip install open-harness-suite && linelens version && …`.
 - [ ] Add a `Usage in Python projects` section to the root README.
 - [ ] ADR-016 documenting the wheel-per-platform decision and why we don't ship a universal `py3-none-any` wheel.
