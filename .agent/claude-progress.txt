@@ -125,3 +125,17 @@ SESSION — F-020: onboarding de configuracion
 - Fix meta pypi: __version__ 0.2.3->0.3.0 y menciona los 5 tools.
 - secretlens.json excluye **/CHANGELOG.md (docs con ejemplos de credenciales).
 - En develop, change openspec add-config-onboarding.
+
+SESSION — release 0.3.1 + tooling de versiones + docs
+------------------------------------------------------
+- Release publicado: npm 0.3.1 (4 tools + meta) + scopelens 0.1.0 (5 paquetes);
+  PyPI 0.3.1 (4 tools) + open-harness-scopelens 0.1.0. Meta PyPI bloqueado por
+  nombre (aceptado). Tags v0.3.0, v0.3.1. Flujo develop->PR->main (PRs #1-#4).
+- scripts/check-versions.sh EXTENDIDO: ahora gatea tambien npm (package.json de
+  tool + 4 plataformas + pins + meta) y PyPI (pyproject de tool + meta + pins +
+  __version__). 79 checks (antes ~17). Solo grep/sed, sin deps.
+- docs/RELEASE.md nuevo: proceso de release completo con check-versions como gate.
+  Enlazado desde AGENTS.md.
+- Archivados los changes add-scopelens y add-config-onboarding; sus specs
+  promovidos a openspec/specs/ (14 capabilities canonicas en total).
+- Modelo de ramas main+develop consolidado; se publica desde main.

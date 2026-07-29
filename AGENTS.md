@@ -214,6 +214,12 @@ lefthook `pre-commit` automatiza los 4 gates (linelens, dupelens, secretlens y t
 
 ---
 
+> **Proceso de release** (bump, sincronización de manifiestos npm/PyPI, publish,
+> tags y flujo de ramas): ver [docs/RELEASE.md](docs/RELEASE.md). El gate único
+> antes de publicar es `bash scripts/check-versions.sh`, que verifica que la
+> versión coincida en `main.go`, `open-harness.json`, README/AGENTS y **todos los
+> manifiestos de distribución** (npm y PyPI).
+
 ## 12. Errores recurrentes a evitar
 
 | Error | Síntoma | Solución |
