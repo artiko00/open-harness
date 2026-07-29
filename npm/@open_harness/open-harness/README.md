@@ -22,7 +22,7 @@ npm resolves the dependency tree and pulls the right native binary for your plat
 | **dupelens**   | Code duplication detector (Rabin-Karp, language-agnostic). |
 | **secretlens** | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, …). |
 | **testlens**   | Test coverage detector — finds source files without tests, 10 languages. |
-| **scopelens**  | Per-PR file-budget gate — counts the branch-vs-base diff locally, at `pre-commit`. |
+| **scopelens**  | Per-PR file- and line-budget gate — counts the branch-vs-base diff locally, at `pre-commit`. |
 
 After install, all five binaries are available via `npx`:
 

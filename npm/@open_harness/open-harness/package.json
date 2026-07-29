@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/open-harness",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "All open-harness linting tools in one package \u2014 linelens, dupelens, secretlens, testlens",
   "keywords": [
     "linter",
