@@ -19,7 +19,8 @@
     "linelens": "bin/linelens.js",
     "dupelens": "bin/dupelens.js",
     "secretlens": "bin/secretlens.js",
-    "testlens": "bin/testlens.js"
+    "testlens": "bin/testlens.js",
+    "scopelens": "bin/scopelens.js"
   },
   "dependencies": {
     "@open_harness/linelens": "0.3.1",
