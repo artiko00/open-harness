@@ -9,6 +9,8 @@
 #   - cada mencion de version (vX.Y.Z) en README.md y AGENTS.md,
 #   - npm: package.json del tool, de sus 4 paquetes de plataforma, y los pins
 #     (optionalDependencies del tool -> plataformas; dependencies del meta -> tools),
+#     y que el meta EXPONGA el comando de cada tool (entrada bin + shim que lo
+#     re-exporta), no solo que dependa de el,
 #   - PyPI: pyproject.toml del tool, del meta, sus pins, y __version__ del meta.
 #
 # Sale con 1 si alguna diverge, 0 si todas coinciden. Un solo comando verificable
@@ -61,6 +63,32 @@ pyproj_pin() { grep -E "open-harness-$2==" "$1" 2>/dev/null | sed -E 's/.*==([0-
 
 # __version__ = "X" de un __init__.py.
 py_dunder_version() { grep -E '__version__[[:space:]]*=' "$1" 2>/dev/null | sed -E 's/.*"([^"]+)".*/\1/' | head -n1; }
+
+# valor "bin/<x>" de una entrada bin de package.json. Distingue de las deps (que
+# son versiones) exigiendo que el valor empiece con "bin/".
+pkg_bin_entry() { grep -E "\"$2\"[[:space:]]*:[[:space:]]*\"bin/" "$1" 2>/dev/null | sed -E 's/.*"(bin\/[^"]+)".*/\1/' | head -n1; }
+
+# check_meta_shim <tool>: el meta debe EXPONER el comando del tool, no solo
+# depender de el. Verifica la entrada bin del package.json y el shim que lo
+# re-exporta (el hueco que dejo a scopelens sin comando en 0.3.1).
+check_meta_shim() {
+  local tool="$1"
+  local binpath shim
+  binpath="$(pkg_bin_entry "${META_NPM}" "${tool}")"
+  if [[ -n "${binpath}" ]]; then
+    pass "npm meta bin[${tool}] -> ${binpath}"
+  else
+    fail "npm meta bin[${tool}]: sin entrada en package.json (comando NO expuesto)"
+  fi
+  shim="${NPM_DIR}/open-harness/bin/${tool}.js"
+  if [[ ! -f "${shim}" ]]; then
+    fail "npm meta shim bin/${tool}.js: no existe (comando NO expuesto)"
+  elif grep -q "@open_harness/${tool}/bin/${tool}.js" "${shim}"; then
+    pass "npm meta shim bin/${tool}.js"
+  else
+    fail "npm meta shim bin/${tool}.js: no re-exporta @open_harness/${tool}"
+  fi
+}
 
 manifest_tool_version() {
   awk -v tool="$1" '
@@ -155,14 +183,17 @@ fi
 echo "[meta] open-harness (referencia ${REFERENCE})"
 expect "${MANIFEST} (version raiz)" "$(manifest_top_version)" "${REFERENCE}"
 
-# npm meta: version + dependencies -> cada tool a su version.
+# npm meta: version + dependencies -> cada tool a su version, y ADEMAS que exponga
+# el comando de cada tool (bin entry + shim), no solo que dependa de el.
 if [[ -f "${META_NPM}" ]]; then
   expect "npm meta open-harness" "$(pkg_version "${META_NPM}")" "${REFERENCE}"
   for tool in "${TOOLS[@]}"; do
     expect "npm meta dep ${tool}" "$(pkg_dep_version "${META_NPM}" "@open_harness/${tool}")" "${REFERENCE}"
+    check_meta_shim "${tool}"
   done
   if [[ -n "${SCOPELENS_VER}" ]]; then
     expect "npm meta dep scopelens" "$(pkg_dep_version "${META_NPM}" "@open_harness/scopelens")" "${SCOPELENS_VER}"
+    check_meta_shim scopelens
   fi
 else
   fail "npm meta: no existe ${META_NPM}"
