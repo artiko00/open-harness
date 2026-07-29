@@ -84,7 +84,7 @@ func run(args []string) int {
 
 Los primeros 4 tools (linelens, dupelens, secretlens, testlens) usan sólo **`0`** (ok) y **`1`** (violaciones encontradas, con `--fail`).
 
-**`scopelens` (v0.1.0) agrega el exit code `2`: "no se pudo medir".** El gate no puede inventar un conteo cuando le falta información, así que **nunca falla en verde**: cada condición que impide una medición confiable devuelve `2`, no `0`.
+**`scopelens` (v0.2.0) agrega el exit code `2`: "no se pudo medir".** El gate no puede inventar un conteo cuando le falta información, así que **nunca falla en verde**: cada condición que impide una medición confiable devuelve `2`, no `0`.
 
 | Code | Semántica |
 |---|---|
@@ -120,7 +120,7 @@ open-harness/
 │   ├── dupelens/        ← v0.3.2 (duplicate detector, Rabin-Karp)
 │   ├── secretlens/      ← v0.3.2 (secret/credential detector)
 │   ├── testlens/        ← v0.3.2 (test coverage detector, multi-language)
-│   └── scopelens/       ← v0.1.0 (per-PR file-budget gate sobre git, exit 2 = no medible)
+│   └── scopelens/       ← v0.2.0 (per-PR file+line budget gate sobre git, exit 2 = no medible)
 ├── npm/@open_harness/   ← wrappers npm por plataforma
 ├── docs/                ← ADRs (decisiones arquitectónicas)
 ├── scripts/             ← build.sh, build-npm.sh, bench-vs-jscpd.sh

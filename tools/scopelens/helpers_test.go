@@ -34,6 +34,10 @@ type fakeGit struct {
 	short     *resp
 	staged    *resp
 	committed *resp
+	// Numstat opcional: nil devuelve churn vacío (los tests que no miden líneas
+	// no necesitan declararlo).
+	stagedNum    *resp
+	committedNum *resp
 }
 
 var errRef = errors.New("ref inexistente")
@@ -56,6 +60,10 @@ func (f *fakeGit) run(_ context.Context, args ...string) ([]byte, error) {
 		return f.mergeBase.resolve("abcdef1234567890")
 	case j == "rev-parse --short abcdef1234567890" || (len(args) == 3 && args[1] == "--short"):
 		return f.short.resolve("abcdef1")
+	case args[0] == "diff" && contains(args, "--numstat") && contains(args, "--cached"):
+		return f.stagedNum.resolve("")
+	case args[0] == "diff" && contains(args, "--numstat"):
+		return f.committedNum.resolve("")
 	case args[0] == "diff" && contains(args, "--cached"):
 		return f.staged.resolve("")
 	case args[0] == "diff":

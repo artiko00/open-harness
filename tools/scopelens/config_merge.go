@@ -7,6 +7,15 @@ func mergeConfig(dst *Config, src Config) {
 	if dst.MaxFiles == 0 {
 		dst.MaxFiles = src.MaxFiles
 	}
+	if dst.MaxLines == 0 {
+		dst.MaxLines = src.MaxLines
+	}
+	if dst.Mode == "" {
+		dst.Mode = src.Mode
+	}
+	if dst.LineMetric == "" {
+		dst.LineMetric = src.LineMetric
+	}
 	if dst.Base == "" {
 		dst.Base = src.Base
 	}
@@ -21,6 +30,9 @@ func mergeConfig(dst *Config, src Config) {
 func defaultConfigJSON() string {
 	return `{
   "maxFiles": 15,
+  "maxLines": 0,
+  "mode": "or",
+  "lineMetric": "changed",
   "base": "",
   "excludeTests": false,
   "exclude": [

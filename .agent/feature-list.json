@@ -471,6 +471,22 @@
         "[integ] scripts/check-versions.sh: verificar scopelens (main.go vs manifiesto y docs) sin forzar la versión unificada 0.3.0",
         "[test] scopelens compila y go test ./... pasa con 100% de cobertura"
       ]
+    },
+    {
+      "id": "F-021",
+      "category": "functional",
+      "description": "scopelens: presupuesto de líneas de churn por PR además de archivos — maxLines (default 0 = deshabilitado), mode (or|and) para combinar con maxFiles, lineMetric (changed=add+del | added). Retrocompatible: sin maxLines el gate opera igual que 0.1.0",
+      "passes": true,
+      "steps": [
+        "[feat] Config: campos maxLines/mode/lineMetric + validación (negativo/inválido → exit 2) y defaults (0/or/changed)",
+        "[feat] churn.go: parseNumstat (added\\tdeleted\\tpath, binario '-' → 0, renames -M, paths citados) y accumulateChurn por spec",
+        "[feat] scanner.go: acumular churn del índice y de merge-base...HEAD en scanResult",
+        "[feat] report.go: countLinesFor (added vs changed) y exceeded() combinado por mode (or/and); maxLines 0 = sólo archivos",
+        "[feat] reporter.go: estado y SUMMARY muestran archivos y líneas cuando maxLines > 0",
+        "[feat] check_cmd.go: flags --max-lines/--mode/--line-metric con fs.Visit (override de config)",
+        "[doc] tutorial.go + CHANGELOG scopelens 0.2.0; caso motivador 1 archivo/11000 líneas",
+        "[test] scopelens go test ./... con 100% de cobertura"
+      ]
     }
   ]
 }

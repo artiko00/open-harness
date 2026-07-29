@@ -10,7 +10,7 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 | [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.3.2` |
 | [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.3.2` |
 | [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.3.2` |
-| [scopelens](tools/scopelens/) | Per-PR file-budget gate — counts the branch-vs-base diff at local pre-commit | `v0.1.0` |
+| [scopelens](tools/scopelens/) | Per-PR file- and line-budget gate — counts the branch-vs-base diff at local pre-commit | `v0.2.0` |
 | bigo | Big O complexity analyzer | `planned` |
 
 ---
