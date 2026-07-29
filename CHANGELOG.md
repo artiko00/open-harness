@@ -12,6 +12,16 @@ changelog:
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2026-07-29
+
+### Fixed
+
+- **The meta-package now bundles `scopelens`**: added the `scopelens` bin
+  shim and its `bin` entry so the command is exposed on install (0.3.1 shipped
+  the dependency but not the shim), and listed it across the README.
+- Corrected the README's registry claims: the all-in-one meta is **npm-only**;
+  on PyPI install the per-tool `open-harness-<tool>` packages (Packagist is planned).
+
 ## [0.1.0-scopelens] - 2026-07-28
 
 The suite gains its **fifth tool, `scopelens`** (F-019), released at `0.1.0`. It

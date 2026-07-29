@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/secretlens-darwin-arm64",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "secretlens binary for macOS Apple Silicon (arm64)",
   "os": [
     "darwin"

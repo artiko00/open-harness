@@ -1,6 +1,6 @@
 # open-harness
 
-The full **open-harness** suite in a single `pip install`. Installs all four code-quality linters at once: `linelens`, `dupelens`, `secretlens`, `testlens`.
+The full **open-harness** suite in a single `pip install`. Installs all five code-quality tools at once: `linelens`, `dupelens`, `secretlens`, `testlens`, `scopelens`.
 
 Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
@@ -23,7 +23,7 @@ pip resolves the dependency tree and downloads the right native wheel per platfo
 | **secretlens** | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, …). |
 | **testlens**   | Test coverage detector — finds source files without tests, 9 languages. |
 
-After install, all four binaries live in your venv's `bin/`:
+After install, all five binaries live in your venv's `bin/`:
 
 ```bash
 linelens   check
@@ -43,7 +43,7 @@ Each tool will read its config from `[tool.<name>]` inside your `pyproject.toml`
 
 Precedence per tool: `--config <path>` > dedicated `*.json` > `pyproject.toml` table > built-in defaults.
 
-## Run all four as a single CI gate
+## Run all five as a single CI gate
 
 ```yaml
 # GitHub Actions / GitLab CI / etc.
@@ -96,7 +96,7 @@ Each tool ships in three ecosystems with identical behavior. Pick the registry t
 
 ## Español
 
-La suite completa de **open-harness** en un solo `pip install`. Instala los cuatro linters de calidad de código: `linelens`, `dupelens`, `secretlens`, `testlens`.
+La suite completa de **open-harness** en un solo `pip install`. Instala los cinco tools de calidad de código: `linelens`, `dupelens`, `secretlens`, `testlens`, `scopelens`.
 
 Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
 
