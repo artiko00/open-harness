@@ -4,7 +4,7 @@ The full **open-harness** suite in a single package. Installs all five code-qual
 
 Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
-> **Other ecosystems**: the individual tools are also published on **PyPI** as `open-harness-<tool>` (e.g. [`open-harness-linelens`](https://pypi.org/project/open-harness-linelens/), [`open-harness-scopelens`](https://pypi.org/project/open-harness-scopelens/)) for Python projects. This all-in-one meta-package is **npm-only** — on PyPI, install the per-tool packages you need. Packagist (PHP/Composer) is planned. The underlying binaries and config formats are identical across registries.
+> **Other ecosystems**: the individual tools are also published on **PyPI** as `open-harness-<tool>` (e.g. [`open-harness-linelens`](https://pypi.org/project/open-harness-linelens/), [`open-harness-scopelens`](https://pypi.org/project/open-harness-scopelens/)) for Python projects. The all-in-one meta-package is on npm as [`@open_harness/open-harness`](https://www.npmjs.com/package/@open_harness/open-harness) and on PyPI as [`open-harness-suite`](https://pypi.org/project/open-harness-suite/) (`pip install open-harness-suite`). Packagist (PHP/Composer) is planned. The underlying binaries and config formats are identical across registries.
 
 ## Install
 
@@ -97,7 +97,7 @@ La suite completa de **open-harness** en un solo paquete. Instala los cinco tool
 
 Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
 
-> **Otros ecosistemas**: los tools individuales están también en **PyPI** como `open-harness-<tool>`. Este meta-paquete todo-en-uno es **solo de npm** — en PyPI se instalan los paquetes por tool. Packagist (PHP/Composer) está planeado. Los binarios y formatos de config son idénticos entre registries.
+> **Otros ecosistemas**: los tools individuales están también en **PyPI** como `open-harness-<tool>`. El meta-paquete todo-en-uno está en npm como [`@open_harness/open-harness`](https://www.npmjs.com/package/@open_harness/open-harness) y en PyPI como [`open-harness-suite`](https://pypi.org/project/open-harness-suite/) (`pip install open-harness-suite`). Packagist (PHP/Composer) está planeado. Los binarios y formatos de config son idénticos entre registries.
 
 ### Instalación
 

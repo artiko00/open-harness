@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "open-harness"
+name = "open-harness-suite"
 version = "0.3.3"
-description = "The full open-harness suite — linelens, dupelens, secretlens, testlens — in one install"
+description = "The full open-harness suite — linelens, dupelens, secretlens, testlens, scopelens — in one install"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Jassen Castillo", email = "castillo.cristianj@gmail.com" }]
