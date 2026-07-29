@@ -22,8 +22,22 @@ func printReport(r report, noColor bool, w io.Writer) {
 	printFiles(w, catTest, r.Test)
 	printExcluded(w, r.Excluded)
 
+	if r.MaxLines > 0 {
+		fmt.Fprintf(w, "\nSUMMARY: %d files, %d lines counted, %d excluded; limit %d files / %d lines (%s)\n",
+			r.Countable, r.Lines, len(r.Excluded), r.Max, r.MaxLines, r.Mode)
+		return
+	}
 	fmt.Fprintf(w, "\nSUMMARY: %d counted, %d excluded, limit %d\n",
 		r.Countable, len(r.Excluded), r.Max)
+}
+
+// metrics arma la parte "N files (max M)[, L lines (max K)]" del estado.
+func metrics(r report) string {
+	s := fmt.Sprintf("%d files (max %d)", r.Countable, r.Max)
+	if r.MaxLines > 0 {
+		s += fmt.Sprintf(", %d lines (max %d)", r.Lines, r.MaxLines)
+	}
+	return s
 }
 
 func header(r report) string {
@@ -39,11 +53,10 @@ func printStatus(r report, noColor bool, w io.Writer) {
 		label, color = "FAIL", colorRed
 	}
 	if noColor {
-		fmt.Fprintf(w, "  %s: %d files (max %d)\n", label, r.Countable, r.Max)
+		fmt.Fprintf(w, "  %s: %s\n", label, metrics(r))
 		return
 	}
-	fmt.Fprintf(w, "  %s%s%s%s: %d files (max %d)\n",
-		colorBold, color, label, colorReset, r.Countable, r.Max)
+	fmt.Fprintf(w, "  %s%s%s%s: %s\n", colorBold, color, label, colorReset, metrics(r))
 }
 
 func printFiles(w io.Writer, cat string, files []string) {

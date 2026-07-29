@@ -18,7 +18,7 @@ func sampleRes() scanResult {
 }
 
 func TestBuildReportClasificaYCuenta(t *testing.T) {
-	r := buildReport(sampleRes(), defaultExclude, 15, false, false)
+	r := buildReport(sampleRes(), defaultExclude, 15, 0, "or", "changed", false, false)
 	if len(r.Source) != 2 || len(r.Test) != 1 || len(r.Excluded) != 2 {
 		t.Fatalf("clasificación: src=%v test=%v exc=%v", r.Source, r.Test, r.Excluded)
 	}
@@ -28,14 +28,14 @@ func TestBuildReportClasificaYCuenta(t *testing.T) {
 }
 
 func TestBuildReportExcludeTests(t *testing.T) {
-	r := buildReport(sampleRes(), defaultExclude, 15, true, false)
+	r := buildReport(sampleRes(), defaultExclude, 15, 0, "or", "changed", true, false)
 	if r.Countable != 2 {
 		t.Fatalf("con --exclude-tests contable = %d, want 2", r.Countable)
 	}
 }
 
 func TestPrintReportNoColor(t *testing.T) {
-	r := buildReport(sampleRes(), defaultExclude, 2, false, false)
+	r := buildReport(sampleRes(), defaultExclude, 2, 0, "or", "changed", false, false)
 	var buf bytes.Buffer
 	printReport(r, true, &buf)
 	out := buf.String()
@@ -54,7 +54,7 @@ func TestPrintReportNoColor(t *testing.T) {
 }
 
 func TestPrintReportOKColor(t *testing.T) {
-	r := buildReport(sampleRes(), defaultExclude, 15, false, false)
+	r := buildReport(sampleRes(), defaultExclude, 15, 0, "or", "changed", false, false)
 	var buf bytes.Buffer
 	printReport(r, false, &buf)
 	out := buf.String()
@@ -65,7 +65,7 @@ func TestPrintReportOKColor(t *testing.T) {
 
 func TestPrintReportStagedHeader(t *testing.T) {
 	res := scanResult{Branch: "main", Files: []string{"a.go"}}
-	r := buildReport(res, defaultExclude, 15, false, true)
+	r := buildReport(res, defaultExclude, 15, 0, "or", "changed", false, true)
 	var buf bytes.Buffer
 	printReport(r, true, &buf)
 	if !strings.Contains(buf.String(), "main (sólo staged)") {
@@ -75,7 +75,7 @@ func TestPrintReportStagedHeader(t *testing.T) {
 
 func TestPrintReportSinArchivos(t *testing.T) {
 	res := scanResult{Branch: "main", MergeBase: "abc"}
-	r := buildReport(res, defaultExclude, 15, false, false)
+	r := buildReport(res, defaultExclude, 15, 0, "or", "changed", false, false)
 	var buf bytes.Buffer
 	printReport(r, true, &buf)
 	out := buf.String()
@@ -85,7 +85,7 @@ func TestPrintReportSinArchivos(t *testing.T) {
 }
 
 func TestDeterminismo20Corridas(t *testing.T) {
-	r := buildReport(sampleRes(), defaultExclude, 2, false, false)
+	r := buildReport(sampleRes(), defaultExclude, 2, 0, "or", "changed", false, false)
 	var first string
 	for i := 0; i < 20; i++ {
 		var buf bytes.Buffer

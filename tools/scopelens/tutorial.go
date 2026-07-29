@@ -43,6 +43,19 @@ composer.json vía cadena). Genera un ejemplo con: scopelens init
     Presupuesto de archivos contables del diff. 0 o ausente usa el default;
     negativo es error (exit 2).  Ej.:  "maxFiles": 20
 
+  «maxLines» (int, default 0 = deshabilitado)
+    Presupuesto de líneas de churn del diff. 0 o ausente lo deja apagado (sólo
+    cuenta archivos); negativo es error (exit 2).  Ej.:  "maxLines": 800
+
+  «mode» (string, default "or")
+    Cómo se combinan los presupuestos de archivos y líneas cuando maxLines > 0.
+    "or" falla si se excede cualquiera; "and" sólo si se exceden ambos.
+    Ej.:  "mode": "and"
+
+  «lineMetric» (string, default "changed")
+    Qué líneas cuenta maxLines. "changed" suma agregadas + borradas; "added"
+    sólo las agregadas.  Ej.:  "lineMetric": "added"
+
   «base» (string, default "")
     Rama base por defecto para el diff. Vacío autodetecta origin/HEAD > main
     > master. --base la sobreescribe.  Ej.:  "base": "develop"
@@ -59,7 +72,10 @@ composer.json vía cadena). Genera un ejemplo con: scopelens init
 «FLAGS DEL TOOL»
 
   scopelens check [opciones]
-    --max-files <int>   presupuesto; sobreescribe maxFiles de la config
+    --max-files <int>   presupuesto de archivos; sobreescribe maxFiles
+    --max-lines <int>   presupuesto de líneas; sobreescribe maxLines
+    --mode <or|and>     combinación de presupuestos; sobreescribe mode
+    --line-metric <changed|added>  métrica de líneas; sobreescribe lineMetric
     --base <ref>        rama base; sobreescribe base de la config
     --dir <path>        directorio del repo (default: .)
     --staged-only       cuenta sólo el índice (staged)
@@ -74,7 +90,8 @@ composer.json vía cadena). Genera un ejemplo con: scopelens init
   0 dentro del presupuesto (o fuera, sin --fail)
   1 excede el presupuesto (con --fail)
   2 no se pudo medir: git ausente, no es repo, shallow, base no resoluble o
-    config inválida (maxFiles negativo, JSON malformado)
+    config/flag inválido (maxFiles/maxLines negativo, mode ∉ {or,and},
+    lineMetric ∉ {changed,added}, JSON malformado)
 
 «COMPORTAMIENTO 0.3.0»
   La config se carga en modo estricto: una clave desconocida emite un warning

@@ -27,7 +27,7 @@
     "@open_harness/dupelens": "0.3.2",
     "@open_harness/secretlens": "0.3.2",
     "@open_harness/testlens": "0.3.2",
-    "@open_harness/scopelens": "0.1.0"
+    "@open_harness/scopelens": "0.2.0"
   },
   "engines": {
     "node": ">=16"

@@ -13,6 +13,7 @@ type scanResult struct {
 	Base      string
 	MergeBase string
 	Files     []string
+	Churn     map[string]lineStat
 }
 
 // measure calcula la unión del diff acumulado (merge-base...HEAD) con el índice.
@@ -28,23 +29,28 @@ func measure(run gitRunner, flagBase, cfgBase string, stagedOnly bool) (scanResu
 	res.Branch = branchName(ctx, run)
 
 	set := map[string]struct{}{}
+	churn := map[string]lineStat{}
 	staged, err := diffFiles(ctx, run, "--cached")
 	if err != nil {
 		return res, err
 	}
 	addAll(set, staged)
+	if err := accumulateChurn(ctx, run, "--cached", churn); err != nil {
+		return res, err
+	}
 
 	if !stagedOnly && headExists(ctx, run) {
-		if err := accumulateBranch(ctx, run, flagBase, cfgBase, &res, set); err != nil {
+		if err := accumulateBranch(ctx, run, flagBase, cfgBase, &res, set, churn); err != nil {
 			return res, err
 		}
 	}
 	res.Files = sortedKeys(set)
+	res.Churn = churn
 	return res, nil
 }
 
 // accumulateBranch resuelve la base, calcula el merge-base y suma su diff.
-func accumulateBranch(ctx context.Context, run gitRunner, flagBase, cfgBase string, res *scanResult, set map[string]struct{}) error {
+func accumulateBranch(ctx context.Context, run gitRunner, flagBase, cfgBase string, res *scanResult, set map[string]struct{}, churn map[string]lineStat) error {
 	base, err := resolveBase(ctx, run, flagBase, cfgBase)
 	if err != nil {
 		return err
@@ -65,7 +71,7 @@ func accumulateBranch(ctx context.Context, run gitRunner, flagBase, cfgBase stri
 		return err
 	}
 	addAll(set, committed)
-	return nil
+	return accumulateChurn(ctx, run, mergeBase+"...HEAD", churn)
 }
 
 func diffFiles(ctx context.Context, run gitRunner, spec string) ([]string, error) {

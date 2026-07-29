@@ -183,7 +183,8 @@ directory with any `*_test.go` covers all its sources); the per-file ecosystems 
 
 ## scopelens
 
-Enforces a per-PR file budget by counting the branch-vs-base diff over `git`.
+Enforces a per-PR file and (optionally) line budget by counting the
+branch-vs-base diff over `git`.
 
 Default config file: `scopelens.json`. Note: `scopelens` does **not** expose
 `--format json` or `--config`; the report is a single fixed console format, and
@@ -191,10 +192,16 @@ configuration is resolved through the chain above.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `maxFiles` | int | `15` | The budget: max countable files in the diff. `0` falls back to the default; **negative is an error** (exit 2). |
+| `maxFiles` | int | `15` | The file budget: max countable files in the diff. `0` falls back to the default; **negative is an error** (exit 2). Always on. |
+| `maxLines` | int | `0` | The line budget: max churn of the diff. `0` (or absent) **disables** it — the gate then counts files only (backward compatible). Negative is an error (exit 2). |
+| `mode` | string | `"or"` | How the file and line budgets combine when `maxLines > 0`: `"or"` fails if **either** is exceeded, `"and"` only if **both** are. Any other value is an error. |
+| `lineMetric` | string | `"changed"` | What `maxLines` counts: `"changed"` = added + deleted, `"added"` = only added lines. Any other value is an error. |
 | `base` | string | `""` | Base ref to diff against. Empty auto-discovers `origin/HEAD` → `main` → `master`. The `--base` flag overrides it. |
-| `excludeTests` | bool | `false` | Discount test files from the count. The config field **or** the `--exclude-tests` flag turns it on (OR). |
+| `excludeTests` | bool | `false` | Discount test files from the count (files **and** lines). The config field **or** the `--exclude-tests` flag turns it on (OR). |
 | `exclude` | []string | see below | Globs (`.gitignore` style) for paths that are not review surface and must not consume budget. **Atomic** — setting it replaces the defaults. |
+
+Each config key has a matching flag that overrides it: `--max-files`,
+`--max-lines`, `--mode`, `--line-metric`, `--base`, `--exclude-tests`.
 
 Default `exclude` covers common vendor/build dirs and regenerated lockfiles and
 generated code across JS/TS, Python and Go: `.git/**`, `node_modules/**`,
@@ -207,6 +214,9 @@ generated code across JS/TS, Python and Go: `.git/**`, `node_modules/**`,
 ```json
 {
   "maxFiles": 15,
+  "maxLines": 0,
+  "mode": "or",
+  "lineMetric": "changed",
   "base": "",
   "excludeTests": false,
   "exclude": [
@@ -218,7 +228,8 @@ generated code across JS/TS, Python and Go: `.git/**`, `node_modules/**`,
 
 **Exit codes:** `0` = within budget (or over without `--fail`), `1` = over budget
 (with `--fail`), `2` = **could not measure** (git missing, not a repo, shallow
-clone, base ref unresolvable, invalid config, or a usage error). See
+clone, base ref unresolvable, invalid config —including a bad `mode`/`lineMetric`—
+or a usage error). See
 [ADR-023](adr-023-scopelens-dependencia-git.md).
 
 ---

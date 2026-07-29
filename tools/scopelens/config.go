@@ -10,12 +10,19 @@ import (
 
 type Config struct {
 	MaxFiles     int      `json:"maxFiles"`
+	MaxLines     int      `json:"maxLines"`
+	Mode         string   `json:"mode"`
+	LineMetric   string   `json:"lineMetric"`
 	Base         string   `json:"base"`
 	ExcludeTests bool     `json:"excludeTests"`
 	Exclude      []string `json:"exclude"`
 }
 
-const defaultMaxFiles = 15
+const (
+	defaultMaxFiles   = 15
+	defaultMode       = "or"
+	defaultLineMetric = "changed"
+)
 
 var defaultExclude = []string{
 	// Comunes
@@ -59,8 +66,21 @@ func validateAndDefault(cfg Config, src string) (Config, error) {
 	if cfg.MaxFiles < 0 {
 		return Config{}, fmt.Errorf("config %q: maxFiles debe ser >= 0, no %d", src, cfg.MaxFiles)
 	}
+	if cfg.MaxLines < 0 {
+		return Config{}, fmt.Errorf("config %q: maxLines debe ser >= 0, no %d", src, cfg.MaxLines)
+	}
 	if cfg.MaxFiles == 0 {
 		cfg.MaxFiles = defaultMaxFiles
+	}
+	if cfg.Mode == "" {
+		cfg.Mode = defaultMode
+	} else if cfg.Mode != "or" && cfg.Mode != "and" {
+		return Config{}, fmt.Errorf("config %q: mode debe ser \"or\" o \"and\", no %q", src, cfg.Mode)
+	}
+	if cfg.LineMetric == "" {
+		cfg.LineMetric = defaultLineMetric
+	} else if cfg.LineMetric != "changed" && cfg.LineMetric != "added" {
+		return Config{}, fmt.Errorf("config %q: lineMetric debe ser \"changed\" o \"added\", no %q", src, cfg.LineMetric)
 	}
 	if len(cfg.Exclude) == 0 {
 		cfg.Exclude = defaultExclude
