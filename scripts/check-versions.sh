@@ -179,14 +179,18 @@ if [[ -f "${sl_main}" ]]; then
   fi
 fi
 
-# --- Meta-paquete (comparte REFERENCE con los 4 nucleos) ---
-echo "[meta] open-harness (referencia ${REFERENCE})"
-expect "${MANIFEST} (version raiz)" "$(manifest_top_version)" "${REFERENCE}"
+# --- Meta-paquete (ciclo propio, desacoplado de los cores) ---
+# META_REF (fuente de verdad = version del package.json del meta) puede avanzar
+# por cambios de pin sin bumpear los 4 cores. Sus dependencias a cada core siguen
+# fijadas en REFERENCE; su dependencia a scopelens en SCOPELENS_VER.
+META_REF="$(pkg_version "${META_NPM}")"
+[[ -n "${META_REF}" ]] || fail "npm meta: no se pudo leer la version de ${META_NPM}"
+echo "[meta] open-harness (version ${META_REF}; cores en ${REFERENCE})"
+expect "${MANIFEST} (version raiz)" "$(manifest_top_version)" "${META_REF}"
 
-# npm meta: version + dependencies -> cada tool a su version, y ADEMAS que exponga
-# el comando de cada tool (bin entry + shim), no solo que dependa de el.
+# npm meta: version propia (META_REF) + dependencies -> cada core a REFERENCE y
+# scopelens a su version, y ADEMAS que exponga el comando de cada tool (bin + shim).
 if [[ -f "${META_NPM}" ]]; then
-  expect "npm meta open-harness" "$(pkg_version "${META_NPM}")" "${REFERENCE}"
   for tool in "${TOOLS[@]}"; do
     expect "npm meta dep ${tool}" "$(pkg_dep_version "${META_NPM}" "@open_harness/${tool}")" "${REFERENCE}"
     check_meta_shim "${tool}"
@@ -201,7 +205,7 @@ fi
 
 # pypi meta: version + __version__ + pins -> cada tool a su version.
 if [[ -f "${META_PY}" ]]; then
-  expect "pypi meta open_harness" "$(pyproj_version "${META_PY}")" "${REFERENCE}"
+  expect "pypi meta open_harness" "$(pyproj_version "${META_PY}")" "${META_REF}"
   for tool in "${TOOLS[@]}"; do
     expect "pypi meta pin ${tool}" "$(pyproj_pin "${META_PY}" "${tool}")" "${REFERENCE}"
   done
@@ -214,7 +218,7 @@ else
   fail "pypi meta: no existe ${META_PY}"
 fi
 if [[ -f "${META_PY_INIT}" ]]; then
-  expect "pypi meta __version__" "$(py_dunder_version "${META_PY_INIT}")" "${REFERENCE}"
+  expect "pypi meta __version__" "$(py_dunder_version "${META_PY_INIT}")" "${META_REF}"
 else
   fail "pypi meta: no existe ${META_PY_INIT}"
 fi
