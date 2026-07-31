@@ -7,13 +7,14 @@ import (
 
 // addFile tokeniza el contenido, calcula fingerprints crudos y normalizados y
 // registra el archivo solo si produjo fingerprints.
-func addFile(files *[]fileData, rawFps, normFps *[]Fingerprint, relPath, content string, windowSize int) {
+func addFile(files *[]fileData, rawFps, normFps *[]Fingerprint, relPath, content string, opts scanOpts) {
 	ext := strings.ToLower(filepath.Ext(relPath))
-	raw := tokenize(content, ext)
+	raw := tokenize(content, ext, opts.stripImports)
 	norm := normalizeTokens(raw)
 	fileID := len(*files)
+	windowSize := opts.windowSize
 	rfp := fingerprintCode(raw, fileID, windowSize)
-	nfp := fingerprintNormalized(norm, fileID, windowSize)
+	nfp := fingerprintNormalized(norm, raw, fileID, windowSize)
 	if len(rfp) == 0 && len(nfp) == 0 {
 		return
 	}

@@ -64,9 +64,19 @@ func fingerprintCode(tokens []Token, fileID, windowSize int) []Fingerprint {
 }
 
 // fingerprintNormalized fingerprintea los tokens normalizados (clones Type-2),
-// filtrando ventanas monótonas igual que la pasada exacta.
-func fingerprintNormalized(norm []Token, fileID, windowSize int) []Fingerprint {
-	return fingerprintCode(norm, fileID, windowSize)
+// filtrando ventanas monótonas igual que la pasada exacta y, además, las que
+// provienen de un bloque de baja entropía en el fuente crudo (ver entropy.go).
+// El filtro extra vive solo en esta pasada: en la exacta la igualdad literal ya
+// es señal genuina, y el gate por defecto de --fail depende de ella.
+func fingerprintNormalized(norm, raw []Token, fileID, windowSize int) []Fingerprint {
+	all := fingerprintCode(norm, fileID, windowSize)
+	out := all[:0]
+	for _, fp := range all {
+		if !lowEntropyWindow(raw, fp.StartIdx, windowSize) {
+			out = append(out, fp)
+		}
+	}
+	return out
 }
 
 // monotoneWindow indica si todos los tokens de la ventana tienen el mismo valor.

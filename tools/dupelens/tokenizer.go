@@ -21,8 +21,16 @@ type Token struct {
 // Recibe la extensión del archivo para que langsyntax.StripComments decida la
 // sintaxis de comentarios (p. ej. '#' es comentario en .py pero no en .rs) y
 // descarte comentarios y contenido de strings, que generan ruido.
-func tokenize(src, ext string) []Token {
+//
+// Con stripImports, descarta además las declaraciones de import: son sintaxis
+// obligatoria sin lógica y, con los identificadores normalizados, vuelven
+// idénticas las cabeceras de archivos sin relación entre sí. Se aplica después
+// de StripComments, como exige langsyntax.StripImports.
+func tokenize(src, ext string, stripImports bool) []Token {
 	src = langsyntax.StripComments(src, ext)
+	if stripImports {
+		src = langsyntax.StripImports(src, ext)
+	}
 	var tokens []Token
 	line := 1
 	var current strings.Builder

@@ -12,7 +12,7 @@ func TestAddFile_dropsMonotoneRawRuns(t *testing.T) {
 	var files []fileData
 	var raw, norm []Fingerprint
 	content := strings.Repeat("aa ", 60)
-	addFile(&files, &raw, &norm, "x.go", content, 25)
+	addFile(&files, &raw, &norm, "x.go", content, scanOpts{windowSize: 25})
 	if len(raw) != 0 {
 		t.Errorf("run monótono no debe producir fingerprints raw; got %d", len(raw))
 	}

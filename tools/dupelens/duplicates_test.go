@@ -26,7 +26,7 @@ func buildFiles(windowSize int, in ...tf) ([]fileData, []Fingerprint, []Fingerpr
 		id := len(files)
 		files = append(files, fileData{name: f.name, raw: toks, norm: ntoks})
 		raw = append(raw, fingerprint(toks, id, windowSize)...)
-		norm = append(norm, fingerprintNormalized(ntoks, id, windowSize)...)
+		norm = append(norm, fingerprintNormalized(ntoks, toks, id, windowSize)...)
 	}
 	return files, raw, norm
 }
