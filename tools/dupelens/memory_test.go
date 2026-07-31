@@ -40,13 +40,23 @@ func genSource(t *testing.T, dir string, sizeBytes int) {
 }
 
 // TestMemory_scanStaysProportional verifica que el escaneo de ~24 MB de fuente
-// mantiene el heap MUY por debajo del viejo factor N*windowSize (que reventaba
+// mantiene la memoria MUY por debajo del viejo factor N*windowSize (que reventaba
 // a cientos de MB por pocos MB de fuente). Con fingerprints por índice (sin
 // copiar ventanas) la memoria es proporcional al fuente.
 //
-// Método: se mide runtime.MemStats.HeapAlloc inmediatamente después de scan
-// (la basura del escaneo todavía cuenta, dando una cota superior del pico) y se
-// asienta un techo de 512 MB. Es -short-aware para no lentificar el ciclo.
+// Método: se mide el delta de runtime.MemStats.TotalAlloc a través de scan — los
+// bytes que el escaneo pidió al heap en total. Es la métrica correcta para lo que
+// el test protege: copiar la ventana en cada fingerprint multiplicaría el total
+// por windowSize, se libere o no después.
+//
+// TotalAlloc es acumulativo y monótono, así que la medición NO depende de cuándo
+// corrió el recolector. HeapAlloc sí dependía: medido sin GC previo daba entre
+// 458 y 552 MB para el mismo código según se corriera el test aislado, con la
+// suite completa o con -v, y cruzaba el techo de 512 MB de forma intermitente.
+// Medirlo *con* GC previo tampoco sirve: da 0 MB, porque todo lo que asigna scan
+// es local y ya se liberó cuando el test observa.
+//
+// Es -short-aware para no lentificar el ciclo.
 func TestMemory_scanStaysProportional(t *testing.T) {
 	if testing.Short() {
 		t.Skip("omitido en -short: genera ~24 MB de fuente")
@@ -68,17 +78,20 @@ func TestMemory_scanStaysProportional(t *testing.T) {
 
 	var after runtime.MemStats
 	runtime.ReadMemStats(&after)
-	heap := after.HeapAlloc
+	allocated := after.TotalAlloc - before.TotalAlloc
 
-	const ceiling = 512 << 20
-	if heap > ceiling {
-		t.Errorf("HeapAlloc=%d MB excede el techo de %d MB (scanned=%d)",
-			heap>>20, ceiling>>20, scanned)
+	// ~1.4 GB medidos de forma estable para 24 MB de fuente (≈57x). El techo deja
+	// margen holgado y sigue detectando de sobra el regreso del factor N*windowSize,
+	// que multiplicaría el total por el tamaño de ventana (25 por defecto).
+	const ceiling = 2048 << 20
+	if allocated > ceiling {
+		t.Errorf("el scan asignó %d MB, excede el techo de %d MB (scanned=%d)",
+			allocated>>20, ceiling>>20, scanned)
 	}
 	// Sanidad: se escaneó realmente el volumen esperado.
 	if scanned < 20 {
 		t.Errorf("scanned=%d; se esperaban ≥20 archivos de ~1 MB", scanned)
 	}
-	t.Logf("scanned=%d, matches=%d, HeapAlloc=%d MB (techo %d MB)",
-		scanned, len(matches), heap>>20, ceiling>>20)
+	t.Logf("scanned=%d, matches=%d, asignados=%d MB (techo %d MB)",
+		scanned, len(matches), allocated>>20, ceiling>>20)
 }
