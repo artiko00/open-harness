@@ -81,3 +81,21 @@
 - [x] 6.3 `linelens check --fail` sobre el repo.
 - [x] 6.4 `dupelens check --fail` sobre el repo.
 - [x] 6.5 `secretlens check --fail` y `testlens check --fail` sobre el repo.
+- [x] 6.6 `scopelens check --fail`: 34 de 40 archivos. La sincronización de manifiestos quedó
+  **fuera de esta rama** a propósito: sumaba 9 archivos y llevaba el total a 42, por encima del
+  presupuesto del propio repo. Corresponde al commit de release.
+
+## Fase 7 · Release (pendiente, fuera de esta rama)
+
+`scripts/check-versions.sh` está en rojo a propósito: `const version` es 0.4.0 y los manifiestos
+siguen en 0.3.2. Para publicar:
+
+- [ ] 7.1 `bash scripts/build-npm.sh dupelens` — compila los 4 binarios y sincroniza los 5
+  `package.json` (meta + plataformas) a la versión de `main.go`.
+- [ ] 7.2 `pypi/open_harness_dupelens/pyproject.toml`: `version = "0.4.0"`.
+- [ ] 7.3 `open-harness.json` (bloque `dupelens`), `README.md` y `AGENTS.md`: `v0.4.0`.
+- [ ] 7.4 `bash scripts/check-versions.sh` en verde. Nota: el script exige que los 4 tools compartan
+  versión, así que hay que decidir si dupelens toma ciclo propio (como scopelens) o si el release es
+  coordinado y sube los 4 a 0.4.0.
+- [ ] 7.5 Publicar: npm (5 paquetes, plataformas primero) y PyPI (4 wheels).
+- [ ] 7.6 Actualizar los pins del meta (npm y PyPI) a dupelens 0.4.0.
