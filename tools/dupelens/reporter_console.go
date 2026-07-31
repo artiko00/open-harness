@@ -31,16 +31,27 @@ func reportConsole(matches []Match, opts ReportOpts, w io.Writer) int {
 		}
 		fmt.Fprintln(w)
 	}
-	fmt.Fprintf(w, "SUMMARY: %d match(es) across %d files%s\n",
-		len(matches), opts.ScannedCount, skippedSuffix(opts.Skips, ", %d skipped"))
+	fmt.Fprintf(w, "SUMMARY: %d match(es)%s across %d files%s\n",
+		len(matches), kindBreakdown(matches), opts.ScannedCount,
+		skippedSuffix(opts.Skips, ", %d skipped"))
 	return len(matches)
+}
+
+// kindBreakdown formatea el desglose exact/renamed entre paréntesis, o cadena
+// vacía si no hay matches.
+func kindBreakdown(matches []Match) string {
+	if len(matches) == 0 {
+		return ""
+	}
+	exact, renamed := countByKind(matches)
+	return fmt.Sprintf(" (%d exact · %d renamed)", exact, renamed)
 }
 
 // writeMatches imprime el encabezado DUPLICATES y el detalle de cada match.
 func writeMatches(matches []Match, opts ReportOpts, w io.Writer) {
-	fmt.Fprintf(w, "%s%sDUPLICATES%s (%d match(es) found in %d files):\n\n",
+	fmt.Fprintf(w, "%s%sDUPLICATES%s (%d match(es)%s found in %d files):\n\n",
 		boldOpt(opts.NoColor), redOpt(opts.NoColor), resetOpt(opts.NoColor),
-		len(matches), opts.ScannedCount)
+		len(matches), kindBreakdown(matches), opts.ScannedCount)
 
 	for _, m := range matches {
 		fmt.Fprintf(w, "  %s%s:%d-%d%s  ↔  %s%s:%d-%d%s  %s(%d tokens, %s)%s\n",
