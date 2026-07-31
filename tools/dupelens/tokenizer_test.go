@@ -4,7 +4,7 @@ import "testing"
 
 func TestTokenize_skipsPunctuationAndShortTokens(t *testing.T) {
 	src := `if (a == b) { return 0; }`
-	tokens := tokenize(src, ".go")
+	tokens := tokenize(src, ".go", false)
 	// Esperamos tokens "alpha"-style sin puntuación ni tokens de 1 caracter.
 	wantValues := []string{"if", "==", "return"}
 	gotValues := []string{}
@@ -27,7 +27,7 @@ func TestTokenize_skipsPunctuationAndShortTokens(t *testing.T) {
 
 func TestTokenize_lineNumbersTracked(t *testing.T) {
 	src := "line_one_token\n\nline_three_token\n"
-	tokens := tokenize(src, ".go")
+	tokens := tokenize(src, ".go", false)
 	if len(tokens) < 2 {
 		t.Fatalf("expected at least 2 tokens, got %d", len(tokens))
 	}

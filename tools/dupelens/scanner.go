@@ -20,6 +20,13 @@ func deriveWindow(configured int) int {
 	return configured
 }
 
+// scanOpts agrupa lo que la config decide sobre cómo tokenizar y fingerprintear
+// cada archivo, para no propagar parámetros sueltos hasta addFile.
+type scanOpts struct {
+	windowSize   int
+	stripImports bool
+}
+
 // scan recorre el árbol de archivos, tokeniza los de código (según
 // pathmatch.CodeExtensions), calcula fingerprints crudos y normalizados, y
 // retorna los matches, la cuenta de escaneados y los omitidos. windowSize
@@ -33,7 +40,7 @@ func scan(root string, cfg Config, minOverride int) ([]Match, int, []pathmatch.S
 	if minOverride > 0 {
 		minTokens = minOverride
 	}
-	windowSize := deriveWindow(cfg.Default.WindowSize)
+	opts := scanOpts{windowSize: deriveWindow(cfg.Default.WindowSize), stripImports: cfg.ignoreImports()}
 	codeExts := pathmatch.CodeExtensions()
 
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
@@ -77,12 +84,12 @@ func scan(root string, cfg Config, minOverride int) ([]Match, int, []pathmatch.S
 			return nil
 		}
 		scanned++
-		addFile(&files, &rawFps, &normFps, relPath, string(data), windowSize)
+		addFile(&files, &rawFps, &normFps, relPath, string(data), opts)
 		return nil
 	})
 
 	if err != nil {
 		return nil, scanned, skips, err
 	}
-	return findDuplicates(files, rawFps, normFps, windowSize, cfg.Default.MinLines, minTokens), scanned, skips, nil
+	return findDuplicates(files, rawFps, normFps, opts.windowSize, cfg.Default.MinLines, minTokens), scanned, skips, nil
 }

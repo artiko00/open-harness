@@ -3,7 +3,7 @@ package main
 import "testing"
 
 func tokenValuesExt(src, ext string) []string {
-	tokens := tokenize(src, ext)
+	tokens := tokenize(src, ext, false)
 	out := make([]string, 0, len(tokens))
 	for _, t := range tokens {
 		out = append(out, t.Value)
@@ -109,7 +109,7 @@ func TestTokenize_stripsMultiLineBlockComment(t *testing.T) {
 
 func TestTokenize_blockCommentPreservesLineNumbers(t *testing.T) {
 	src := "head /* a\nb\nc */ after"
-	tokens := tokenize(src, ".go")
+	tokens := tokenize(src, ".go", false)
 	var headLine, afterLine int
 	for _, tok := range tokens {
 		if tok.Value == "head" {
@@ -128,14 +128,14 @@ func TestTokenize_blockCommentPreservesLineNumbers(t *testing.T) {
 }
 
 func TestTokenize_emptyFileProducesNoTokens(t *testing.T) {
-	if got := tokenize("", ".go"); len(got) != 0 {
+	if got := tokenize("", ".go", false); len(got) != 0 {
 		t.Errorf("empty input must produce 0 tokens, got %d", len(got))
 	}
 }
 
 func TestTokenize_onlyCommentsFile_producesNoTokens(t *testing.T) {
 	src := "// solo comentarios\n# otro\n/* y bloque\n a la vez */"
-	if got := tokenize(src, ".py"); len(got) != 0 {
+	if got := tokenize(src, ".py", false); len(got) != 0 {
 		t.Errorf("file con solo comments no debe producir tokens, got %d: %v", len(got), got)
 	}
 }

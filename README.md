@@ -252,7 +252,8 @@ dupelens init --output custom.json
   "default": {
     "minTokens": 50,
     "minLines": 5,
-    "windowSize": 0
+    "windowSize": 0,
+    "ignoreImports": true
   },
   "rules": [
     { "pattern": "**/*_test.go",     "skip": true },
@@ -262,22 +263,28 @@ dupelens init --output custom.json
 }
 ```
 
-`minTokens` is the **report threshold** — matches shorter than this are dropped. `windowSize` is the **detection window** of the rolling hash and is now independent of `minTokens` (`0` falls back to the built-in default), so you can lower `minTokens` to reduce noise without changing how blocks are hashed. `minLines` filters short matches (e.g., back-to-back identical imports).
+`minTokens` is the **report threshold** — matches shorter than this are dropped. `windowSize` is the **detection window** of the rolling hash and is now independent of `minTokens` (`0` falls back to the built-in default), so you can lower `minTokens` to reduce noise without changing how blocks are hashed. `minLines` filters short matches.
+
+`ignoreImports` (default `true`) drops import declarations before tokenizing, the same way comments and string contents are already dropped: they are mandatory module-access syntax, not logic. This matters in modular codebases — a NestJS file opens with 5–15 `import { X } from 'Y';` lines, and once identifiers are normalized for renamed-clone detection, every file's header collapses to the same token stream, so any two files match. Set it to `false` to restore the pre-0.4.0 behaviour.
+
+Recognition is per language family, by file extension, with no parser involved — JS/TS (`import`, `export … from`, `require(…)`), Python (`import`, `from … import`), Go (`package`, `import ( … )`), Ruby, Rust, JVM, PHP, C/C++/ObjC, C#, Dart and Swift. Multi-line declarations are dropped whole. Executable statements that merely start with the same word — C#'s `using (var s = …)`, JS's dynamic `import('./x')` — are left alone.
 
 ### Output (console)
 
 ```
-DUPLICATES (2 match(es) found in 87 files):
+DUPLICATES (2 match(es) (1 exact · 1 renamed) found in 87 files):
 
-  src/auth.go:42-58  ↔  src/users.go:12-28  (35 tokens)
+  src/auth.go:42-58  ↔  src/users.go:12-28  (35 tokens, exact)
   | func validate(input string) error {
   | ...
-  src/db.go:1-10  ↔  src/cache.go:1-10  (15 tokens)
+  src/db.go:1-10  ↔  src/cache.go:1-10  (15 tokens, renamed)
 
-SUMMARY: 2 match(es) across 87 files
+SUMMARY: 2 match(es) (1 exact · 1 renamed) across 87 files
 Top duplicated files:
   - src/auth.go  (1 match(es))
 ```
+
+The `exact · renamed` breakdown tells you at a glance whether `--fail` will trip: by default the gate only counts `exact`, so a long list of `renamed` findings alongside a green gate is expected, not a contradiction.
 
 ### Output (JSON)
 
@@ -285,10 +292,12 @@ Top duplicated files:
 {
   "scannedFiles": 87,
   "matchCount": 2,
+  "exactCount": 1,
+  "renamedCount": 1,
   "matches": [
     { "fileA": "src/auth.go", "startLineA": 42, "endLineA": 58,
       "fileB": "src/users.go", "startLineB": 12, "endLineB": 28,
-      "tokens": 35 }
+      "tokens": 35, "kind": "exact" }
   ],
   "summary": {
     "topDuplicatedFiles": [{ "file": "src/auth.go", "count": 1 }]
@@ -296,7 +305,18 @@ Top duplicated files:
 }
 ```
 
-### Limitations (v0.3.2)
+### Low-entropy filter
+
+Embedded data blocks — seed arrays, literal tables, constant lists — are structurally identical line
+after line, so under identifier normalization they collide with any other block of the same shape. The
+`renamed` pass therefore drops windows where at least 75% of the lines start with the same token (3
+lines minimum). The `exact` pass keeps them: a byte-identical twenty-`case` `switch` is a genuine
+finding, and since `--fail` defaults to `exact` only, the gate loses no detection power.
+
+The filter keys on the *first token of each line*, so a data block whose lines start with distinct
+identifiers (`entry_1(…)`, `entry_2(…)`) is not covered — exclude those paths in `dupelens.json`.
+
+### Limitations (v0.4.0)
 
 - Detects contiguous **exact** and **alpha-renamed** clones (see `--fail-on`). Structural refactors — reordered statements, inserted or deleted lines (gapped/Type-3 clones), and behaviourally-equivalent rewrites (Type-4) — are still not detected; that requires AST analysis ([ADR-012](docs/adr-012-dupelens-rabin-karp-sobre-ast.md) explains the trade-off).
 

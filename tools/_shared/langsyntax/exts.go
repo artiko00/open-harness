@@ -16,12 +16,17 @@ var hashCommentExts = map[string]bool{
 }
 
 // hashStartsComment indica si '#' inicia un comentario de línea para la
-// extensión dada. Acepta la extensión con o sin punto inicial y en cualquier
-// caja (".PY", "py", ".py" son equivalentes).
+// extensión dada.
 func hashStartsComment(ext string) bool {
+	return hashCommentExts[normalizeExt(ext)]
+}
+
+// normalizeExt acepta la extensión con o sin punto inicial y en cualquier caja
+// (".PY", "py", ".py" son equivalentes) y devuelve la forma canónica ".py".
+func normalizeExt(ext string) string {
 	ext = strings.ToLower(ext)
 	if ext != "" && ext[0] != '.' {
 		ext = "." + ext
 	}
-	return hashCommentExts[ext]
+	return ext
 }

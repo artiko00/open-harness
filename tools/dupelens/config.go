@@ -21,6 +21,15 @@ type DefaultConfig struct {
 	// MinTokens, el umbral de reporte). 0 = usar defaultWindow. Bajar MinTokens
 	// para reducir ruido no obliga a tocar la ventana.
 	WindowSize int `json:"windowSize"`
+	// IgnoreImports descarta las declaraciones de import antes de tokenizar.
+	// Puntero para distinguir "ausente" (default true) de "false" explícito.
+	IgnoreImports *bool `json:"ignoreImports"`
+}
+
+// ignoreImports resuelve el default: ausente equivale a true, porque los
+// imports son sintaxis obligatoria de acceso a módulos y no lógica propia.
+func (c Config) ignoreImports() bool {
+	return c.Default.IgnoreImports == nil || *c.Default.IgnoreImports
 }
 
 type Rule struct {
@@ -76,7 +85,8 @@ func defaultConfigJSON() string {
 	return `{
   "default": {
     "minTokens": 50,
-    "minLines": 5
+    "minLines": 5,
+    "ignoreImports": true
   },
   "rules": [
     { "pattern": "**/*.spec.*",  "skip": true },

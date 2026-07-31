@@ -487,6 +487,22 @@
         "[doc] tutorial.go + CHANGELOG scopelens 0.2.0; caso motivador 1 archivo/11000 líneas",
         "[test] scopelens go test ./... con 100% de cobertura"
       ]
+    },
+    {
+      "id": "F-022",
+      "category": "refactor",
+      "description": "dupelens: los imports dejan de contar como código duplicado — ignoreImports (default true), desglose exact/renamed en el reporte y filtro de baja entropía en la pasada renamed",
+      "passes": true,
+      "steps": [
+        "[done] langsyntax.StripImports(src, ext): descarte por familia de lenguaje, sin parser, con continuación multilínea por balance de delimitadores",
+        "[done] Clave default.ignoreImports (default true) en config, init y --tutorial",
+        "[done] Desglose exact/renamed en el encabezado y el SUMMARY de consola; exactCount/renamedCount en el JSON",
+        "[done] Filtro de baja entropía en la pasada renamed (sobre tokens crudos); la pasada exact queda intacta",
+        "[done] Tests TDD por lenguaje y caso límite; 100% statement coverage en langsyntax y dupelens",
+        "[done] README, CHANGELOG, docs/UPGRADING.md y docs/CONFIGURATION.md",
+        "[done] Bump dupelens 0.3.2 -> 0.4.0",
+        "Publicar a npm (5 paquetes) y PyPI (4 wheels)"
+      ]
     }
   ]
 }

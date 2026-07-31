@@ -98,6 +98,7 @@ Default config file: `dupelens.json`.
 | `default.minTokens` | int | `50` | **Report threshold** — matches shorter than this are dropped. `0` falls back to the default. |
 | `default.minLines` | int | `5` | Minimum lines for a duplicate block (filters short back-to-back matches). `0` falls back to the default. |
 | `default.windowSize` | int | `0` | Rolling-hash **detection window**, independent of `minTokens`. `0` uses the internal default (`25`). |
+| `default.ignoreImports` | bool | `true` | Drops import declarations before tokenizing (`import`/`require`/`use`/`#include`/… per language). They are mandatory module-access syntax, not logic: normalized, every file's header collapses to the same token stream. `false` restores the pre-0.4.0 counting. |
 | `rules[].pattern` | string | — | Glob selecting files for this rule. |
 | `rules[].minTokens` | int | — | Per-pattern token threshold. |
 | `rules[].skip` | bool | `false` | If `true`, matching files are skipped. |
@@ -105,7 +106,7 @@ Default config file: `dupelens.json`.
 
 ```json
 {
-  "default": { "minTokens": 50, "minLines": 5, "windowSize": 0 },
+  "default": { "minTokens": 50, "minLines": 5, "windowSize": 0, "ignoreImports": true },
   "rules": [
     { "pattern": "**/*_test.go", "skip": true },
     { "pattern": "**/migrations/**", "skip": true }

@@ -120,3 +120,57 @@ By default `--fail` counts only `exact` clones, so renamed clones are reported b
 - `linelens`: `maxNesting` (default 0 = disabled).
 
 See the [README](../README.md) for the full flag and config reference.
+
+---
+
+# Upgrading to dupelens 0.4.0
+
+`dupelens` 0.4.0 stops counting import declarations as duplicated code. Nothing to configure —
+**existing setups keep working and report fewer matches**, all of them in the `renamed` bucket.
+
+## dupelens 0.4.0
+
+### Imports no longer count as code
+
+The tokenizer already dropped comments and string contents. It now drops import declarations too:
+`import … from`, `export … from`, `require(…)`, `from … import`, `use`, `using`, `#include`, `package`
+and their multi-line forms, recognized per language family by file extension.
+
+**Why:** with string contents already blanked, `import { UserService } from './user.service';` reduces
+to `import from`, and once identifiers are normalized for renamed-clone detection it becomes
+`import ID from` — the same token stream in **every file of the project**. A modular codebase opens
+each file with 5–15 imports, so with the default 25-token window any two headers collide. The better
+modularized the project, the more noise the tool produced.
+
+**Impact:** fewer `renamed` matches. `exact` matches that consisted purely of import headers also
+disappear — those were never real duplication.
+
+**What to do:** nothing. To restore the previous counting, set:
+
+```json
+{ "default": { "ignoreImports": false } }
+```
+
+### The report breaks findings down by kind
+
+The console header and `SUMMARY` line now read `N match(es) (X exact · Y renamed)`, and the JSON
+output gains `exactCount` and `renamedCount` next to `matchCount`.
+
+**Why:** `--fail` counts only `exact` findings by default, so a report listing 26 renamed matches with
+a green gate looked like a contradiction until you read all 26 lines.
+
+**Impact:** additive. The JSON schema gains two fields; existing consumers are unaffected.
+
+### Repetitive data blocks no longer produce renamed clones
+
+The `renamed` pass now drops windows where at least 75% of the lines start with the same token
+(3 lines minimum) — embedded seed arrays, literal tables and constant lists, which are structurally
+identical line after line and therefore collide with any block of the same shape.
+
+The `exact` pass is **not** filtered: a byte-identical repetitive block is genuine duplication, and
+since `--fail` defaults to `exact` only, the gate loses no detection power.
+
+**Impact:** fewer `renamed` matches over data-heavy files.
+
+**What to do:** nothing. The filter keys on the first token of each line, so a data block whose lines
+start with distinct identifiers is not covered — exclude those paths in `dupelens.json` as before.

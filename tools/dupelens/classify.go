@@ -31,6 +31,21 @@ func overlaps(s1, e1, s2, e2 int) bool {
 	return s1 <= e2 && s2 <= e1
 }
 
+// countByKind devuelve cuántos matches son exact y cuántos renamed. El reporte
+// lo muestra para que se entienda sin leer el detalle por qué --fail pasa: por
+// defecto el gate solo mira los exact, y una lista larga de renamed con el gate
+// en verde se lee como una contradicción.
+func countByKind(matches []Match) (exact, renamed int) {
+	for _, m := range matches {
+		if m.Kind == "exact" {
+			exact++
+			continue
+		}
+		renamed++
+	}
+	return exact, renamed
+}
+
 // gateCount cuenta los matches que rompen --fail según --fail-on:
 // "exact" (default) solo cuenta exact, "renamed" solo renamed, "all" todos.
 func gateCount(matches []Match, failOn string) int {
