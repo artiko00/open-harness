@@ -22,7 +22,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${ROOT}" || exit 2
 
-TOOLS=(linelens dupelens secretlens testlens)
+# TOOLS comparten una unica REFERENCE (release coordinado). SOLO_TOOLS tienen
+# ciclo de versiones propio: se validan contra su propio const version.
+TOOLS=(linelens secretlens testlens)
+SOLO_TOOLS=(dupelens scopelens)
 PLATFORMS=(linux-x64 darwin-arm64 darwin-x64 win32-x64)
 MANIFEST="open-harness.json"
 DOCS=(README.md AGENTS.md)
@@ -158,26 +161,30 @@ for tool in "${TOOLS[@]}"; do
   echo
 done
 
-# scopelens: ciclo de versiones propio (0.1.0), no comparte REFERENCE.
-SCOPELENS_VER=""
-sl_main="tools/scopelens/main.go"
-if [[ -f "${sl_main}" ]]; then
-  SCOPELENS_VER="$(const_version "${sl_main}")"
-  if [[ -z "${SCOPELENS_VER}" ]]; then
-    fail "scopelens: no se pudo leer const version en ${sl_main}"
-  else
-    echo "[scopelens] const version (fuente de verdad) = ${SCOPELENS_VER}"
-    expect "${MANIFEST} (tool scopelens)" "$(manifest_tool_version scopelens)" "${SCOPELENS_VER}"
-    for doc in "${DOCS[@]}"; do
-      [[ -f "${doc}" ]] || { fail "${doc}: no existe"; continue; }
-      versions="$(doc_tool_versions "${doc}" scopelens)"
-      [[ -z "${versions}" ]] && continue
-      while IFS= read -r v; do [[ -z "${v}" ]] || expect "${doc} (scopelens)" "${v}" "${SCOPELENS_VER}"; done <<< "${versions}"
-    done
-    check_tool_dist scopelens "${SCOPELENS_VER}"
-    echo
+# Tools con ciclo de versiones propio: cada uno se valida contra su propio
+# const version, no contra REFERENCE. Sus versiones quedan en SOLO_VER para que
+# el meta-paquete pinee cada uno a la suya.
+declare -A SOLO_VER=()
+for tool in "${SOLO_TOOLS[@]}"; do
+  tool_main="tools/${tool}/main.go"
+  [[ -f "${tool_main}" ]] || continue
+  tool_ver="$(const_version "${tool_main}")"
+  if [[ -z "${tool_ver}" ]]; then
+    fail "${tool}: no se pudo leer const version en ${tool_main}"
+    continue
   fi
-fi
+  SOLO_VER["${tool}"]="${tool_ver}"
+  echo "[${tool}] const version (fuente de verdad, ciclo propio) = ${tool_ver}"
+  expect "${MANIFEST} (tool ${tool})" "$(manifest_tool_version "${tool}")" "${tool_ver}"
+  for doc in "${DOCS[@]}"; do
+    [[ -f "${doc}" ]] || { fail "${doc}: no existe"; continue; }
+    versions="$(doc_tool_versions "${doc}" "${tool}")"
+    [[ -z "${versions}" ]] && continue
+    while IFS= read -r v; do [[ -z "${v}" ]] || expect "${doc} (${tool})" "${v}" "${tool_ver}"; done <<< "${versions}"
+  done
+  check_tool_dist "${tool}" "${tool_ver}"
+  echo
+done
 
 # --- Meta-paquete (ciclo propio, desacoplado de los cores) ---
 # META_REF (fuente de verdad = version del package.json del meta) puede avanzar
@@ -195,10 +202,11 @@ if [[ -f "${META_NPM}" ]]; then
     expect "npm meta dep ${tool}" "$(pkg_dep_version "${META_NPM}" "@open_harness/${tool}")" "${REFERENCE}"
     check_meta_shim "${tool}"
   done
-  if [[ -n "${SCOPELENS_VER}" ]]; then
-    expect "npm meta dep scopelens" "$(pkg_dep_version "${META_NPM}" "@open_harness/scopelens")" "${SCOPELENS_VER}"
-    check_meta_shim scopelens
-  fi
+  for tool in "${SOLO_TOOLS[@]}"; do
+    [[ -n "${SOLO_VER[${tool}]:-}" ]] || continue
+    expect "npm meta dep ${tool}" "$(pkg_dep_version "${META_NPM}" "@open_harness/${tool}")" "${SOLO_VER[${tool}]}"
+    check_meta_shim "${tool}"
+  done
 else
   fail "npm meta: no existe ${META_NPM}"
 fi
@@ -209,11 +217,12 @@ if [[ -f "${META_PY}" ]]; then
   for tool in "${TOOLS[@]}"; do
     expect "pypi meta pin ${tool}" "$(pyproj_pin "${META_PY}" "${tool}")" "${REFERENCE}"
   done
-  if [[ -n "${SCOPELENS_VER}" ]]; then
-    # scopelens puede o no estar en los pins del meta pypi (packaging opcional).
-    sl_pin="$(pyproj_pin "${META_PY}" scopelens)"
-    [[ -n "${sl_pin}" ]] && expect "pypi meta pin scopelens" "${sl_pin}" "${SCOPELENS_VER}"
-  fi
+  for tool in "${SOLO_TOOLS[@]}"; do
+    [[ -n "${SOLO_VER[${tool}]:-}" ]] || continue
+    # Un tool puede o no estar en los pins del meta pypi (packaging opcional).
+    solo_pin="$(pyproj_pin "${META_PY}" "${tool}")"
+    [[ -n "${solo_pin}" ]] && expect "pypi meta pin ${tool}" "${solo_pin}" "${SOLO_VER[${tool}]}"
+  done
 else
   fail "pypi meta: no existe ${META_PY}"
 fi

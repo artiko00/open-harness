@@ -1,5 +1,5 @@
 {
-  "version": "0.3.3",
+  "version": "0.3.4",
   "tools": [
     {
       "name": "linelens",
@@ -11,7 +11,7 @@
       "name": "dupelens",
       "description": "Code duplication detector (Rabin-Karp, language-agnostic)",
       "path": "tools/dupelens",
-      "version": "0.3.2"
+      "version": "0.4.0"
     },
     {
       "name": "secretlens",

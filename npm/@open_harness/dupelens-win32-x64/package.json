@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/dupelens-win32-x64",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "dupelens binary for Windows x64",
   "os": [
     "win32"

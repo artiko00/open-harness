@@ -7,7 +7,7 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 | Tool | Description | Status |
 |---|---|---|
 | [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.3.2` |
-| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.3.2` |
+| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.4.0` |
 | [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.3.2` |
 | [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.3.2` |
 | [scopelens](tools/scopelens/) | Per-PR file- and line-budget gate — counts the branch-vs-base diff at local pre-commit | `v0.2.0` |
@@ -528,7 +528,7 @@ The `pre-commit` hook runs all four lints; `pre-push` runs the test suite of eac
 open-harness/
 ├── tools/
 │   ├── linelens/          ← v0.3.2 (file length linter, 100% coverage)
-│   ├── dupelens/          ← v0.3.2 (duplicate detector, Rabin-Karp, 100% coverage)
+│   ├── dupelens/          ← v0.4.0 (duplicate detector, Rabin-Karp, 100% coverage)
 │   ├── secretlens/        ← v0.3.2 (secret/credential detector, 100% coverage)
 │   └── testlens/          ← v0.3.2 (test coverage detector, multi-language, 100% coverage)
 ├── npm/
