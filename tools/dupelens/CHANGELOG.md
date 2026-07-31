@@ -5,6 +5,40 @@ All notable changes to `dupelens` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-07-31
+
+Import declarations no longer count as duplicated code (F-022). Reported by a user
+whose NestJS monorepo produced 26 matches across 77 files, **all of them `renamed`
+and none `exact`** — every match was the import header.
+
+### Added
+
+- **`default.ignoreImports`** (default **`true`**): drops import declarations before
+  tokenizing, alongside the comments and string contents that were already dropped.
+  Recognition is per language family, by extension, without a parser: JS/TS
+  (`import`, `export … from`, `require(…)`), Python, Go, Ruby, Rust, JVM, PHP,
+  C/C++/ObjC, C#, Dart, Swift. Multi-line declarations are dropped whole; executable
+  statements that merely start with the same word (C#'s `using (…)`, JS's dynamic
+  `import('./x')`) are left alone. Set to `false` for the previous behaviour.
+- **Kind breakdown in the report.** The console header and `SUMMARY` line now show
+  `N exact · M renamed`; the JSON gains `exactCount` and `renamedCount`. Since
+  `--fail` only counts `exact` by default, the total alone never said whether the
+  gate would trip.
+
+### Changed
+
+- **Low-entropy filter on the `renamed` pass.** Windows where at least 75% of the
+  lines start with the same token (3 lines minimum) are dropped: embedded data
+  blocks — seed arrays, literal tables — are structurally identical line after line
+  and collide with any block of the same shape. The `exact` pass is untouched, so a
+  byte-identical repetitive block is still reported and the default gate loses no
+  detection power.
+
+### Impact
+
+Existing projects will see **fewer matches**, all of them in the `renamed` bucket.
+No match that broke the default `--fail` gate stops breaking it.
+
 ## [0.3.2] - 2026-07-29
 
 Coordinated suite release (meta-package packaging fix). No changes to `dupelens` itself.

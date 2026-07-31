@@ -139,3 +139,24 @@ SESSION — release 0.3.1 + tooling de versiones + docs
 - Archivados los changes add-scopelens y add-config-onboarding; sus specs
   promovidos a openspec/specs/ (14 capabilities canonicas en total).
 - Modelo de ramas main+develop consolidado; se publica desde main.
+
+SESSION — dupelens 0.4.0: los imports dejan de contar como codigo (F-022)
+-------------------------------------------------------------------------
+- Origen: reporte de un usuario con monorepo NestJS — 26 matches en 77 archivos,
+  TODOS renamed y ninguno exact. Causa: tokenize() stripeaba comentarios y
+  strings pero no los imports; con los strings vacios, la cabecera colapsa a
+  "import ID from" repetido, identica en todos los archivos.
+- langsyntax.StripImports(src, ext) NUEVO (compartido): descarte por familia de
+  lenguaje via extension (11 familias, las 25 extensiones de CodeExtensions),
+  sin parser. Multilinea por balance de delimitadores. Se aplica DESPUES de
+  StripComments (los strings ya vacios no aportan delimitadores espurios).
+  Buffer lazy: archivo sin imports se devuelve tal cual, sin copiar — necesario
+  para no romper el techo de 512 MB de TestMemory_scanStaysProportional.
+- dupelens: clave default.ignoreImports (*bool, default true), desglose
+  exact/renamed en encabezado y SUMMARY de consola + exactCount/renamedCount en
+  JSON, y filtro de baja entropia (entropy.go) SOLO en la pasada renamed.
+- El filtro de entropia se ancla en la primera linea COMPLETA de la ventana: las
+  ventanas deslizantes suelen empezar a mitad de linea y ahi el token inicial no
+  es el head real. Umbrales fijos: 3 lineas minimo, 75% de head compartido.
+- Rama update-dupelens-import-noise, change openspec homonimo. Bump 0.3.2->0.4.0.
+- PENDIENTE: publicar a npm (5 paquetes) y PyPI (4 wheels).

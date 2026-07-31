@@ -35,6 +35,12 @@ CLAVES DE CONFIG (struct Config)
   default.minLines   líneas mínimas del bloque duplicado      (default: 5).
   default.windowSize ventana de detección, independiente de minTokens; 0 usa
                      el default interno (25).                 (default: 0).
+  default.ignoreImports
+                     descarta las declaraciones de import antes de tokenizar
+                     (import/require/use/#include según el lenguaje). Son
+                     sintaxis obligatoria sin lógica: al normalizar los
+                     identificadores, las cabeceras de todos los archivos
+                     colapsan al mismo token stream.          (default: true).
   rules              array de overrides por patrón glob.
   rules[].pattern    glob del archivo, ej. "**/*_test.go".
   rules[].minTokens  umbral propio de esa regla (opcional).
@@ -45,7 +51,8 @@ CLAVES DE CONFIG (struct Config)
 
 EJEMPLO dupelens.json
   {
-    "default": { "minTokens": 50, "minLines": 5, "windowSize": 25 },
+    "default": { "minTokens": 50, "minLines": 5, "windowSize": 25,
+                 "ignoreImports": true },
     "rules": [ { "pattern": "**/*_test.go", "skip": true } ],
     "exclude": [ "node_modules", "vendor", "dist" ]
   }
@@ -59,6 +66,11 @@ FLAGS (dupelens check)
   --fail-on     qué rompe --fail: exact|renamed|all (default: exact).
   --no-color    desactiva el color (también en --tutorial).
   --verbose     imprime tiempos a stderr.
+
+CAMBIOS 0.4.0
+  Las declaraciones de import ya no cuentan como código (ignoreImports:
+  true). El reporte desglosa los hallazgos en exact/renamed. La pasada
+  renamed descarta los bloques de datos repetitivos; la exact no.
 
 CAMBIOS 0.3.0
   La config se carga en modo estricto: una clave desconocida se avisa por
