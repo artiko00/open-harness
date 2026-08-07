@@ -1,0 +1,36 @@
+[project]
+name = "demo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "ruff>=0.9.1",
+]
+
+[tool.uv]
+managed = true
+package = false
+
+[tool.uv.sources]
+demo-lib = { git = "https://example.com/demo.git", rev = "0x1f" }
+
+[tool.pytest.ini_options]
+addopts = '-ra -q'
+testpaths = [
+    "tests",
+]
+minversion = 6.0
+xfail_strict = true
+
+[tool.linelens]
+maxLines = 120
+since = 2026-01-01
+exclude = [
+    "vendor/**",
+    "build/**",
+]

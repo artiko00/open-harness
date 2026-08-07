@@ -2,7 +2,6 @@ package tomlmin
 
 import (
 	"encoding/json"
-	"strings"
 	"testing"
 )
 
@@ -205,7 +204,6 @@ f = -1.5
 func TestExtract_MalformedTableHeader(t *testing.T) {
 	cases := []string{
 		"[unclosed",
-		"]",
 		"[[a]",
 		"[]",
 	}
@@ -213,6 +211,14 @@ func TestExtract_MalformedTableHeader(t *testing.T) {
 		if _, _, err := ExtractAsJSON([]byte(src), "x"); err == nil {
 			t.Errorf("expected error for: %q", src)
 		}
+	}
+	// Un ']' suelto no es un encabezado sino basura: es error en la sección
+	// pedida y se descarta fuera de ella.
+	if _, _, err := ExtractAsJSON([]byte("]"), ""); err == nil {
+		t.Error("expected error for a stray ']' in the target section")
+	}
+	if _, _, err := ExtractAsJSON([]byte("]"), "x"); err != nil {
+		t.Errorf("a stray ']' outside the target section must be ignored: %v", err)
 	}
 }
 
@@ -230,16 +236,8 @@ func TestExtract_MalformedAssignment(t *testing.T) {
 	}
 }
 
-func TestExtract_UnsupportedFeature_DottedKey(t *testing.T) {
-	src := `
-[tool.linelens]
-default.maxLines = 100
-`
-	_, _, err := ExtractAsJSON([]byte(src), "tool.linelens")
-	if err == nil || !strings.Contains(err.Error(), "dotted") {
-		t.Errorf("expected dotted-key error, got: %v", err)
-	}
-}
+// Las dotted keys pasaron de ser un error a formar parte del subset; el
+// comportamiento vive ahora en TestSubset_DottedKeyCreatesTable.
 
 func TestExtract_MalformedArray(t *testing.T) {
 	cases := []string{

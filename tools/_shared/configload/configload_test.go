@@ -159,11 +159,40 @@ func TestPyprojectSeccionPresente(t *testing.T) {
 
 func TestPyprojectTomlminError(t *testing.T) {
 	dir := t.TempDir()
-	// sintaxis fuera del subset soportado por tomlmin
-	writeFile(t, dir, "pyproject.toml", "= sin_clave\n")
+	// sintaxis invalida dentro de la propia seccion: error duro
+	writeFile(t, dir, "pyproject.toml", "[tool.dupelens]\n= sin_clave\n")
 	_, ok, err := Pyproject[testCfg](dir, "tool.dupelens")
 	if err == nil || ok {
 		t.Fatalf("esperado error tomlmin, got ok=%v err=%v", ok, err)
+	}
+}
+
+func TestPyprojectDependenciasMultilinea(t *testing.T) {
+	dir := t.TempDir()
+	src := `[project]
+name = "demo"
+dependencies = [
+    "requests>=2.0",
+    "pydantic>=2.0",
+]
+
+[tool.dupelens]
+name = "c"
+enabled = true
+`
+	writeFile(t, dir, "pyproject.toml", src)
+	cfg, ok, err := Pyproject[testCfg](dir, "tool.dupelens")
+	if err != nil || !ok || cfg.Name != "c" || !cfg.Enabled {
+		t.Fatalf("un array multilinea en [project] no debe romper la carga: (%v,%v,%v)", cfg, ok, err)
+	}
+}
+
+func TestPyprojectSintaxisAjenaSeIgnora(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "pyproject.toml", "[tool.poetry]\nx = @@@\n\n[tool.dupelens]\nname = \"c\"\n")
+	cfg, ok, err := Pyproject[testCfg](dir, "tool.dupelens")
+	if err != nil || !ok || cfg.Name != "c" {
+		t.Fatalf("sintaxis ajena debe ignorarse: (%v,%v,%v)", cfg, ok, err)
 	}
 }
 

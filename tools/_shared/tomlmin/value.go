@@ -2,17 +2,22 @@ package tomlmin
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
+
+// wsChars son los blancos que separan tokens. El salto de línea cuenta porque
+// una línea lógica puede abarcar varias físicas (arrays multilínea).
+const wsChars = " \t\r\n"
+
+func trimWS(s string) string { return strings.TrimLeft(s, wsChars) }
 
 // parseValue reads a single scalar / array / inline-table from the front of
 // src. Caller guarantees src has at least one non-blank char.
 func parseValue(src string) (any, string, error) {
-	s := strings.TrimLeft(src, " \t")
+	s := trimWS(src)
 	switch s[0] {
-	case '"':
-		return parseString(s)
+	case '"', '\'':
+		return parseStringValue(s)
 	case '[':
 		return parseArray(s)
 	case '{':
@@ -27,29 +32,46 @@ func parseString(s string) (any, string, error) {
 	if s[0] != '"' {
 		return nil, "", fmt.Errorf("expected '\"' at start of string")
 	}
-	var b strings.Builder
 	i := 1
 	for i < len(s) {
-		c := s[i]
-		if c == '\\' {
+		switch s[i] {
+		case '\\':
 			if i+1 >= len(s) {
 				return nil, "", fmt.Errorf("unterminated string escape")
 			}
-			esc, ok := unescape(s[i+1])
-			if !ok {
-				return nil, "", fmt.Errorf("invalid escape \\%c", s[i+1])
-			}
-			b.WriteByte(esc)
 			i += 2
-			continue
+		case '"':
+			out, err := unescapeBody(s[1:i])
+			return out, s[i+1:], err
+		default:
+			i++
 		}
-		if c == '"' {
-			return b.String(), s[i+1:], nil
-		}
-		b.WriteByte(c)
-		i++
 	}
 	return nil, "", fmt.Errorf("unterminated string")
+}
+
+func unescapeBody(s string) (string, error) {
+	if !strings.ContainsRune(s, '\\') {
+		return s, nil
+	}
+	var b strings.Builder
+	for i := 0; i < len(s); {
+		if s[i] != '\\' {
+			b.WriteByte(s[i])
+			i++
+			continue
+		}
+		if i+1 >= len(s) {
+			return "", fmt.Errorf("unterminated string escape")
+		}
+		esc, ok := unescape(s[i+1])
+		if !ok {
+			return "", fmt.Errorf("invalid escape \\%c", s[i+1])
+		}
+		b.WriteByte(esc)
+		i += 2
+	}
+	return b.String(), nil
 }
 
 func unescape(c byte) (byte, bool) {
@@ -76,24 +98,4 @@ func parseBool(s string) (any, string, error) {
 		return false, s[5:], nil
 	}
 	return nil, "", fmt.Errorf("invalid literal: %q", s)
-}
-
-func parseNumber(s string) (any, string, error) {
-	end := 0
-	for end < len(s) && isNumberChar(s[end]) {
-		end++
-	}
-	if end == 0 {
-		return nil, "", fmt.Errorf("unrecognized value: %q", s)
-	}
-	tok := s[:end]
-	n, err := strconv.ParseFloat(tok, 64)
-	if err != nil {
-		return nil, "", fmt.Errorf("invalid number %q: %w", tok, err)
-	}
-	return n, s[end:], nil
-}
-
-func isNumberChar(c byte) bool {
-	return (c >= '0' && c <= '9') || c == '-' || c == '+' || c == '.' || c == 'e' || c == 'E'
 }
