@@ -65,11 +65,11 @@ Rojo → verde → refactor (ADR-013). 100% coverage en `tomlmin` (ADR-011), arc
 
 ## 8. Documentación
 
-- [ ] 8.1 ADR-018: reemplazar la tabla del subset ("NO soporta multi-line strings/arrays, dotted keys") por el subset ampliado + la regla de tolerancia; nota de por qué la asimetría
-- [ ] 8.2 ADR nuevo o sección en ADR-018 justificando "no abortar por TOML ajeno" como principio de carga de config
-- [ ] 8.3 `docs/CONFIGURATION.md`: ejemplo de `pyproject.toml` real con `dependencies` multilínea y `[tool.<name>]`
-- [ ] 8.4 CHANGELOG de los cinco tools con la entrada del fix
-- [ ] 8.5 `.agent/feature-list.json`: entrada F-023
+- [x] 8.1 ADR-018: reemplazar la tabla del subset ("NO soporta multi-line strings/arrays, dotted keys") por el subset ampliado + la regla de tolerancia; nota de por qué la asimetría
+- [x] 8.2 Resuelto como sección de ADR-018 ("Severidad asimétrica") en vez de un ADR nuevo: la decisión es un matiz del parser ya decidido allí, no una decisión independiente
+- [x] 8.3 `docs/CONFIGURATION.md`: ejemplo de `pyproject.toml` real con `dependencies` multilínea y `[tool.<name>]`
+- [x] 8.4 CHANGELOG de los cinco tools con la entrada del fix
+- [x] 8.5 `.agent/feature-list.json`: entrada F-023
 
 ## 9. Release
 

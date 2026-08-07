@@ -183,6 +183,24 @@
         "[done] [fase8·release] Tag local v0.1.0-dupelens",
         "[done] [fase8·release] Merge a main resolviendo colisiones con épica testlens (F-006)"
       ]
+    },
+    {
+      "id": "F-023",
+      "category": "bugfix",
+      "description": "tomlmin lee pyproject.toml del mundo real: arrays multilinea, coma final, literal/multilinea strings, enteros 0x/0o/0b y con _, fechas RFC 3339 como string, dotted y quoted keys; y la sintaxis no soportada fuera de [tool.<name>] se descarta en vez de abortar la carga",
+      "passes": true,
+      "steps": [
+        "[done] scan.go: lineas logicas por balanceo de delimitadores fuera de strings, con la linea fisica de origen para los errores",
+        "[done] strscan.go: medicion de literales (basicos, literales y multilinea) sin abortar ante un string sin cerrar",
+        "[done] value.go/stringval.go/numeric.go: literal y multilinea strings, enteros con _ y prefijos, fechas RFC 3339 como string",
+        "[done] keys.go: dotted keys y quoted keys, con materializacion de tablas intermedias",
+        "[done] composite.go: coma final permitida en arrays y rechazada en inline tables",
+        "[done] document.go: severidad asimetrica — error dentro de sectionPath y sus sub-tablas, descarte fuera",
+        "[done] testdata/: cuatro pyproject.toml de referencia (poetry, setuptools, hatch, uv) como golden tests",
+        "[done] 100% de cobertura en tomlmin y configload; los cinco tools en verde sobre el propio repo",
+        "[done] ADR-018 actualizado y docs/CONFIGURATION.md con el ejemplo real",
+        "Publicar linelens 0.3.3, dupelens 0.4.1, secretlens 0.3.3, testlens 0.3.3, scopelens 0.2.1 y el meta 0.3.5"
+      ]
     }
   ],
   "backlog": [

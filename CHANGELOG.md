@@ -12,6 +12,30 @@ changelog:
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.5] - 2026-08-07
+
+Suite-wide fix in the shared TOML parser: every tool is republished
+(`linelens` 0.3.3, `dupelens` 0.4.1, `secretlens` 0.3.3, `testlens` 0.3.3,
+`scopelens` 0.2.1).
+
+### Fixed
+
+- **`pyproject.toml` in real Python projects no longer aborts config loading**
+  (F-023). Reported by a user whose valid `pyproject.toml` — one `tomllib` reads
+  without complaint — made all five tools fail with `tomlmin: line 7 (in
+  "project"): for key "dependencies": unexpected token in array`. The shared
+  parser walked the document line by line, so a multi-line `dependencies = [`
+  (the canonical PEP 621 form) broke the whole load, even though the syntax sat
+  in a section no tool cares about.
+
+  The TOML subset now covers multi-line arrays, trailing commas, literal and
+  multi-line strings, `_`-separated and `0x`/`0o`/`0b` integers, RFC 3339 dates
+  (read as strings), dotted keys and quoted keys. On top of that, unrecognised
+  syntax **outside** the tool's own `[tool.<tool>]` table is skipped instead of
+  aborting; inside that table errors still surface with line and key, so a
+  broken config never falls back to defaults in silence. See
+  [ADR-018](docs/adr-018-config-multi-ecosistema.md).
+
 ## [0.3.4] - 2026-07-31
 
 Meta-package release pinning `dupelens` 0.4.0. `dupelens` now runs on its **own
