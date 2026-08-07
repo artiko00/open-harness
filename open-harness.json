@@ -1,35 +1,35 @@
 {
-  "version": "0.3.4",
+  "version": "0.3.5",
   "tools": [
     {
       "name": "linelens",
       "description": "File length linter for any language",
       "path": "tools/linelens",
-      "version": "0.3.2"
+      "version": "0.3.3"
     },
     {
       "name": "dupelens",
       "description": "Code duplication detector (Rabin-Karp, language-agnostic)",
       "path": "tools/dupelens",
-      "version": "0.4.0"
+      "version": "0.4.1"
     },
     {
       "name": "secretlens",
       "description": "Secret and credential detector for any codebase",
       "path": "tools/secretlens",
-      "version": "0.3.2"
+      "version": "0.3.3"
     },
     {
       "name": "testlens",
       "description": "Detect source files missing tests (multi-language)",
       "path": "tools/testlens",
-      "version": "0.3.2"
+      "version": "0.3.3"
     },
     {
       "name": "scopelens",
       "description": "presupuesto de archivos por PR sobre git",
       "path": "tools/scopelens",
-      "version": "0.2.0"
+      "version": "0.2.1"
     }
   ]
 }

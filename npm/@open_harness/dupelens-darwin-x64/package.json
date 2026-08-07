@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/dupelens-darwin-x64",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "dupelens binary for macOS x64",
   "os": [
     "darwin"

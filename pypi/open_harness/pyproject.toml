@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "open-harness-suite"
-version = "0.3.4"
+version = "0.3.5"
 description = "The full open-harness suite — linelens, dupelens, secretlens, testlens, scopelens — in one install"
 readme = "README.md"
 license = { text = "MIT" }
@@ -22,11 +22,11 @@ classifiers = [
   "Topic :: Software Development :: Quality Assurance",
 ]
 dependencies = [
-  "open-harness-linelens==0.3.2",
-  "open-harness-dupelens==0.4.0",
-  "open-harness-secretlens==0.3.2",
-  "open-harness-testlens==0.3.2",
-  "open-harness-scopelens==0.2.0",
+  "open-harness-linelens==0.3.3",
+  "open-harness-dupelens==0.4.1",
+  "open-harness-secretlens==0.3.3",
+  "open-harness-testlens==0.3.3",
+  "open-harness-scopelens==0.2.1",
 ]
 
 [project.scripts]

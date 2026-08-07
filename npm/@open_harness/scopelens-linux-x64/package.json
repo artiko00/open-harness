@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/scopelens-linux-x64",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "scopelens binary for Linux x64",
   "os": [
     "linux"
