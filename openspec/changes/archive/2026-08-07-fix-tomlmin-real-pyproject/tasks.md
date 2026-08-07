@@ -73,10 +73,10 @@ Rojo → verde → refactor (ADR-013). 100% coverage en `tomlmin` (ADR-011), arc
 
 ## 9. Release
 
-- [ ] 9.1 Bump: linelens 0.3.3, secretlens 0.3.3, testlens 0.3.3, dupelens 0.4.1, scopelens 0.2.1 (patch: corrección sin cambio de contrato)
-- [ ] 9.2 `scripts/build-npm.sh` por tool (4 plataformas + meta) y `scripts/build-pypi.sh`
-- [ ] 9.3 Meta-paquetes: `@open_harness/open-harness` y `open-harness-suite` con las dependencias actualizadas
-- [ ] 9.4 `scripts/check-versions.sh` en verde
-- [ ] 9.5 Merge `develop` → `main`, tags
-- [ ] 9.6 Publicar en npm (25 paquetes + meta) y PyPI (5 tools + meta)
+- [x] 9.1 Bump: linelens 0.3.3, secretlens 0.3.3, testlens 0.3.3, dupelens 0.4.1, scopelens 0.2.1 (patch: corrección sin cambio de contrato)
+- [x] 9.2 `scripts/build-npm.sh` por tool (4 plataformas + meta) y `scripts/build-pypi.sh`
+- [x] 9.3 Meta-paquetes: `@open_harness/open-harness` y `open-harness-suite` con las dependencias actualizadas
+- [x] 9.4 `scripts/check-versions.sh` en verde
+- [x] 9.5 Merge `develop` → `main`, tags
+- [x] 9.6 Publicar en npm (25 paquetes + meta) y PyPI (5 tools + meta)
 - [ ] 9.7 Verificar desde los registries: instalar en un repo Python limpio con `pyproject.toml` multilínea y confirmar que ya no aborta
