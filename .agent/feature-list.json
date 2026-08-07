@@ -199,7 +199,7 @@
         "[done] testdata/: cuatro pyproject.toml de referencia (poetry, setuptools, hatch, uv) como golden tests",
         "[done] 100% de cobertura en tomlmin y configload; los cinco tools en verde sobre el propio repo",
         "[done] ADR-018 actualizado y docs/CONFIGURATION.md con el ejemplo real",
-        "Publicar linelens 0.3.3, dupelens 0.4.1, secretlens 0.3.3, testlens 0.3.3, scopelens 0.2.1 y el meta 0.3.5"
+        "[done] Publicado y verificado desde los registries: npm (26 paquetes) y PyPI (5 tools + meta open-harness-suite 0.3.5); los cinco binarios instalados leen un pyproject.toml con dependencies multilinea y aplican su [tool.<name>]"
       ]
     }
   ],

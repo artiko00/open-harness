@@ -79,4 +79,4 @@ Rojo → verde → refactor (ADR-013). 100% coverage en `tomlmin` (ADR-011), arc
 - [x] 9.4 `scripts/check-versions.sh` en verde
 - [x] 9.5 Merge `develop` → `main`, tags
 - [x] 9.6 Publicar en npm (25 paquetes + meta) y PyPI (5 tools + meta)
-- [ ] 9.7 Verificar desde los registries: instalar en un repo Python limpio con `pyproject.toml` multilínea y confirmar que ya no aborta
+- [x] 9.7 Verificar desde los registries: instalar en un repo Python limpio con `pyproject.toml` multilínea y confirmar que ya no aborta
