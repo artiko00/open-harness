@@ -73,3 +73,6 @@ pypi/**/build/
 pypi/**/*.egg-info/
 __pycache__/
 *.pyc
+
+# Claude Code: preferencias personales por desarrollador
+.claude/settings.local.json

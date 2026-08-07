@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(go vet:*)",
+      "Bash(go tool cover:*)",
+      "Bash(gofmt:*)",
+      "Bash(openspec validate:*)",
+      "Bash(openspec list:*)",
+      "Bash(openspec show:*)",
+      "Bash(openspec status:*)",
+      "Bash(bash scripts/check-versions.sh)",
+      "Bash(bash scripts/build.sh)",
+      "Bash(bash scripts/build-npm.sh:*)",
+      "Bash(bash scripts/smoke-test-npm.sh)",
+      "Bash(lefthook run:*)"
+    ]
+  }
+}
