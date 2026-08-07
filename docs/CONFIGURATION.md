@@ -242,9 +242,25 @@ is per-tool — mix and match freely.
 
 ### `pyproject.toml` (Python)
 
+The tables below live alongside whatever else your `pyproject.toml` already
+holds — `[project]`, `[tool.poetry]`, `[tool.ruff]` and friends:
+
 ```toml
+[project]
+name = "my-project"
+dependencies = [
+    "requests>=2.0",
+    "pydantic>=2.0",
+]
+
 [tool.linelens.default]
 maxLines = 100
+
+[tool.linelens]
+exclude = [
+    "vendor/**",
+    "build/**",
+]
 
 [tool.testlens]
 language = "python"
@@ -253,6 +269,15 @@ exclude = ["node_modules", ".git", "dist", ".venv"]
 [tool.scopelens]
 maxFiles = 20
 ```
+
+Multi-line arrays, trailing commas, `'literal strings'`, `"""multi-line
+strings"""`, dotted keys (`default.maxLines = 100`) and quoted keys are all
+understood. Syntax the parser does not recognise **outside** your `[tool.<tool>]`
+tables is skipped rather than treated as a failure, so an exotic
+`[tool.poetry]` section never stops a tool from reading its own config. Inside
+your own tables the opposite holds: a broken value is reported with its line
+number instead of silently falling back to defaults. See
+[ADR-018](adr-018-config-multi-ecosistema.md) for the supported subset.
 
 ### `package.json` (Node / TypeScript)
 

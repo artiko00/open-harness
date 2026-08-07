@@ -1,6 +1,8 @@
 # ADR-018: Config unificada multi-ecosistema (pyproject.toml + composer.json)
 
 **Fecha:** 2026-05-13
+**Actualizada:** 2026-08-07 — subset TOML ampliado y severidad asimétrica (ver
+"Por qué un parser TOML mínimo en Go puro")
 **Estado:** Aceptada
 **Aplica a:** linelens, dupelens, secretlens, testlens (todos)
 
@@ -63,7 +65,8 @@ Go stdlib no incluye `encoding/toml`. Tres opciones:
 | Convertir TOML → JSON con tool externo en build time | No sirve para users finales que escriben TOML a mano. |
 | **Parser TOML mínimo (subset) en Go puro** | Preserva ADR-002. ~150 líneas de código bien delimitado. |
 
-Elegimos la tercera. El parser solo necesita reconocer el subset que aparece típicamente en `[tool.<name>]` de un `pyproject.toml`:
+Elegimos la tercera. El parser reconoce el subset que aparece en un `pyproject.toml`
+real, no solo dentro de `[tool.<name>]`:
 
 - Tablas top-level con dot notation: `[tool.linelens]`, `[tool.linelens.default]`.
 - Arrays of tables: `[[tool.linelens.rules]]`.
@@ -71,11 +74,41 @@ Elegimos la tercera. El parser solo necesita reconocer el subset que aparece tí
 - Inline tables: `default = { maxLines = 100 }`.
 - Arrays of strings: `exclude = ["node_modules", "vendor"]`.
 - Arrays of inline tables: `rules = [{ pattern = "…", maxLines = 300 }]`.
-- Comentarios `#` (línea entera o trailing).
+- **Arrays multilínea** y **coma final** en arrays — la forma canónica de PEP 621.
+- **Literal strings** `'…'` y **strings multilínea** `"""…"""` / `'''…'''`.
+- **Enteros** con separador `_` y prefijos `0x` / `0o` / `0b`.
+- **Fechas y datetimes** RFC 3339, que se leen como string sin interpretar.
+- **Dotted keys** (`default.maxLines = 100`) y **quoted keys** (`"module.x" = 1`).
+- Comentarios `#` (línea entera o trailing), incluso dentro de un array multilínea.
 
-NO soporta (cae en `error` claro al encontrarlos): datetimes, hex/oct/bin int literals, multi-line strings/arrays, dotted keys dentro de una tabla.
+Sigue sin ser un TOML 1.0 completo: quedan fuera, entre otros, los escapes
+`\uXXXX`, los floats especiales (`inf`, `nan`) y la coma final en inline tables
+—que TOML tampoco admite—. La diferencia es que **lo no soportado ya no es
+fatal**: ver la sección siguiente.
 
 El parser vive en `tools/_shared/tomlmin/` con su propio `go.mod`. Cada tool lo importa via Go workspace `use`.
+
+### Severidad asimétrica: estricto adentro, tolerante afuera
+
+`ExtractAsJSON(toml, sectionPath)` parsea el documento entero aunque solo le
+interese una tabla, así que el subset se enfrenta a TODO el `pyproject.toml` del
+usuario: `[build-system]`, `[tool.poetry]`, `[tool.ruff]`, `[tool.mypy]`… Tratar
+cualquier sintaxis desconocida como error convertía a un tool en rehén de
+secciones que no le incumben.
+
+La regla es entonces:
+
+| Dónde está la línea no parseable | Qué pasa |
+|---|---|
+| Dentro de `sectionPath` o de sus sub-tablas | **Error** con línea y clave: la config del usuario está mal y tiene que enterarse |
+| En cualquier otra tabla | Se **descarta** y el parseo sigue |
+| Encabezado de tabla malformado | **Error** siempre: sin él no se sabe a qué sección pertenece lo que viene después |
+
+El subset ampliado reduce los descartes a casi cero; la tolerancia es el
+seguro de que ningún TOML exótico ajeno vuelva a tumbar la carga. Lo que **no**
+hace la tolerancia es enmascarar errores propios: un `[tool.linelens]` roto sigue
+fallando ruidosamente en vez de caer a los defaults en silencio, que es la misma
+garantía que da el resto de la cadena de configuración.
 
 ## API del parser
 

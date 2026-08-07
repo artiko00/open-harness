@@ -17,7 +17,7 @@ import (
 // Pass sectionPath="" to extract the root table (top-level keys before
 // any table header).
 func ExtractAsJSON(toml []byte, sectionPath string) ([]byte, bool, error) {
-	root, err := parseDocument(string(toml))
+	root, err := parseDocument(string(toml), sectionPath)
 	if err != nil {
 		return nil, false, err
 	}

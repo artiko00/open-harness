@@ -12,4 +12,4 @@ virtualenv, plus the `open-harness` command whose `init` subcommand delegates
 to each tool's own init to scaffold the config files (including scopelens.json
 when the scopelens command is available).
 """
-__version__ = "0.3.4"
+__version__ = "0.3.5"

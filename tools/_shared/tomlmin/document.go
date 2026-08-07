@@ -5,32 +5,49 @@ import (
 	"strings"
 )
 
-// parseDocument walks the TOML document line by line, materializing
-// tables and array-of-tables into a nested map[string]any tree.
-func parseDocument(src string) (map[string]any, error) {
+// parseDocument recorre el documento TOML materializando tablas y arrays de
+// tablas en un árbol de map[string]any.
+//
+// target es la sección que el llamador quiere extraer. Dentro de ella (y de sus
+// sub-tablas) una asignación no parseable es un error: la config del usuario
+// está mal y debe enterarse. Fuera de ella se descarta en silencio, porque el
+// resto del pyproject.toml no es asunto nuestro y no debe tumbar la carga.
+func parseDocument(src, target string) (map[string]any, error) {
+	lines, err := splitLogicalLines(src)
+	if err != nil {
+		return nil, err
+	}
 	root := map[string]any{}
 	cur := root
 	curPath := ""
 
-	for i, rawLine := range strings.Split(src, "\n") {
-		line := stripTrailingComment(rawLine)
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		if isTableHeader(line) {
-			next, path, err := openTable(root, line)
+	for _, ll := range lines {
+		if isTableHeader(ll.text) {
+			next, path, err := openTable(root, ll.text)
 			if err != nil {
-				return nil, fmt.Errorf("tomlmin: line %d: %w", i+1, err)
+				return nil, fmt.Errorf("tomlmin: line %d: %w", ll.line, err)
 			}
 			cur, curPath = next, path
 			continue
 		}
-		if err := applyAssignment(cur, line); err != nil {
-			return nil, fmt.Errorf("tomlmin: line %d (in %q): %w", i+1, curPath, err)
+		if err := applyAssignment(cur, ll.text); err != nil {
+			if !withinTarget(curPath, target) {
+				continue
+			}
+			return nil, fmt.Errorf("tomlmin: line %d (in %q): %w", ll.line, curPath, err)
 		}
 	}
 	return root, nil
+}
+
+// withinTarget indica si la tabla actual es la sección buscada o una sub-tabla
+// suya. Con target vacío (tabla raíz) solo cuentan las claves previas al primer
+// encabezado.
+func withinTarget(curPath, target string) bool {
+	if target == "" {
+		return curPath == ""
+	}
+	return curPath == target || strings.HasPrefix(curPath, target+".")
 }
 
 func isTableHeader(line string) bool {

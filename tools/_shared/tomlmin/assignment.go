@@ -5,11 +5,10 @@ import (
 	"strings"
 )
 
-// applyAssignment parses "key = value" and stores the value into target.
-// Returns an error for malformed lines or unsupported features
-// (dotted keys, missing value, …).
+// applyAssignment parsea "key = value" y guarda el valor en target. Devuelve
+// error para líneas malformadas o para valores fuera del subset soportado.
 func applyAssignment(target map[string]any, line string) error {
-	eq := strings.IndexByte(line, '=')
+	eq := indexEqOutsideStrings(line)
 	if eq < 0 {
 		return fmt.Errorf("missing '=' in: %q", line)
 	}
@@ -17,9 +16,6 @@ func applyAssignment(target map[string]any, line string) error {
 	rest := strings.TrimSpace(line[eq+1:])
 	if key == "" {
 		return fmt.Errorf("missing key before '='")
-	}
-	if strings.Contains(key, ".") {
-		return fmt.Errorf("dotted keys inside tables are not supported: %q", key)
 	}
 	if rest == "" {
 		return fmt.Errorf("missing value after '=' for key %q", key)
@@ -31,32 +27,8 @@ func applyAssignment(target map[string]any, line string) error {
 	if strings.TrimSpace(leftover) != "" {
 		return fmt.Errorf("trailing garbage after value for %q: %q", key, leftover)
 	}
-	target[key] = val
-	return nil
-}
-
-// stripTrailingComment removes "# …" from the end of a line, respecting
-// quoted strings (so a "#" inside a string literal is preserved).
-func stripTrailingComment(line string) string {
-	inStr := false
-	escaped := false
-	for i, r := range line {
-		if escaped {
-			escaped = false
-			continue
-		}
-		switch r {
-		case '\\':
-			if inStr {
-				escaped = true
-			}
-		case '"':
-			inStr = !inStr
-		case '#':
-			if !inStr {
-				return line[:i]
-			}
-		}
+	if err := assignKey(target, key, val); err != nil {
+		return fmt.Errorf("for key %q: %w", key, err)
 	}
-	return line
+	return nil
 }

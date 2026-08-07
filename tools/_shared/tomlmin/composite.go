@@ -6,8 +6,9 @@ import (
 )
 
 // parseArray reads "[v1, v2, …]" returning a []any. Caller guarantees s[0]=='['.
+// Admite coma final antes del cierre y saltos de línea entre elementos.
 func parseArray(s string) (any, string, error) {
-	rest := strings.TrimLeft(s[1:], " \t")
+	rest := trimWS(s[1:])
 	out := []any{}
 	if strings.HasPrefix(rest, "]") {
 		return out, rest[1:], nil
@@ -21,9 +22,12 @@ func parseArray(s string) (any, string, error) {
 			return nil, "", err
 		}
 		out = append(out, v)
-		rest = strings.TrimLeft(after, " \t")
+		rest = trimWS(after)
 		if strings.HasPrefix(rest, ",") {
-			rest = strings.TrimLeft(rest[1:], " \t")
+			rest = trimWS(rest[1:])
+			if strings.HasPrefix(rest, "]") { // coma final: TOML la permite
+				return out, rest[1:], nil
+			}
 			continue
 		}
 		if strings.HasPrefix(rest, "]") {
@@ -34,9 +38,10 @@ func parseArray(s string) (any, string, error) {
 }
 
 // parseInlineTable reads "{ k1 = v1, k2 = v2 }" returning a map[string]any.
-// Caller guarantees s[0]=='{'.
+// Caller guarantees s[0]=='{'. A diferencia de los arrays, TOML no admite coma
+// final aquí y se sigue rechazando.
 func parseInlineTable(s string) (any, string, error) {
-	rest := strings.TrimLeft(s[1:], " \t")
+	rest := trimWS(s[1:])
 	out := map[string]any{}
 	if strings.HasPrefix(rest, "}") {
 		return out, rest[1:], nil
@@ -50,10 +55,12 @@ func parseInlineTable(s string) (any, string, error) {
 		if err != nil {
 			return nil, "", err
 		}
-		out[k] = v
-		rest = strings.TrimLeft(after2, " \t")
+		if err := assignKey(out, k, v); err != nil {
+			return nil, "", err
+		}
+		rest = trimWS(after2)
 		if strings.HasPrefix(rest, ",") {
-			rest = strings.TrimLeft(rest[1:], " \t")
+			rest = trimWS(rest[1:])
 			continue
 		}
 		if strings.HasPrefix(rest, "}") {
@@ -64,7 +71,7 @@ func parseInlineTable(s string) (any, string, error) {
 }
 
 func readInlineKey(s string) (string, string, error) {
-	eq := strings.IndexByte(s, '=')
+	eq := indexEqOutsideStrings(s)
 	if eq < 0 {
 		return "", "", fmt.Errorf("missing '=' in inline table near %q", s)
 	}
@@ -72,5 +79,5 @@ func readInlineKey(s string) (string, string, error) {
 	if key == "" {
 		return "", "", fmt.Errorf("empty key in inline table")
 	}
-	return key, strings.TrimLeft(s[eq+1:], " \t"), nil
+	return key, trimWS(s[eq+1:]), nil
 }

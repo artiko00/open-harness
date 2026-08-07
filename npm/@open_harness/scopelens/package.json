@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/scopelens",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "PR file budget checker — measures the cumulative diff of a branch vs its base",
   "keywords": [
     "linter",
@@ -18,10 +18,10 @@
     "test": "node bin/scopelens.js version"
   },
   "optionalDependencies": {
-    "@open_harness/scopelens-linux-x64": "0.2.0",
-    "@open_harness/scopelens-darwin-arm64": "0.2.0",
-    "@open_harness/scopelens-darwin-x64": "0.2.0",
-    "@open_harness/scopelens-win32-x64": "0.2.0"
+    "@open_harness/scopelens-linux-x64": "0.2.1",
+    "@open_harness/scopelens-darwin-arm64": "0.2.1",
+    "@open_harness/scopelens-darwin-x64": "0.2.1",
+    "@open_harness/scopelens-win32-x64": "0.2.1"
   },
   "engines": {
     "node": ">=16"

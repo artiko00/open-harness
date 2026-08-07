@@ -174,3 +174,44 @@ since `--fail` defaults to `exact` only, the gate loses no detection power.
 
 **What to do:** nothing. The filter keys on the first token of each line, so a data block whose lines
 start with distinct identifiers is not covered — exclude those paths in `dupelens.json` as before.
+
+---
+
+# Upgrading to the 2026-08-07 suite release
+
+`linelens` 0.3.3 · `dupelens` 0.4.1 · `secretlens` 0.3.3 · `testlens` 0.3.3 ·
+`scopelens` 0.2.1 · meta 0.3.5
+
+## `pyproject.toml` is read the way Python projects actually write it
+
+Until now the shared TOML parser walked `pyproject.toml` line by line, so a
+multi-line array — the canonical PEP 621 way to declare dependencies — aborted
+config loading in every tool:
+
+```
+tomlmin: line 7 (in "project"): for key "dependencies": unexpected token in array
+```
+
+The file was valid; `tomllib` read it without complaint. Worse, the failing
+syntax did not even have to be yours: a `[project]`, `[tool.poetry]` or
+`[tool.ruff]` section was enough to take the load down.
+
+**What changed.** The subset now understands multi-line arrays, trailing commas,
+`'literal strings'`, `"""multi-line strings"""`, `_`-separated and
+`0x`/`0o`/`0b` integers, RFC 3339 dates (returned as strings), dotted keys
+(`default.maxLines = 100`) and quoted keys (`"module.x" = 1`). And syntax it
+still does not recognise is only fatal **inside your own `[tool.<tool>]`
+table** — anywhere else it is skipped.
+
+**Impact:** strictly a fix. Any `pyproject.toml` that loaded before loads
+identically now.
+
+**What to do:** if you worked around this with a dedicated `<tool>.json`, you
+can move the config back into `pyproject.toml` — or keep the JSON file, which
+still wins over `pyproject.toml` in the precedence chain either way.
+
+**One thing to watch:** a `[tool.<tool>]` table that was *unreadable* before —
+the tool printed the parse error and fell back to compiled defaults — may now
+load for the first time and change what the tool reports. If output shifts after
+this upgrade, that config was there all along; it just never made it past the
+parser.

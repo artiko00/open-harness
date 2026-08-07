@@ -1,6 +1,6 @@
 {
   "name": "@open_harness/secretlens-linux-x64",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "secretlens binary for Linux x64",
   "os": [
     "linux"

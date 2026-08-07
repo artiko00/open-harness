@@ -6,11 +6,11 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 
 | Tool | Description | Status |
 |---|---|---|
-| [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.3.2` |
-| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.4.0` |
-| [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.3.2` |
-| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.3.2` |
-| [scopelens](tools/scopelens/) | Per-PR file- and line-budget gate — counts the branch-vs-base diff at local pre-commit | `v0.2.0` |
+| [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.3.3` |
+| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.4.1` |
+| [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.3.3` |
+| [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.3.3` |
+| [scopelens](tools/scopelens/) | Per-PR file- and line-budget gate — counts the branch-vs-base diff at local pre-commit | `v0.2.1` |
 | bigo | Big O complexity analyzer | `planned` |
 
 ---
@@ -316,7 +316,7 @@ finding, and since `--fail` defaults to `exact` only, the gate loses no detectio
 The filter keys on the *first token of each line*, so a data block whose lines start with distinct
 identifiers (`entry_1(…)`, `entry_2(…)`) is not covered — exclude those paths in `dupelens.json`.
 
-### Limitations (v0.4.0)
+### Limitations (v0.4.1)
 
 - Detects contiguous **exact** and **alpha-renamed** clones (see `--fail-on`). Structural refactors — reordered statements, inserted or deleted lines (gapped/Type-3 clones), and behaviourally-equivalent rewrites (Type-4) — are still not detected; that requires AST analysis ([ADR-012](docs/adr-012-dupelens-rabin-karp-sobre-ast.md) explains the trade-off).
 
@@ -527,10 +527,10 @@ The `pre-commit` hook runs all four lints; `pre-push` runs the test suite of eac
 ```
 open-harness/
 ├── tools/
-│   ├── linelens/          ← v0.3.2 (file length linter, 100% coverage)
-│   ├── dupelens/          ← v0.4.0 (duplicate detector, Rabin-Karp, 100% coverage)
-│   ├── secretlens/        ← v0.3.2 (secret/credential detector, 100% coverage)
-│   └── testlens/          ← v0.3.2 (test coverage detector, multi-language, 100% coverage)
+│   ├── linelens/          ← v0.3.3 (file length linter, 100% coverage)
+│   ├── dupelens/          ← v0.4.1 (duplicate detector, Rabin-Karp, 100% coverage)
+│   ├── secretlens/        ← v0.3.3 (secret/credential detector, 100% coverage)
+│   └── testlens/          ← v0.3.3 (test coverage detector, multi-language, 100% coverage)
 ├── npm/
 │   ├── open-harness/      ← meta-package (instala los 4 tools)
 │   └── @open_harness/

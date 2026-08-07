@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "demo"
+dynamic = ["version"]
+license = { text = "MIT" }
+keywords = [
+  "lint",
+  "ci",
+]
+
+[tool.hatch.version]
+path = "src/demo/__about__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "coverage[toml]>=6.5",
+  "pytest",
+]
+
+[tool.hatch.envs.default.scripts]
+test = 'pytest {args:tests}'
+cov-report = [
+  "- coverage combine",
+  "coverage report",
+]
+
+[tool.coverage.run]
+source_pkgs = ["demo", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/demo/__about__.py",
+]
+
+[tool.linelens]
+maxLines = 120
+
+[tool.linelens.default]
+maxLines = 120
+
+[[tool.linelens.rules]]
+pattern = "**/*_test.py"
+maxLines = 300
