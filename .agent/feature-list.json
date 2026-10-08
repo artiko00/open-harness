@@ -543,13 +543,13 @@
       "id": "F-025",
       "category": "bugfix",
       "description": "npm: los paquetes de plataforma declaraban un bin con el mismo nombre que el wrapper; con npm 10 el link node_modules/.bin/<tool> se perdía al revertir los opcionales de otras plataformas y `npx <tool>` buscaba el paquete en el registry (404). Afecta a los cinco tools y al meta",
-      "passes": false,
+      "passes": true,
       "steps": [
-        "Reproducir con tarballs locales (A/B): con bin en las plataformas el link desaparece; sin bin, npx funciona (wrapper y meta)",
-        "Quitar bin de los 20 package.json de plataforma",
-        "Gate en scripts/check-versions.sh: ningún paquete de plataforma declara bin",
-        "Release: linelens/secretlens/testlens 0.3.4, dupelens 0.5.1, scopelens 0.2.2, meta 0.3.7 (npm y PyPI)",
-        "Verificar desde el registry: npm install + npx <tool> para los cinco tools y el meta"
+        "[done] Reproducir con tarballs locales (A/B): con bin en las plataformas el link desaparece; sin bin, npx funciona (wrapper y meta)",
+        "[done] Quitar bin de los 20 package.json de plataforma",
+        "[done] Gate en scripts/check-versions.sh: ningún paquete de plataforma declara bin",
+        "[done] Release: linelens/secretlens/testlens 0.3.4, dupelens 0.5.1, scopelens 0.2.2, meta 0.3.7 (npm y PyPI)",
+        "[done] Verificar desde el registry: npm install + npx <tool> para los cinco tools y el meta"
       ]
     }
   ]

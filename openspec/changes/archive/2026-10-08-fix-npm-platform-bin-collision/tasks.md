@@ -27,12 +27,12 @@
   meta. Verificación: cada binario linux-x64 imprime su versión nueva y `twine check` pasa.
 - [x] 3.3 Tests de los cinco tools y los cuatro `_shared`, y los cinco gates sobre el repo.
   Verificación: todo en verde.
-- [ ] 3.4 Publicar npm (20 plataformas, 5 wrappers, meta) y PyPI (5 tools, `open-harness-suite`); tags.
+- [x] 3.4 Publicar npm (20 plataformas, 5 wrappers, meta) y PyPI (5 tools, `open-harness-suite`); tags.
   Verificación: `npm publish`/`twine upload` sin errores.
-- [ ] 3.5 Verificación desde el registry. Verificación: en proyectos limpios, `npm install` + `npx <tool>
+- [x] 3.5 Verificación desde el registry. Verificación: en proyectos limpios, `npm install` + `npx <tool>
   version` para los cinco wrappers y para el meta; `pip install open-harness-suite==0.3.7`.
 
 ## 4. Cierre
 
-- [ ] 4.1 Marcar F-025 en `.agent/feature-list.json`, actualizar `.agent/claude-progress.txt` y archivar
+- [x] 4.1 Marcar F-025 en `.agent/feature-list.json`, actualizar `.agent/claude-progress.txt` y archivar
   el change.

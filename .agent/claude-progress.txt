@@ -199,3 +199,26 @@ SESSION — dupelens 0.5.0: memoria acotada (F-024) — 2026-10-08
   `npm install` local busca "dupelens" en el registry (404). Pasa igual con
   0.4.1 y en el meta (solo queda enlazado open-harness). Fix propuesto: quitar
   "bin" de los paquetes de plataforma (y de build-npm.sh) y republicar los 5.
+
+SESSION — F-025: npx <tool> tras npm install + Purpose de los specs — 2026-10-08
+-------------------------------------------------------------------------------
+- Causa confirmada con un A/B de tarballs locales (optionalDependencies por
+  file:): los paquetes de plataforma declaraban "bin": {"<tool>": ...} y npm 10
+  borraba node_modules/.bin/<tool> al revertir las opcionales de otras
+  plataformas. Sin bin en las plataformas, npx funciona (wrapper y meta).
+- Fix: sin bin en los 20 package.json de plataforma; check-versions.sh falla si
+  una plataforma vuelve a declararlo. El wrapper nunca lo uso (require.resolve).
+- Release: linelens/secretlens/testlens 0.3.4, dupelens 0.5.1, scopelens 0.2.2,
+  meta 0.3.7 — npm (26 paquetes) y PyPI (5 tools x 4 wheels + suite). Commit de
+  release con --no-verify (48 archivos > 40 de scopelens, excepcion documentada;
+  los otros 4 gates verificados a mano). Tags v0.3.4-{linelens,secretlens,
+  testlens}, v0.5.1-dupelens, v0.2.2-scopelens, v0.3.7.
+- openspec: los 14 specs canonicos tenian el Purpose placeholder de archive;
+  redactados a partir de sus requirements. openspec validate --specs --strict:
+  14/14.
+- Verificado desde los registries: npm install de cada wrapper deja
+  node_modules/.bin/<tool> y npx <tool> imprime la version nueva (los 5); el meta
+  0.3.7 enlaza los 6 comandos (antes solo open-harness); pip install
+  open-harness-suite==0.3.7 instala los 5 tools en sus versiones nuevas.
+- Propagacion: npm y el indice simple de PyPI tardaron varios minutos; un loop
+  con `npm view` siguio viendo 404 cacheados aunque el registry ya respondia.
