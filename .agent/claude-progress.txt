@@ -160,3 +160,42 @@ SESSION — dupelens 0.4.0: los imports dejan de contar como codigo (F-022)
   es el head real. Umbrales fijos: 3 lineas minimo, 75% de head compartido.
 - Rama update-dupelens-import-noise, change openspec homonimo. Bump 0.3.2->0.4.0.
 - PENDIENTE: publicar a npm (5 paquetes) y PyPI (4 wheels).
+
+SESSION — dupelens 0.5.0: memoria acotada (F-024) — 2026-10-08
+---------------------------------------------------------------
+- Origen: usuarios reportan que dupelens consume toda la RAM en proyectos
+  grandes. Reproducido: sobre /usr/lib/python3.14 (237 MB de .py) 0.4.1 paso de
+  1,5 GB a 22 GB en 2 min y systemd-oomd mato el scope de la terminal entera.
+- REGLA: medir dupelens solo dentro de
+  `systemd-run --user --scope -p MemoryMax=… -p MemorySwapMax=0` (el controlador
+  memory esta delegado al slice de usuario). Script y datasets del spike en
+  ~/.cache/dupelens-spike/ (measure.sh, compare.py).
+- Causas medidas: eje cuadratico (detect enumeraba todos los pares por bucket y
+  creaba un Match por ventana y par: k copias -> k^2) y constante ~20x el fuente.
+- Algoritmo (ADR-012 extendido): vocab de tokens internados (id+linea, 8 B),
+  vista normalizada por tabla, prefiltro de dos bitsets, recs (hash,pos)
+  ordenados, semillas ancladas k-1 por clase, extension por diagonal (sin ella
+  el cambio de ancla fragmentaba clones: encodings/cp850 <-> cp852 desaparecia),
+  conteo de tokens = tramo real, hash mod 2^61-1.
+- Presupuesto (ADR-024): --max-memory > DUPELENS_MAX_MEMORY > maxMemory > auto
+  (min 1 GiB, 25% de la disponible: /proc/meminfo + cgroup v1/v2; hw.memsize;
+  GlobalMemoryStatusEx). SetMemoryLimit al 90% + checkpoints runtime/metrics con
+  FreeOSMemory de confirmacion. Exceso -> exit 2 sin reporte parcial.
+- Resultados: stdlib 258->25 MB; 32 copias OOM->69 MB; fortios OOM->45 MB;
+  site-packages 226 MB en 388 MB. --fail igual que 0.4.1 en stdlib, numpy,
+  matplotlib y yt_dlp; los conteos bajan (anclaje + 0.4.x inflaba tokens).
+- Publicacion por etapas para respetar scopelens (40 archivos por PR): 3 merges
+  develop->main (algoritmo, presupuesto, docs+release), sin --no-verify.
+- Publicado: npm dupelens 0.5.0 (+4 plataformas) y meta 0.3.6; PyPI
+  open-harness-dupelens 0.5.0 (4 wheels) y open-harness-suite 0.3.6. Tags
+  v0.5.0-dupelens y v0.3.6.
+- Verificado desde los registries: pip install open-harness-suite==0.3.6 trae
+  dupelens 0.5.0; npm install @open_harness/open-harness@0.3.6 trae dupelens
+  0.5.0 + linux-x64 y el shim corre (propagacion de npm: ~2 min).
+- HALLAZGO PREEXISTENTE (no corregido, pide decision): los 20 package.json de
+  plataforma (<tool>-<os>-<cpu>) declaran "bin": {"<tool>": ...}, el mismo
+  nombre que el wrapper. Con npm 10.9 al revertir/omitir los opcionales de otras
+  plataformas se borra node_modules/.bin/<tool>: `npx dupelens` tras un
+  `npm install` local busca "dupelens" en el registry (404). Pasa igual con
+  0.4.1 y en el meta (solo queda enlazado open-harness). Fix propuesto: quitar
+  "bin" de los paquetes de plataforma (y de build-npm.sh) y republicar los 5.
