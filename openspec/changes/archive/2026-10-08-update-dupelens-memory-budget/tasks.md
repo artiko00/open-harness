@@ -118,5 +118,5 @@
   `for m in tools/*/ tools/_shared/*/; do (cd $m && go test ./...); done` en verde.
 - [x] 8.2 `linelens`, `dupelens`, `secretlens`, `testlens` y `scopelens` `check --fail` sobre el repo
   en verde.
-- [ ] 8.3 Marcar los steps de F-024 en `.agent/feature-list.json` y actualizar
+- [x] 8.3 Marcar los steps de F-024 en `.agent/feature-list.json` y actualizar
   `.agent/claude-progress.txt` con lo hecho y los próximos pasos (release).
