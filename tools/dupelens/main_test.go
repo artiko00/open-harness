@@ -209,4 +209,9 @@ func TestPrintUsage_Stdout(t *testing.T) {
 	if buf.Len() == 0 {
 		t.Error("printUsage should print something")
 	}
+	for _, want := range []string{"--max-memory", "DUPELENS_MAX_MEMORY", "exit 2"} {
+		if !bytes.Contains(buf.Bytes(), []byte(want)) {
+			t.Errorf("printUsage no menciona %q", want)
+		}
+	}
 }

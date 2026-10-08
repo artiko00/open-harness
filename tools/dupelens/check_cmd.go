@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -19,6 +20,7 @@ func runCheck(args []string) int {
 	format := fs.String("format", "console", "output format: console | json")
 	root := fs.String("dir", ".", "directory to scan")
 	verbose := fs.Bool("verbose", false, "print timing and progress to stderr")
+	maxMemory := fs.String("max-memory", "", "memory budget: <n>MiB, <n>GiB or <n>% of available memory")
 	if err := fs.Parse(args); err != nil {
 		return 1
 	}
@@ -31,30 +33,15 @@ func runCheck(args []string) int {
 		fmt.Fprintf(os.Stderr, "invalid fail-on %q (valid: exact, renamed, all)\n", *failOn)
 		return 1
 	}
-
-	minSet := false
-	fs.Visit(func(f *flag.Flag) {
-		if f.Name == "min-tokens" {
-			minSet = true
-		}
-	})
-	if minSet && *minTokens <= 0 {
+	if flagWasSet(fs, "min-tokens") && *minTokens <= 0 {
 		fmt.Fprintln(os.Stderr, "min-tokens must be greater than 0")
 		return 1
 	}
-
 	if _, err := os.Stat(*root); err != nil {
 		fmt.Fprintf(os.Stderr, "directory %q not accessible: %v\n", *root, err)
 		return 1
 	}
-
-	configSet := false
-	fs.Visit(func(f *flag.Flag) {
-		if f.Name == "config" {
-			configSet = true
-		}
-	})
-	if configSet {
+	if flagWasSet(fs, "config") {
 		if _, err := os.Stat(*configPath); err != nil {
 			fmt.Fprintf(os.Stderr, "config file %q not found\n", *configPath)
 			return 1
@@ -66,9 +53,19 @@ func runCheck(args []string) int {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return 1
 	}
+	b, err := resolveBudget(*maxMemory, flagWasSet(fs, "max-memory"), cfg.MaxMemory, os.Stderr)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		return 1
+	}
+	defer applyBudget(b)()
 
 	t0 := time.Now()
-	matches, scanned, skips, err := scan(*root, cfg, *minTokens, memGuard{})
+	matches, scanned, skips, err := scan(*root, cfg, *minTokens, memGuard{limit: b.bytes})
+	if errors.Is(err, errOverBudget) {
+		printOverBudget(os.Stderr, b)
+		return 2
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "scan error: %v\n", err)
 		return 1
@@ -81,8 +78,8 @@ func runCheck(args []string) int {
 	}
 	report(matches, opts, os.Stdout)
 	if *verbose {
-		fmt.Fprintf(os.Stderr, "[verbose] scan=%s (%d files, %d matches), total=%s\n",
-			tScan, scanned, len(matches), time.Since(t0))
+		fmt.Fprintf(os.Stderr, "[verbose] scan=%s (%d files, %d matches), total=%s, memory budget=%s (%s)\n",
+			tScan, scanned, len(matches), time.Since(t0), formatBytes(b.bytes), b.source)
 	}
 	if *failOnViolation && (gateCount(matches, *failOn) > 0 || pathmatch.AnyFailsGate(skips)) {
 		return 1

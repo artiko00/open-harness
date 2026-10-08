@@ -48,6 +48,12 @@ CLAVES DE CONFIG (struct Config)
   exclude            directorios excluidos del escaneo
                      (default: node_modules, vendor, .git, dist, build,
                      coverage, __pycache__, target, .next, out).
+  maxMemory          presupuesto de memoria: "512MiB", "2GiB" o "40%" de la
+                     memoria disponible (la del sistema o, dentro de un
+                     cgroup con límite, su margen). Si se excede, check
+                     termina con exit 2. Precedencia: --max-memory, luego
+                     DUPELENS_MAX_MEMORY, luego esta clave. (default: auto =
+                     el menor entre 1 GiB y el 25% de la disponible).
 
 EJEMPLO dupelens.json
   {
@@ -65,7 +71,14 @@ FLAGS (dupelens check)
   --fail        exit 1 si hay duplicados (hooks).
   --fail-on     qué rompe --fail: exact|renamed|all (default: exact).
   --no-color    desactiva el color (también en --tutorial).
-  --verbose     imprime tiempos a stderr.
+  --verbose     imprime tiempos y el presupuesto de memoria a stderr.
+  --max-memory  presupuesto de memoria (ver maxMemory).
+
+CAMBIOS 0.5.0
+  Memoria acotada: k copias de un bloque cuestan k, no k². Con tres o más
+  copias, cada una se reporta contra la primera (A-B, A-C; B-C queda
+  implícito). El conteo de tokens es el tramo real del bloque. Nuevo
+  presupuesto maxMemory; excederlo termina con exit 2 (no se pudo medir).
 
 CAMBIOS 0.4.0
   Las declaraciones de import ya no cuentan como código (ignoreImports:
