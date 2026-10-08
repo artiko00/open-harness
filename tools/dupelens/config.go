@@ -12,6 +12,9 @@ type Config struct {
 	Default DefaultConfig `json:"default"`
 	Rules   []Rule        `json:"rules"`
 	Exclude []string      `json:"exclude"`
+	// MaxMemory es el presupuesto de memoria ("2GiB", "512MiB" o "40%"). Vacío
+	// = auto; ver resolveBudget para la precedencia con el flag y el entorno.
+	MaxMemory string `json:"maxMemory"`
 }
 
 type DefaultConfig struct {

@@ -38,7 +38,7 @@ func TestTutorial_menciona_claves(t *testing.T) {
 	stdout, _ := captureRun(t, []string{"tutorial"})
 	for _, key := range []string{
 		"default", "minTokens", "minLines", "windowSize",
-		"rules", "pattern", "skip", "exclude",
+		"rules", "pattern", "skip", "exclude", "maxMemory", "DUPELENS_MAX_MEMORY",
 	} {
 		if !strings.Contains(stdout, key) {
 			t.Errorf("el tutorial no menciona la clave %q", key)
@@ -48,7 +48,7 @@ func TestTutorial_menciona_claves(t *testing.T) {
 
 func TestTutorial_menciona_flags(t *testing.T) {
 	stdout, _ := captureRun(t, []string{"--tutorial"})
-	for _, flag := range []string{"--config", "--fail", "--no-color", "--format"} {
+	for _, flag := range []string{"--config", "--fail", "--no-color", "--format", "--max-memory"} {
 		if !strings.Contains(stdout, flag) {
 			t.Errorf("el tutorial no menciona el flag %q", flag)
 		}

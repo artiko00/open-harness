@@ -21,13 +21,22 @@ CHECK OPTIONS:
   --fail        exit 1 if duplicates      (use in git hooks)
   --fail-on     kinds that break --fail   (default: exact; "renamed"|"all")
   --no-color    disable colored output
-  --verbose     print scan timings to stderr
+  --verbose     print scan timings and memory budget to stderr
+  --max-memory  memory budget: <n>MiB, <n>GiB or <n>% of available memory
+                (default: min(1GiB, 25%); also DUPELENS_MAX_MEMORY or the
+                maxMemory config key). Exceeding it stops with exit 2.
+
+EXIT CODES:
+  0  no duplicates, or duplicates without --fail
+  1  duplicates with --fail, or invalid usage/config
+  exit 2  memory budget exceeded: the scan could not be completed
 
 EXAMPLES:
   dupelens check
   dupelens check --fail
   dupelens check --format=json > report.json
   dupelens check --min-tokens 30 --dir ./src --verbose
+  dupelens check --max-memory 2GiB
 
 LEFTHOOK INTEGRATION (lefthook.yml):
   pre-commit:

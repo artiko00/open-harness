@@ -42,4 +42,7 @@ func mergeConfig(dst *Config, src Config) {
 	if len(dst.Exclude) == 0 {
 		dst.Exclude = src.Exclude
 	}
+	if dst.MaxMemory == "" {
+		dst.MaxMemory = src.MaxMemory
+	}
 }
