@@ -5,6 +5,51 @@ All notable changes to `dupelens` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-10-08
+
+Bounded memory on large repositories (F-024). Reported by users whose projects made
+`dupelens` take all the RAM: reproduced on a 226 MB `site-packages`, where 0.4.1 grew
+from 1.5 GB to 22 GB in two minutes until `systemd-oomd` killed the whole session.
+0.5.0 scans the same tree in 388 MB. See
+[ADR-024](../../docs/adr-024-dupelens-presupuesto-de-memoria.md) and
+[UPGRADING](../../docs/UPGRADING.md#upgrading-to-dupelens-050).
+
+### Added
+
+- **Memory budget.** `--max-memory`, the `DUPELENS_MAX_MEMORY` environment variable
+  and the `maxMemory` config key (in that order of precedence) accept `"512MiB"`,
+  `"2GiB"` or `"40%"` of the available memory. The default, `auto`, is the lower of
+  1 GiB and 25% of the available memory — the system's or, inside a cgroup with a
+  limit, its remaining headroom (Linux `/proc/meminfo` and cgroup v1/v2, macOS
+  `hw.memsize`, Windows `GlobalMemoryStatusEx`; stdlib only).
+- **Exit code 2** when the scan exceeds the budget: no partial report, with or
+  without `--fail`, and a message with the budget, its source and how to raise it.
+  The GC soft limit is set to 90% of the budget and checkpoints read
+  `runtime/metrics`, so the process stops cleanly instead of being OOM-killed.
+- `--verbose` prints the memory budget in force and where it came from.
+
+### Changed
+
+- **No more quadratic axis.** 0.4.x enumerated every pair inside each hash bucket and
+  allocated one match per window and pair before merging: a block of L windows
+  copied k times cost L·k(k−1)/2 objects. Each occurrence is now paired only with
+  the first one of its class (k−1 seeds), seeds are extended to the maximal clone of
+  their diagonal and merged per pair. Measured: 32 copies of a 0.5 MB package went
+  from >3 GB (OOM) to 69 MB; Ansible's generated `fortinet/fortios` (20 MB) from
+  >3 GB to 45 MB.
+- **Compact representation.** Interned tokens (id + line, 8 bytes per token), the
+  normalized view derived through a table instead of a copy, sorted (hash, position)
+  candidates instead of a map, and a two-bitset prefilter that never materializes
+  unique windows. The Python standard library (11.3 MB) went from 258 MB to 25 MB.
+- **61-bit rolling hash** (modulo 2^61−1) instead of ~30 bits, which produced millions
+  of spurious collisions on large trees. Literal verification is unchanged.
+- **BREAKING (counts):** with three or more copies of a block, each copy is reported
+  against the first one (`a-b`, `a-c`; `b-c` is implied). The result of `--fail`
+  does not change.
+- **BREAKING (counts):** `tokens` is the real span of the duplicated block. 0.4.x
+  added one token per merged pair of windows, even across different alignments, and
+  reported blocks above `minTokens` that never were (31 real tokens reported as 71).
+
 ## [0.4.1] - 2026-08-07
 
 ### Fixed

@@ -19,7 +19,7 @@ npm resolves the dependency tree and pulls the right native binary for your plat
 | Tool | Purpose |
 |---|---|
 | **linelens**   | File length linter — flags files over a configurable line limit. |
-| **dupelens**   | Code duplication detector (Rabin-Karp, language-agnostic). |
+| **dupelens**   | Code duplication detector (Rabin-Karp, language-agnostic, bounded memory budget). |
 | **secretlens** | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, …). |
 | **testlens**   | Test coverage detector — finds source files without tests, 10 languages. |
 | **scopelens**  | Per-PR file- and line-budget gate — counts the branch-vs-base diff locally, at `pre-commit`. |
@@ -112,7 +112,7 @@ npm resuelve el árbol de dependencias y descarga el binario nativo correcto par
 | Tool | Propósito |
 |---|---|
 | **linelens**   | Linter de longitud — marca archivos que superan un límite de líneas. |
-| **dupelens**   | Detector de duplicación (Rabin-Karp, agnóstico al lenguaje). |
+| **dupelens**   | Detector de duplicación (Rabin-Karp, agnóstico al lenguaje, presupuesto de memoria acotado). |
 | **secretlens** | Detector de secretos y credenciales (AWS, GitHub tokens, JWT, PEM, …). |
 | **testlens**   | Detector de cobertura — encuentra archivos sin test, 10 lenguajes. |
 | **scopelens**  | Presupuesto de archivos por PR — cuenta el diff rama-vs-base local en `pre-commit`. |

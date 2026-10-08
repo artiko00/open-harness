@@ -19,7 +19,7 @@ pip resolves the dependency tree and downloads the right native wheel per platfo
 | Tool | Purpose |
 |---|---|
 | **linelens**   | File length linter — flags files over a configurable line limit. |
-| **dupelens**   | Code duplication detector (Rabin-Karp, language-agnostic). |
+| **dupelens**   | Code duplication detector (Rabin-Karp, language-agnostic, bounded memory budget). |
 | **secretlens** | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, …). |
 | **testlens**   | Test coverage detector — finds source files without tests, 9 languages. |
 | **scopelens**  | Per-PR file- and line-budget gate over `git` — counts the branch-vs-base diff at pre-commit. |
