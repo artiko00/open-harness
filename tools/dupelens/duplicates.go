@@ -1,9 +1,11 @@
 package main
 
-// Match representa un par de bloques duplicados detectados. Los campos fileID*
-// y startIdx* son internos: ubican el bloque en los slices de tokens para la
-// clasificación exact/renamed. Kind es "exact" (tokens idénticos) o "renamed"
-// (misma estructura, identificadores distintos).
+import "sort"
+
+// Match representa un par de bloques duplicados detectados. Kind es "exact"
+// (tokens idénticos) o "renamed" (misma estructura, identificadores distintos).
+// startIdxA/endIdxA son internos: el rango de tokens [start, end) del bloque en
+// el archivo A, para contar los tokens al fusionar corridas.
 type Match struct {
 	FileA      string
 	StartLineA int
@@ -14,64 +16,59 @@ type Match struct {
 	Tokens     int
 	Kind       string
 
-	fileIDA   int
 	startIdxA int
-	fileIDB   int
-	startIdxB int
+	endIdxA   int
 }
 
-// fileData agrupa, por archivo, sus tokens crudos y normalizados. Se guardan
-// una sola vez; los fingerprints referencian posiciones dentro de estos slices.
+// fileData guarda, por archivo, el id internado y la línea de cada token. Los
+// tokens normalizados no se copian: se derivan del id vía vocab.norm.
 type fileData struct {
-	name string
-	raw  []Token
-	norm []Token
+	name  string
+	ids   []uint32
+	lines []uint32
 }
 
-// findDuplicates corre dos pasadas: exact (sobre tokens crudos) y renamed
-// (sobre tokens normalizados). Los matches renamed que ya cubre un match exact
-// se descartan para no reportarlos dos veces. Output ordenado deterministicamente.
-func findDuplicates(files []fileData, rawFps, normFps []Fingerprint, windowSize, minLines, minTokens int) []Match {
-	exact := detect(files, rawFps, false, windowSize, minLines, minTokens, "exact")
-	renamed := detect(files, normFps, true, windowSize, minLines, minTokens, "renamed")
-	renamed = dropCoveredByExact(renamed, exact)
-	out := append(exact, renamed...)
+// findDuplicates corre dos pasadas: exact (vista cruda) y renamed (vista
+// normalizada). Los renamed que ya cubre un exact se descartan para no
+// reportarlos dos veces. Ordena los archivos por ruta para que el anclaje a la
+// primera ocurrencia sea canónico, y devuelve el resultado ordenado.
+func findDuplicates(files []fileData, v *vocab, windowSize, minLines, minTokens int, g memGuard) ([]Match, error) {
+	sort.Slice(files, func(i, j int) bool { return files[i].name < files[j].name })
+	exact, err := detect(files, v, false, windowSize, minLines, minTokens, g)
+	if err != nil {
+		return nil, err
+	}
+	renamed, err := detect(files, v, true, windowSize, minLines, minTokens, g)
+	if err != nil {
+		return nil, err
+	}
+	out := append(exact, dropCoveredByExact(renamed, exact)...)
 	sortMatches(out)
-	return out
+	return out, nil
 }
 
-// detect agrupa fingerprints por hash, verifica colisiones por índice (contra
-// tokens crudos o normalizados según useNorm), fusiona solapamientos y filtra
-// por líneas y tokens mínimos. Etiqueta cada match con kind.
-func detect(files []fileData, fps []Fingerprint, useNorm bool, windowSize, minLines, minTokens int, kind string) []Match {
-	byHash := groupByHash(fps)
-	type pairKey struct{ A, B string }
-	groups := make(map[pairKey][]Match)
-	for _, ents := range byHash {
-		for i := 0; i < len(ents); i++ {
-			for j := i + 1; j < len(ents); j++ {
-				a, b := ents[i], ents[j]
-				if a.FileID == b.FileID && a.StartIdx == b.StartIdx {
-					continue
-				}
-				ta := pick(files[a.FileID], useNorm)
-				tb := pick(files[b.FileID], useNorm)
-				if !sameTokens(ta, a.StartIdx, tb, b.StartIdx, windowSize) {
-					continue
-				}
-				m := canonicalMatch(files, a, b, windowSize)
-				groups[pairKey{m.FileA, m.FileB}] = append(groups[pairKey{m.FileA, m.FileB}], m)
-			}
-		}
+// detect encadena prefiltro, semillas ancladas y fusión de corridas sobre una
+// vista, filtra por líneas y tokens mínimos y etiqueta el tipo de hallazgo.
+func detect(files []fileData, v *vocab, norm bool, w, minLines, minTokens int, g memGuard) ([]Match, error) {
+	recs, err := candidates(files, v, w, norm, g)
+	if err != nil {
+		return nil, err
 	}
-	var out []Match
-	for _, ms := range groups {
-		out = append(out, mergeOnePair(ms, windowSize)...)
+	seeds, err := anchorSeeds(files, v, recs, w, norm, g)
+	if err != nil {
+		return nil, err
 	}
-	out = filterByMinLines(out, minLines)
-	out = filterByMinTokens(out, minTokens)
+	out, err := mergeRuns(files, v, seeds, w, norm, g)
+	if err != nil {
+		return nil, err
+	}
+	out = filterByMinTokens(filterByMinLines(out, minLines), minTokens)
+	kind := "exact"
+	if norm {
+		kind = "renamed"
+	}
 	for i := range out {
 		out[i].Kind = kind
 	}
-	return out
+	return out, nil
 }

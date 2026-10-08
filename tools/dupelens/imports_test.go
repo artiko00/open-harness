@@ -112,7 +112,7 @@ func TestScan_importHeadersAloneAreNotDuplicates(t *testing.T) {
 
 	cfg := defaultConfig
 	cfg.Default.MinTokens = 20
-	matches, _, _, err := scan(dir, cfg, 0)
+	matches, _, _, err := scan(dir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan: %v", err)
 	}
@@ -134,7 +134,7 @@ func TestScan_realDuplicateStillDetectedWithImportsStripped(t *testing.T) {
 	cfg := defaultConfig
 	cfg.Default.MinTokens = 20
 	cfg.Default.MinLines = 3
-	matches, _, _, err := scan(dir, cfg, 0)
+	matches, _, _, err := scan(dir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan: %v", err)
 	}
@@ -155,7 +155,7 @@ func TestScan_ignoreImportsFalseRestoresHeaderNoise(t *testing.T) {
 	cfg.Default.MinTokens = 20
 	off := false
 	cfg.Default.IgnoreImports = &off
-	matches, _, _, err := scan(dir, cfg, 0)
+	matches, _, _, err := scan(dir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan: %v", err)
 	}

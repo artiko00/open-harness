@@ -68,7 +68,7 @@ func runCheck(args []string) int {
 	}
 
 	t0 := time.Now()
-	matches, scanned, skips, err := scan(*root, cfg, *minTokens)
+	matches, scanned, skips, err := scan(*root, cfg, *minTokens, memGuard{})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "scan error: %v\n", err)
 		return 1

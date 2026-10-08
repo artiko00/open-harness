@@ -60,7 +60,7 @@ func TestScan_FIFOSeOmiteComoNoRegular(t *testing.T) {
 	if err := syscall.Mkfifo(fifo, 0644); err != nil {
 		t.Skipf("el sistema no soporta FIFO: %v", err)
 	}
-	_, _, skips, err := scan(tmpDir, cfgSkips(), 0)
+	_, _, skips, err := scan(tmpDir, cfgSkips(), 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan falló: %v", err)
 	}
@@ -79,7 +79,7 @@ func TestScan_ArchivoIlegibleSeOmiteComoReadError(t *testing.T) {
 	os.Chmod(locked, 0000)
 	defer os.Chmod(locked, 0644)
 
-	_, _, skips, err := scan(tmpDir, cfgSkips(), 0)
+	_, _, skips, err := scan(tmpDir, cfgSkips(), 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan falló: %v", err)
 	}
@@ -96,7 +96,7 @@ func TestScan_BinarioSeOmiteComoBinary(t *testing.T) {
 	os.WriteFile(filepath.Join(tmpDir, "img.jpg"), []byte{0xFF, 0xD8, 0xFF}, 0644)
 	os.WriteFile(filepath.Join(tmpDir, "blob.dat"), []byte{'a', 0x00, 'b'}, 0644)
 
-	_, _, skips, err := scan(tmpDir, cfgSkips(), 0)
+	_, _, skips, err := scan(tmpDir, cfgSkips(), 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan falló: %v", err)
 	}

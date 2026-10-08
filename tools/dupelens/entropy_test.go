@@ -6,34 +6,36 @@ import (
 	"testing"
 )
 
-// toks arma tokens con una línea por grupo separado por "|".
-func toks(spec string) []Token {
-	var out []Token
+// toks arma un fileData con una línea por grupo separado por "|".
+func toks(spec string) fileData {
+	v := newVocab()
+	var f fileData
 	for i, line := range strings.Split(spec, "|") {
-		for _, v := range strings.Fields(line) {
-			out = append(out, Token{Value: v, Line: i + 1})
+		for _, s := range strings.Fields(line) {
+			f.ids = append(f.ids, v.id(s))
+			f.lines = append(f.lines, uint32(i+1))
 		}
 	}
-	return out
+	return f
 }
 
 func TestLowEntropyWindow_repetitiveBlockIsLowEntropy(t *testing.T) {
 	tk := toks("id name|id name|id name|id name|id name")
-	if !lowEntropyWindow(tk, 0, len(tk)) {
+	if !lowEntropyWindow(tk, 0, len(tk.ids)) {
 		t.Error("un bloque donde todas las líneas empiezan igual es de baja entropía")
 	}
 }
 
 func TestLowEntropyWindow_realCodeIsNotLowEntropy(t *testing.T) {
 	tk := toks("if err|return nil|for row|acc +=|return acc")
-	if lowEntropyWindow(tk, 0, len(tk)) {
+	if lowEntropyWindow(tk, 0, len(tk.ids)) {
 		t.Error("código con líneas de formas distintas no es de baja entropía")
 	}
 }
 
 func TestLowEntropyWindow_belowMinimumLinesIsNotJudged(t *testing.T) {
 	tk := toks("id name|id name")
-	if lowEntropyWindow(tk, 0, len(tk)) {
+	if lowEntropyWindow(tk, 0, len(tk.ids)) {
 		t.Errorf("con menos de %d líneas la ventana no se juzga", minEntropyLines)
 	}
 }
@@ -42,7 +44,7 @@ func TestLowEntropyWindow_windowStartingMidLineSkipsThePartialLine(t *testing.T)
 	// La ventana arranca en el segundo token de la primera línea: esa línea está
 	// cortada y su token no debe usarse como ancla.
 	tk := toks("head tail|id name|id name|id name|id name")
-	if !lowEntropyWindow(tk, 1, len(tk)-1) {
+	if !lowEntropyWindow(tk, 1, len(tk.ids)-1) {
 		t.Error("la línea inicial parcial debe ignorarse al elegir el ancla")
 	}
 }
@@ -56,14 +58,14 @@ func TestLowEntropyWindow_windowFullyInsideOneLineIsNotJudged(t *testing.T) {
 
 func TestLowEntropyWindow_singleLineWindowIsNotJudged(t *testing.T) {
 	tk := toks("id name value other")
-	if lowEntropyWindow(tk, 0, len(tk)) {
+	if lowEntropyWindow(tk, 0, len(tk.ids)) {
 		t.Error("una ventana de una sola línea no se juzga")
 	}
 }
 
 func TestLowEntropyWindow_minorityRepetitionIsNotEnough(t *testing.T) {
 	tk := toks("id a|id b|const c|return d|for e")
-	if lowEntropyWindow(tk, 0, len(tk)) {
+	if lowEntropyWindow(tk, 0, len(tk.ids)) {
 		t.Error("2 de 5 líneas iguales no alcanza el umbral")
 	}
 }
@@ -89,7 +91,7 @@ func TestScan_dataArraysDoNotProduceRenamedMatches(t *testing.T) {
 
 	cfg := defaultConfig
 	cfg.Default.MinTokens = 20
-	matches, _, _, err := scan(dir, cfg, 0)
+	matches, _, _, err := scan(dir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan: %v", err)
 	}
@@ -119,7 +121,7 @@ func TestScan_literalRepetitiveBlockStillReportedAsExact(t *testing.T) {
 
 	cfg := defaultConfig
 	cfg.Default.MinTokens = 20
-	matches, _, _, err := scan(dir, cfg, 0)
+	matches, _, _, err := scan(dir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan: %v", err)
 	}

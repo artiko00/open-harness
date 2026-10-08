@@ -2,9 +2,10 @@ package main
 
 import "sort"
 
-// mergeOnePair fusiona matches solapantes/contiguos del mismo par de archivos.
-// Tokens del merged = windowSize + (numFingerprintsContiguos - 1).
-func mergeOnePair(matches []Match, windowSize int) []Match {
+// mergeOnePair fusiona matches solapantes/contiguos (en líneas) del mismo par
+// de archivos: une corridas de diagonales vecinas, p. ej. cuando una copia
+// tiene un token de más. Tokens del fusionado = tramo de tokens que abarca en A.
+func mergeOnePair(matches []Match) []Match {
 	if len(matches) <= 1 {
 		return matches
 	}
@@ -17,28 +18,19 @@ func mergeOnePair(matches []Match, windowSize int) []Match {
 
 	var out []Match
 	cur := matches[0]
-	count := 1
-	for i := 1; i < len(matches); i++ {
-		n := matches[i]
-		overlapA := n.StartLineA <= cur.EndLineA+1
-		overlapB := n.StartLineB <= cur.EndLineB+1
-		if overlapA && overlapB {
-			if n.EndLineA > cur.EndLineA {
-				cur.EndLineA = n.EndLineA
-			}
-			if n.EndLineB > cur.EndLineB {
-				cur.EndLineB = n.EndLineB
-			}
-			count++
-			cur.Tokens = windowSize + count - 1
-		} else {
-			out = append(out, cur)
-			cur = n
-			count = 1
+	for _, n := range matches[1:] {
+		if n.StartLineA <= cur.EndLineA+1 && n.StartLineB <= cur.EndLineB+1 {
+			cur.EndLineA = max(cur.EndLineA, n.EndLineA)
+			cur.EndLineB = max(cur.EndLineB, n.EndLineB)
+			cur.startIdxA = min(cur.startIdxA, n.startIdxA)
+			cur.endIdxA = max(cur.endIdxA, n.endIdxA)
+			cur.Tokens = cur.endIdxA - cur.startIdxA
+			continue
 		}
+		out = append(out, cur)
+		cur = n
 	}
-	out = append(out, cur)
-	return out
+	return append(out, cur)
 }
 
 // filterByMinLines descarta matches cuyo rango (en cualquiera de los archivos)

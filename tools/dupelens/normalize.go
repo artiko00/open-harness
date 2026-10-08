@@ -1,16 +1,9 @@
 package main
 
-// normalizeTokens produce una copia de tokens con los identificadores
-// reemplazados por "ID" y los literales numéricos por "NUM", preservando
-// keywords y operadores. Habilita la detección de clones Type-2 (misma
-// estructura, identificadores distintos). Conserva la línea de cada token.
-func normalizeTokens(tokens []Token) []Token {
-	out := make([]Token, len(tokens))
-	for i, t := range tokens {
-		out[i] = Token{Value: normalizeValue(t.Value), Line: t.Line}
-	}
-	return out
-}
+// La normalización reemplaza identificadores por "ID" y literales numéricos por
+// "NUM", preservando keywords y operadores: habilita la detección de clones
+// Type-2 (misma estructura, identificadores distintos). Se aplica una vez por
+// token distinto, en vocab.
 
 // normalizeValue mapea un token a su forma normalizada.
 func normalizeValue(v string) string {
@@ -44,47 +37,4 @@ func isIdentifier(v string) bool {
 		}
 	}
 	return len(v) > 0
-}
-
-// fingerprintCode genera fingerprints descartando ventanas monótonas (todos los
-// tokens iguales), que no aportan señal estructural y disparan falsos positivos
-// en contenido repetitivo: literales de datos, tablas, y —tras stripear los
-// contenidos de string— mapas de keywords que quedan como una tira de "true".
-// Se aplica tanto a la pasada exacta (tokens crudos) como a la renamed
-// (normalizados, p. ej. "ID ID ID …").
-func fingerprintCode(tokens []Token, fileID, windowSize int) []Fingerprint {
-	all := fingerprint(tokens, fileID, windowSize)
-	out := all[:0]
-	for _, fp := range all {
-		if !monotoneWindow(tokens, fp.StartIdx, windowSize) {
-			out = append(out, fp)
-		}
-	}
-	return out
-}
-
-// fingerprintNormalized fingerprintea los tokens normalizados (clones Type-2),
-// filtrando ventanas monótonas igual que la pasada exacta y, además, las que
-// provienen de un bloque de baja entropía en el fuente crudo (ver entropy.go).
-// El filtro extra vive solo en esta pasada: en la exacta la igualdad literal ya
-// es señal genuina, y el gate por defecto de --fail depende de ella.
-func fingerprintNormalized(norm, raw []Token, fileID, windowSize int) []Fingerprint {
-	all := fingerprintCode(norm, fileID, windowSize)
-	out := all[:0]
-	for _, fp := range all {
-		if !lowEntropyWindow(raw, fp.StartIdx, windowSize) {
-			out = append(out, fp)
-		}
-	}
-	return out
-}
-
-// monotoneWindow indica si todos los tokens de la ventana tienen el mismo valor.
-func monotoneWindow(t []Token, start, w int) bool {
-	for k := 1; k < w; k++ {
-		if t[start+k].Value != t[start].Value {
-			return false
-		}
-	}
-	return true
 }

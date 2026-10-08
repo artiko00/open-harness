@@ -30,7 +30,7 @@ func TestLoadConfig_ZeroMinTokensFillsDefault(t *testing.T) {
 
 func TestMergeOnePair_SingleElement(t *testing.T) {
 	m := Match{FileA: "a.go", StartLineA: 1, EndLineA: 5, FileB: "b.go", StartLineB: 10, EndLineB: 14, Tokens: 5}
-	result := mergeOnePair([]Match{m}, 5)
+	result := mergeOnePair([]Match{m})
 	if len(result) != 1 || result[0].StartLineA != 1 {
 		t.Errorf("single-element mergeOnePair = %v, want unchanged", result)
 	}
@@ -41,7 +41,7 @@ func TestMergeOnePair_NonOverlapping(t *testing.T) {
 		{FileA: "a.go", StartLineA: 1, EndLineA: 5, FileB: "b.go", StartLineB: 1, EndLineB: 5, Tokens: 3},
 		{FileA: "a.go", StartLineA: 20, EndLineA: 25, FileB: "b.go", StartLineB: 20, EndLineB: 25, Tokens: 3},
 	}
-	result := mergeOnePair(matches, 3)
+	result := mergeOnePair(matches)
 	if len(result) != 2 {
 		t.Errorf("non-overlapping mergeOnePair = %d matches, want 2", len(result))
 	}
@@ -52,7 +52,7 @@ func TestMergeOnePair_SameStartLineA_SortByB(t *testing.T) {
 		{FileA: "a.go", StartLineA: 10, EndLineA: 15, FileB: "b.go", StartLineB: 50, EndLineB: 55, Tokens: 3},
 		{FileA: "a.go", StartLineA: 10, EndLineA: 15, FileB: "b.go", StartLineB: 1, EndLineB: 6, Tokens: 3},
 	}
-	result := mergeOnePair(matches, 3)
+	result := mergeOnePair(matches)
 	if len(result) != 2 {
 		t.Errorf("same StartLineA non-overlapping B: expected 2, got %d", len(result))
 	}
@@ -123,7 +123,7 @@ func TestScan_ExcludedDirectory(t *testing.T) {
 	os.MkdirAll(excluded, 0755)
 	os.WriteFile(filepath.Join(excluded, "lib.go"), []byte("package foo\nfunc Lib() {}"), 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}, Exclude: []string{"vendor"}}
-	_, scanned, _, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -136,7 +136,7 @@ func TestScan_ExcludedFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.WriteFile(filepath.Join(tmpDir, "vendor"), []byte("not a dir"), 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}, Exclude: []string{"vendor"}}
-	_, scanned, _, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -149,7 +149,7 @@ func TestScan_BinaryExtension(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.WriteFile(filepath.Join(tmpDir, "img.jpg"), []byte{0xFF, 0xD8, 0xFF}, 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}}
-	_, scanned, _, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -165,7 +165,7 @@ func TestScan_SkippedByRule(t *testing.T) {
 		Default: DefaultConfig{MinTokens: 5, MinLines: 1},
 		Rules:   []Rule{{Pattern: "**/*_test.go", Skip: true}},
 	}
-	_, scanned, _, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -176,7 +176,7 @@ func TestScan_SkippedByRule(t *testing.T) {
 
 func TestScan_RootNotExist(t *testing.T) {
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}}
-	if _, _, _, err := scan("/nonexistent/path/xyz123abc", cfg, 0); err == nil {
+	if _, _, _, err := scan("/nonexistent/path/xyz123abc", cfg, 0, memGuard{}); err == nil {
 		t.Error("scan with nonexistent root should return error")
 	}
 }
@@ -192,7 +192,7 @@ func TestScan_SubdirError(t *testing.T) {
 	os.Chmod(subdir, 0000)
 	defer os.Chmod(subdir, 0755)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}}
-	if _, _, _, err := scan(tmpDir, cfg, 0); err != nil {
+	if _, _, _, err := scan(tmpDir, cfg, 0, memGuard{}); err != nil {
 		t.Fatalf("scan should ignore subdir errors, got: %v", err)
 	}
 }
@@ -207,7 +207,7 @@ func TestScan_UnreadableFile(t *testing.T) {
 	os.Chmod(locked, 0000)
 	defer os.Chmod(locked, 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 5, MinLines: 1}}
-	if _, _, _, err := scan(tmpDir, cfg, 0); err != nil {
+	if _, _, _, err := scan(tmpDir, cfg, 0, memGuard{}); err != nil {
 		t.Fatalf("scan with unreadable file should not error: %v", err)
 	}
 }
@@ -216,7 +216,7 @@ func TestScan_FileWithNoTokens(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.WriteFile(filepath.Join(tmpDir, "tiny.go"), []byte("x"), 0644)
 	cfg := Config{Default: DefaultConfig{MinTokens: 50, MinLines: 5}}
-	_, scanned, _, err := scan(tmpDir, cfg, 0)
+	_, scanned, _, err := scan(tmpDir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
