@@ -71,7 +71,7 @@ func TestMemory_scanStaysProportional(t *testing.T) {
 	runtime.GC()
 	runtime.ReadMemStats(&before)
 
-	matches, scanned, _, err := scan(dir, cfg, 0)
+	matches, scanned, _, err := scan(dir, cfg, 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan error: %v", err)
 	}

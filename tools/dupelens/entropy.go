@@ -17,28 +17,27 @@ const (
 //
 // El criterio se ancla en el primer token de la primera línea de la ventana en
 // lugar de la moda de todos los primeros tokens: es más conservador (descarta
-// menos), se computa en una pasada sin asignar memoria —hay una ventana por
-// token del repositorio— y cubre igual el caso que motiva el filtro, donde
+// menos), se computa en una pasada sin asignar memoria y cubre igual el caso que motiva el filtro, donde
 // todas las líneas del bloque empiezan igual.
 //
 // Se evalúa sobre los tokens CRUDOS aunque el fingerprint sea el normalizado:
 // normalizado, casi todo código real es de baja entropía por construcción
 // (`const ID = ID ID`) y el filtro descartaría duplicados legítimos.
-func lowEntropyWindow(raw []Token, start, w int) bool {
+func lowEntropyWindow(f fileData, start, w int) bool {
 	end := start + w
-	i := firstWholeLine(raw, start, end)
+	i := firstWholeLine(f, start, end)
 	if i >= end {
 		return false
 	}
-	head := raw[i].Value
-	lines, same, prevLine := 0, 0, 0
+	head := f.ids[i]
+	lines, same, prevLine := 0, 0, uint32(0)
 	for ; i < end; i++ {
-		if raw[i].Line == prevLine {
+		if f.lines[i] == prevLine {
 			continue
 		}
-		prevLine = raw[i].Line
+		prevLine = f.lines[i]
 		lines++
-		if raw[i].Value == head {
+		if f.ids[i] == head {
 			same++
 		}
 	}
@@ -52,12 +51,12 @@ func lowEntropyWindow(raw []Token, start, w int) bool {
 // de la ventana. Las ventanas deslizantes suelen empezar a mitad de una línea, y
 // ahí el token inicial no es el comienzo real de esa línea: tomarlo como ancla
 // haría parecer variado un bloque uniforme.
-func firstWholeLine(raw []Token, start, end int) int {
-	if start == 0 || raw[start-1].Line != raw[start].Line {
+func firstWholeLine(f fileData, start, end int) int {
+	if start == 0 || f.lines[start-1] != f.lines[start] {
 		return start
 	}
 	i := start
-	for i < end && raw[i].Line == raw[start].Line {
+	for i < end && f.lines[i] == f.lines[start] {
 		i++
 	}
 	return i

@@ -5,20 +5,17 @@ import (
 	"strings"
 )
 
-// addFile tokeniza el contenido, calcula fingerprints crudos y normalizados y
-// registra el archivo solo si produjo fingerprints.
-func addFile(files *[]fileData, rawFps, normFps *[]Fingerprint, relPath, content string, opts scanOpts) {
-	ext := strings.ToLower(filepath.Ext(relPath))
-	raw := tokenize(content, ext, opts.stripImports)
-	norm := normalizeTokens(raw)
-	fileID := len(*files)
-	windowSize := opts.windowSize
-	rfp := fingerprintCode(raw, fileID, windowSize)
-	nfp := fingerprintNormalized(norm, raw, fileID, windowSize)
-	if len(rfp) == 0 && len(nfp) == 0 {
+// addFile tokeniza el contenido y registra el archivo como ids internados y
+// líneas: 8 bytes por token. Un archivo con menos tokens que la ventana no
+// puede aportar ninguna ventana y no se registra.
+func addFile(files *[]fileData, v *vocab, relPath, content string, opts scanOpts) {
+	toks := tokenize(content, strings.ToLower(filepath.Ext(relPath)), opts.stripImports)
+	if len(toks) < opts.windowSize {
 		return
 	}
-	*files = append(*files, fileData{name: relPath, raw: raw, norm: norm})
-	*rawFps = append(*rawFps, rfp...)
-	*normFps = append(*normFps, nfp...)
+	f := fileData{name: relPath, ids: make([]uint32, len(toks)), lines: make([]uint32, len(toks))}
+	for i, t := range toks {
+		f.ids[i], f.lines[i] = v.id(t.Value), uint32(t.Line)
+	}
+	*files = append(*files, f)
 }

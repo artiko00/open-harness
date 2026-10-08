@@ -6,18 +6,27 @@ import (
 )
 
 // Un run de tokens idénticos (p. ej. keywords.go tras stripear strings deja
-// una tira de "true") no aporta señal estructural: no debe generar
-// fingerprints raw ni, por ende, auto-matches ni colisiones contra otros datos.
-func TestAddFile_dropsMonotoneRawRuns(t *testing.T) {
+// una tira de "true") no aporta señal estructural: todas sus ventanas son
+// monótonas y no compiten en la detección.
+func TestAddFile_monotoneRunOnlyYieldsMonotoneWindows(t *testing.T) {
 	var files []fileData
-	var raw, norm []Fingerprint
-	content := strings.Repeat("aa ", 60)
-	addFile(&files, &raw, &norm, "x.go", content, scanOpts{windowSize: 25})
-	if len(raw) != 0 {
-		t.Errorf("run monótono no debe producir fingerprints raw; got %d", len(raw))
+	v := newVocab()
+	addFile(&files, v, "x.go", strings.Repeat("aa ", 60), scanOpts{windowSize: 25})
+	if len(files) != 1 {
+		t.Fatalf("se esperaba 1 archivo registrado, got %d", len(files))
 	}
+	for _, w := range windowsOf(v, files[0], 25, false) {
+		if !w.mono {
+			t.Fatalf("ventana %d no marcada como monótona", w.start)
+		}
+	}
+}
+
+func TestAddFile_shorterThanWindowIsNotRegistered(t *testing.T) {
+	var files []fileData
+	addFile(&files, newVocab(), "x.go", "alpha beta", scanOpts{windowSize: 25})
 	if len(files) != 0 {
-		t.Errorf("archivo sin señal no debe registrarse; got %d", len(files))
+		t.Errorf("un archivo con menos tokens que la ventana no debe registrarse; got %d", len(files))
 	}
 }
 
@@ -49,17 +58,6 @@ func TestIsIdentifier(t *testing.T) {
 	}
 	if isIdentifier("") {
 		t.Error("vacío no debe ser identificador")
-	}
-}
-
-func TestNormalizeTokens_preservesLines(t *testing.T) {
-	in := tok([]string{"foo", "42"}, []int{3, 7})
-	out := normalizeTokens(in)
-	if out[0].Value != "ID" || out[0].Line != 3 {
-		t.Errorf("token 0 = %+v; want {ID 3}", out[0])
-	}
-	if out[1].Value != "NUM" || out[1].Line != 7 {
-		t.Errorf("token 1 = %+v; want {NUM 7}", out[1])
 	}
 }
 

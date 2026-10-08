@@ -28,12 +28,13 @@ type scanOpts struct {
 }
 
 // scan recorre el árbol de archivos, tokeniza los de código (según
-// pathmatch.CodeExtensions), calcula fingerprints crudos y normalizados, y
-// retorna los matches, la cuenta de escaneados y los omitidos. windowSize
-// (detección) y minTokens (reporte) son independientes.
-func scan(root string, cfg Config, minOverride int) ([]Match, int, []pathmatch.Skip, error) {
+// pathmatch.CodeExtensions) en un vocabulario compartido y retorna los
+// matches, la cuenta de escaneados y los omitidos. windowSize (detección) y
+// minTokens (reporte) son independientes. g corta el escaneo con
+// errOverBudget si se excede el presupuesto de memoria.
+func scan(root string, cfg Config, minOverride int, g memGuard) ([]Match, int, []pathmatch.Skip, error) {
 	var files []fileData
-	var rawFps, normFps []Fingerprint
+	v := newVocab()
 	var skips []pathmatch.Skip
 	scanned := 0
 	minTokens := cfg.Default.MinTokens
@@ -84,12 +85,13 @@ func scan(root string, cfg Config, minOverride int) ([]Match, int, []pathmatch.S
 			return nil
 		}
 		scanned++
-		addFile(&files, &rawFps, &normFps, relPath, string(data), opts)
-		return nil
+		addFile(&files, v, relPath, string(data), opts)
+		return g.check()
 	})
 
 	if err != nil {
 		return nil, scanned, skips, err
 	}
-	return findDuplicates(files, rawFps, normFps, opts.windowSize, cfg.Default.MinLines, minTokens), scanned, skips, nil
+	matches, err := findDuplicates(files, v, opts.windowSize, cfg.Default.MinLines, minTokens, g)
+	return matches, scanned, skips, err
 }

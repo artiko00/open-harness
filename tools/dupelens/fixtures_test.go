@@ -18,7 +18,7 @@ func fixturesCfg() Config {
 func scanFixtures(t *testing.T) []Match {
 	t.Helper()
 	root := filepath.Join("testdata", "fixtures")
-	matches, _, _, err := scan(root, fixturesCfg(), 0)
+	matches, _, _, err := scan(root, fixturesCfg(), 0, memGuard{})
 	if err != nil {
 		t.Fatalf("scan error: %v", err)
 	}
