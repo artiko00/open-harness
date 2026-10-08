@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const version = "0.3.3"
+const version = "0.3.4"
 
 var osExit = os.Exit
 

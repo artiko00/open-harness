@@ -12,6 +12,22 @@ changelog:
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7] - 2026-10-08
+
+All five tools are republished to fix their npm packaging: `linelens`,
+`secretlens` and `testlens` 0.3.4, `dupelens` 0.5.1, `scopelens` 0.2.2.
+
+### Fixed
+
+- **npm: the tool commands are linked after `npm install`** (F-025). The 20
+  platform packages declared a `bin` with the same name as their wrapper's
+  command; npm 10 deleted `node_modules/.bin/<tool>` when rolling back the
+  optional dependencies of the other platforms, so `npx <tool>` failed with a
+  registry 404 — for every tool, and for the meta-package too (only
+  `open-harness` stayed linked). The platform packages no longer declare `bin`,
+  and `scripts/check-versions.sh` now fails if one does. PyPI packages are
+  republished with the same versions; their content does not change.
+
 ## [0.3.6] - 2026-10-08
 
 `dupelens` 0.5.0 bounds its memory; the meta-package is republished to pin it. The

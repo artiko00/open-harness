@@ -102,12 +102,12 @@ func run(args []string) int {
 
 linelens, secretlens y testlens usan sólo **`0`** (ok) y **`1`** (violaciones encontradas, con `--fail`).
 
-**`dupelens` (v0.5.0) agrega el exit code `2` cuando el escaneo excede su presupuesto de memoria**
+**`dupelens` (v0.5.1) agrega el exit code `2` cuando el escaneo excede su presupuesto de memoria**
 (`--max-memory` / `DUPELENS_MAX_MEMORY` / `maxMemory`; default: el menor entre 1 GiB y el 25 % de la
 memoria disponible). Corta sin reporte parcial, con o sin `--fail`. Sus errores de uso y de config
 siguen en `1` ([ADR-024](docs/adr-024-dupelens-presupuesto-de-memoria.md)).
 
-**`scopelens` (v0.2.1) agrega el exit code `2`: "no se pudo medir".** El gate no puede inventar un conteo cuando le falta información, así que **nunca falla en verde**: cada condición que impide una medición confiable devuelve `2`, no `0`.
+**`scopelens` (v0.2.2) agrega el exit code `2`: "no se pudo medir".** El gate no puede inventar un conteo cuando le falta información, así que **nunca falla en verde**: cada condición que impide una medición confiable devuelve `2`, no `0`.
 
 | Code | Semántica |
 |---|---|
@@ -144,11 +144,11 @@ En `pre-commit`, el `2` también aborta el commit: una medición rota nunca se t
 ```
 open-harness/
 ├── tools/
-│   ├── linelens/        ← v0.3.3 (file length linter)
-│   ├── dupelens/        ← v0.5.0 (duplicate detector, Rabin-Karp)
-│   ├── secretlens/      ← v0.3.3 (secret/credential detector)
-│   ├── testlens/        ← v0.3.3 (test coverage detector, multi-language)
-│   └── scopelens/       ← v0.2.1 (per-PR file+line budget gate sobre git, exit 2 = no medible)
+│   ├── linelens/        ← v0.3.4 (file length linter)
+│   ├── dupelens/        ← v0.5.1 (duplicate detector, Rabin-Karp)
+│   ├── secretlens/      ← v0.3.4 (secret/credential detector)
+│   ├── testlens/        ← v0.3.4 (test coverage detector, multi-language)
+│   └── scopelens/       ← v0.2.2 (per-PR file+line budget gate sobre git, exit 2 = no medible)
 │   └── _shared/         ← módulos compartidos por los 5 binarios (sección 2.1)
 │       ├── tomlmin/     ← parser TOML de pyproject.toml
 │       ├── configload/  ← cadena de configuración multi-ecosistema
