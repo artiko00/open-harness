@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Salida en JSON en los cuatro tools
 
 Los cuatro tools SHALL aceptar `--format <console|json>`, con `console` por defecto. La salida JSON
@@ -97,6 +99,10 @@ Los cuatro tools SHALL usar: 0 cuando no hay violaciones o cuando no se pasó `-
 `--fail` está presente y hay violaciones; 1 ante comando desconocido, flag inválido, `--dir`
 inaccesible o `--config` explícita inexistente.
 
+`dupelens` SHALL usar además el exit code 2 cuando el escaneo excede su presupuesto de memoria: la
+medición no se completó, así que NO MUST terminar con 0 aunque no se haya pasado `--fail`. Los
+errores de uso y de configuración de `dupelens` SHALL seguir terminando con 1.
+
 #### Scenario: Sin --fail las violaciones no rompen el build
 
 - **GIVEN** un árbol con violaciones
@@ -107,6 +113,17 @@ inaccesible o `--config` explícita inexistente.
 
 - **GIVEN** el mismo árbol con violaciones
 - **WHEN** se ejecuta `<tool> check --dir . --fail`
+- **THEN** el exit code es 1
+
+#### Scenario: dupelens distingue la medición fallida de las violaciones
+
+- **GIVEN** un árbol cuyo escaneo excede el presupuesto de memoria de `dupelens`
+- **WHEN** se ejecuta `dupelens check --dir .` con o sin `--fail`
+- **THEN** el exit code es 2
+
+#### Scenario: Los errores de uso de dupelens siguen siendo 1
+
+- **WHEN** se ejecuta `dupelens check --max-memory 0MiB`
 - **THEN** el exit code es 1
 
 ### Requirement: Subcomandos y flags
@@ -189,4 +206,3 @@ conteo de excluidos y el límite aplicado.
 - **WHEN** se ejecuta `git commit`
 - **THEN** el commit se aborta
 - **AND** la salida del hook muestra el desglose de scopelens
-
