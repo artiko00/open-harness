@@ -521,6 +521,22 @@
         "[done] Bump dupelens 0.3.2 -> 0.4.0",
         "Publicar a npm (5 paquetes) y PyPI (4 wheels)"
       ]
+    },
+    {
+      "id": "F-024",
+      "category": "bugfix",
+      "description": "dupelens: memoria acotada en proyectos grandes — semillas ancladas k-1 y fusión por diagonal (sin eje cuadrático), representación compacta de tokens y huellas, y presupuesto maxMemory (default min(1 GiB, 25% de la memoria disponible)) con exit 2 al excederlo",
+      "passes": false,
+      "steps": [
+        "Spike: validar con el árbol fortinet/fortios y k copias que M1+M2 bajan el pico a ~2-3x el fuente",
+        "Semillas ancladas k-1 por grupo de ventanas idénticas y fusión por diagonal",
+        "Tokens internados (id + línea, 8 B), forma normalizada por tabla y huellas (hash, pos) ordenadas con prefiltro de únicas",
+        "Presupuesto maxMemory: flag --max-memory, env DUPELENS_MAX_MEMORY, clave maxMemory; absoluto o % de la memoria disponible",
+        "Memoria disponible: /proc/meminfo + cgroup en Linux, hw.memsize en macOS, GlobalMemoryStatusEx en Windows",
+        "debug.SetMemoryLimit + puntos de control con runtime/metrics; exit 2 al exceder el presupuesto",
+        "ADR nuevo, delta de cli-contract (exit 2 en dupelens), README, CHANGELOG, docs/CONFIGURATION.md y docs/UPGRADING.md",
+        "Tests TDD con 100% statement coverage; bump dupelens 0.4.1 -> 0.5.0"
+      ]
     }
   ]
 }
