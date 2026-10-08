@@ -1,7 +1,9 @@
 # release-docs Specification
 
 ## Purpose
-TBD - created by archiving change add-config-onboarding. Update Purpose after archive.
+
+Define la documentación que acompaña cada release: un CHANGELOG por paquete y una guía central de configuración que cubre los cinco tools y sus ecosistemas.
+
 ## Requirements
 ### Requirement: CHANGELOG por paquete
 

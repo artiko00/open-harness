@@ -1,7 +1,8 @@
 # duplicate-detection Specification
 
 ## Purpose
-TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
+Define cómo dupelens detecta código duplicado: qué cuenta como código, la detección de clones exact y renamed sobre ventanas de tokens, cómo se arman y reportan los hallazgos, y el presupuesto de memoria dentro del cual corre cada escaneo.
 
 ## Requirements
 

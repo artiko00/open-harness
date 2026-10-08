@@ -120,6 +120,13 @@ check_tool_dist() {
     pf="${NPM_DIR}/${tool}-${plat}/package.json"
     if [[ -f "$pf" ]]; then
       expect "npm ${tool}-${plat}" "$(pkg_version "$pf")" "$expected"
+      # Una plataforma con bin "<tool>" hace que npm borre el link del wrapper al
+      # revertir los opcionales de las otras plataformas (F-025).
+      if grep -qE '"bin"[[:space:]]*:' "$pf"; then
+        fail "npm ${tool}-${plat}: declara bin (borra node_modules/.bin/${tool} del wrapper)"
+      else
+        pass "npm ${tool}-${plat}: sin bin"
+      fi
     else
       fail "npm ${tool}-${plat}/package.json: no existe"
     fi

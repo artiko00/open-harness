@@ -8,8 +8,5 @@
   "cpu": [
     "arm64"
   ],
-  "license": "MIT",
-  "bin": {
-    "secretlens": "bin/secretlens"
-  }
+  "license": "MIT"
 }

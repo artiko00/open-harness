@@ -1,7 +1,9 @@
 # file-traversal Specification
 
 ## Purpose
-TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
+Define cómo los tools recorren el árbol de archivos: qué archivos se abren, cómo se reportan los omitidos y cuándo afectan el exit code, el manejo de líneas largas y el alcance de la detección de lenguaje.
+
 ## Requirements
 ### Requirement: Solo se abren archivos regulares
 

@@ -8,8 +8,5 @@
   "cpu": [
     "x64"
   ],
-  "license": "MIT",
-  "bin": {
-    "secretlens": "bin/secretlens.exe"
-  }
+  "license": "MIT"
 }

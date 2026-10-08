@@ -8,8 +8,5 @@
   "cpu": [
     "x64"
   ],
-  "license": "MIT",
-  "bin": {
-    "dupelens": "bin/dupelens.exe"
-  }
+  "license": "MIT"
 }

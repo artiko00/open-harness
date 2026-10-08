@@ -1,7 +1,9 @@
 # line-metrics Specification
 
 ## Purpose
-TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
+Define qué mide linelens en cada archivo de código: líneas de código (sin blancos ni comentarios), la métrica de anidamiento y la consistencia con el conteo físico, sobre el mismo alcance de archivos que el resto de los tools.
+
 ## Requirements
 ### Requirement: Conteo de líneas de código
 

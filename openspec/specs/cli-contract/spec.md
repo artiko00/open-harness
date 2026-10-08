@@ -1,7 +1,8 @@
 # cli-contract Specification
 
 ## Purpose
-TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
+Fija el contrato de línea de comandos común a los cinco tools: subcomandos y flags, salida en consola y JSON con formato homogéneo, diagnósticos en stderr y la semántica de exit codes, incluido el 2 de "no se pudo medir" de scopelens y dupelens.
 
 ## Requirements
 
