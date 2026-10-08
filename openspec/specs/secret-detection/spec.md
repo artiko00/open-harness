@@ -1,7 +1,9 @@
 # secret-detection Specification
 
 ## Purpose
-TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
+Define qué detecta secretlens como credencial: asignaciones con y sin comillas, prefijos de proveedor, entropía, secretos repartidos en varias líneas y contenido UTF-16, junto con el allowlist y los patterns custom que se suman a los integrados.
+
 ## Requirements
 ### Requirement: Asignaciones sin comillas
 

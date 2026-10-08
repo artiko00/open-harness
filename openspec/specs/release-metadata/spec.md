@@ -1,7 +1,9 @@
 # release-metadata Specification
 
 ## Purpose
-TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
+Define los metadatos de release y distribución: la constante version de cada main.go como única fuente de verdad, el gate que verifica su sincronía en docs, npm y PyPI, la forma de los paquetes npm y la alineación de README, backlog y ADRs con lo implementado.
+
 ## Requirements
 ### Requirement: Fuente única de verdad para la versión
 

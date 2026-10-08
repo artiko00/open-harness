@@ -1,7 +1,9 @@
 # tutorial-command Specification
 
 ## Purpose
-TBD - created by archiving change add-config-onboarding. Update Purpose after archive.
+
+Define el flag --tutorial de cada tool, que imprime una guía estática de configuración con sus claves, flags y ejemplos, sin necesidad de abrir la documentación.
+
 ## Requirements
 ### Requirement: Flag `--tutorial` en cada tool
 

@@ -1,7 +1,9 @@
 # git-integration Specification
 
 ## Purpose
-TBD - created by archiving change add-scopelens. Update Purpose after archive.
+
+Define cómo scopelens obtiene el diff a través del binario git: resolución de la rama base, invocación acotada y no intrusiva, parseo robusto de rutas y la regla de que ningún error operativo de git degrada a un exit 0.
+
 ## Requirements
 ### Requirement: Ningún error operativo degrada a exit 0
 

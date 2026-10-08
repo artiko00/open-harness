@@ -1,7 +1,9 @@
 # suite-init Specification
 
 ## Purpose
-TBD - created by archiving change add-config-onboarding. Update Purpose after archive.
+
+Define el comando open-harness init del meta paquete, que crea de una vez los archivos de configuración de los cinco tools en el repositorio.
+
 ## Requirements
 ### Requirement: `open-harness init` crea todos los archivos de config
 

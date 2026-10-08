@@ -1,7 +1,9 @@
 # change-scope Specification
 
 ## Purpose
-TBD - created by archiving change add-scopelens. Update Purpose after archive.
+
+Define cómo scopelens mide el alcance de un PR: cuenta los archivos y líneas que cambian en la rama más lo staged, los clasifica en source, test y excluded, y compara ese conteo con el presupuesto para decidir el exit code de forma determinista.
+
 ## Requirements
 ### Requirement: Conteo acumulado de la rama, no del commit
 

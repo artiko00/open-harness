@@ -1,7 +1,9 @@
 # config-loading Specification
 
 ## Purpose
-TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
+Define cómo cada tool encuentra y lee su configuración: el archivo propio o la cadena pyproject.toml → package.json → composer.json fusionada campo por campo, el subset TOML soportado y qué errores de config fallan o solo se avisan.
+
 ## Requirements
 ### Requirement: Ruta de configuración explícita inexistente es un error
 

@@ -1,7 +1,9 @@
 # path-matching Specification
 
 ## Purpose
-TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
+Define la semántica compartida de rutas y globs de los cinco tools (módulo tools/_shared/pathmatch): exclusión por segmento, ** a cualquier profundidad al estilo gitignore y detección de contenido binario.
+
 ## Requirements
 ### Requirement: Módulo compartido de path matching
 

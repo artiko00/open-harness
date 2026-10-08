@@ -1,7 +1,9 @@
 # test-coverage-detection Specification
 
 ## Purpose
-TBD - created by archiving change fix-audit-findings. Update Purpose after archive.
+
+Define cómo testlens decide si un archivo de código tiene tests: detección determinista del lenguaje, el mapeo de nombres por lenguaje, qué cuenta como archivo de test y qué archivos quedan excluidos o se reportan como código sin usar.
+
 ## Requirements
 ### Requirement: Detección de lenguaje determinista
 
