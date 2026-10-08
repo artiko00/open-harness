@@ -88,3 +88,29 @@ Se preserva la línea de cada token en ambas pasadas para reportar rangos accion
 - **Positivo:** se detectan refactors con renames (Type-2) sin escribir un parser por lenguaje; solo una lista de keywords y una clasificación léxica.
 - **Negativo:** la clasificación es heurística; un token ambiguo entre keyword e identificador en un lenguaje no cubierto por la lista puede normalizarse distinto de lo ideal. El costo es a lo sumo un match Type-2 perdido o de más, nunca un fallo del core Type-1.
 - **Neutral:** no cubre Type-3 (clones con líneas insertadas/borradas) ni Type-4 (equivalencia semántica); eso sigue requiriendo AST o análisis de flujo, fuera del alcance de este ADR.
+
+## Extensión: semillas ancladas, extensión por diagonal y hash de 61 bits (0.5.0)
+
+El Rabin-Karp de este ADR se conserva; cambia qué se hace con las ventanas coincidentes. Hasta 0.4.x,
+`detect` enumeraba **todos los pares** de cada grupo de hash y creaba un hallazgo por ventana y por par
+antes de fusionar. Un bloque de L ventanas copiado k veces costaba L·k(k−1)/2 objetos: 16 MB de código
+generado superaban 3 GB. Ver [ADR-024](adr-024-dupelens-presupuesto-de-memoria.md) para el presupuesto
+de memoria que acompaña este cambio.
+
+- **Semillas ancladas.** Dentro de cada clase de ventanas idénticas (verificadas literalmente), cada
+  ocurrencia se empareja solo con la primera en orden canónico (ruta, posición): k−1 semillas. Como
+  cada ventana aporta como mucho una semilla, el total queda acotado por el número de ventanas.
+- **Extensión por diagonal.** Cada semilla se extiende hacia atrás y hacia adelante sobre su diagonal
+  (`idxB − idxA`) mientras los tokens coincidan y las ventanas pasen los filtros de ruido. Sin esto, un
+  archivo anterior en el orden que comparte solo parte de un bloque cambia el ancla a mitad de camino
+  y deja al par en pedazos por debajo de `minTokens`.
+- **Conteo de tokens = tramo real.** La fusión por líneas entre corridas se conserva, pero el conteo
+  es el tramo que abarcan en A, no `windowSize + pares − 1`, que en código periódico inflaba bloques
+  que en ninguna alineación eran contiguos.
+- **Hash módulo 2^61−1** (con `math/bits.Mul64`) en lugar de `1e9+7`: con cientos de millones de
+  ventanas, ~30 bits producían millones de colisiones falsas. La verificación literal sigue igual.
+- **Normalización por vocabulario.** `normalizeTokens` ya no copia el stream: cada token distinto se
+  interna una vez con su hash y el id de su forma normalizada, y la vista `renamed` se deriva por tabla.
+
+**Consecuencia en el reporte:** con tres o más copias se reportan los pares contra la primera (`a-b`,
+`a-c`; `b-c` queda implícito). El resultado de `--fail` no cambia.

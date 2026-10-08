@@ -12,6 +12,22 @@ changelog:
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.6] - 2026-10-08
+
+`dupelens` 0.5.0 bounds its memory; the meta-package is republished to pin it. The
+other tools are unchanged (`linelens` 0.3.3, `secretlens` 0.3.3, `testlens` 0.3.3,
+`scopelens` 0.2.1).
+
+### Changed
+
+- **`dupelens` no longer takes all the RAM on large repositories** (F-024). Memory
+  now grows linearly with the source and with the number of copies of a block (it
+  grew with their square), and every scan runs under a budget — by default the lower
+  of 1 GiB and 25% of the available memory, configurable with `--max-memory`,
+  `DUPELENS_MAX_MEMORY` or `maxMemory`. Exceeding it exits with code 2 instead of
+  being killed by the OS. See the
+  [dupelens changelog](tools/dupelens/CHANGELOG.md#050---2026-10-08).
+
 ## [0.3.5] - 2026-08-07
 
 Suite-wide fix in the shared TOML parser: every tool is republished

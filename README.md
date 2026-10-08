@@ -7,7 +7,7 @@ A monorepo of lightweight code quality tools — each one a single binary, zero 
 | Tool | Description | Status |
 |---|---|---|
 | [linelens](tools/linelens/) | File length linter — detects files exceeding a line limit | `v0.3.3` |
-| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic) | `v0.4.1` |
+| [dupelens](tools/dupelens/) | Code duplication detector (Rabin-Karp, language-agnostic, bounded memory) | `v0.4.1` |
 | [secretlens](tools/secretlens/) | Secret and credential detector (AWS keys, GitHub tokens, JWT, PEM, etc.) | `v0.3.3` |
 | [testlens](tools/testlens/) | Test coverage detector — finds source files without tests (multi-language) | `v0.3.3` |
 | [scopelens](tools/scopelens/) | Per-PR file- and line-budget gate — counts the branch-vs-base diff at local pre-commit | `v0.2.1` |
@@ -233,8 +233,12 @@ dupelens check --no-color
 # JSON output for tooling integrations
 dupelens check --format=json > report.json
 
-# Verbose timings to stderr
+# Verbose timings (and the memory budget in force) to stderr
 dupelens check --verbose
+
+# Memory budget: absolute or a percentage of the available memory
+dupelens check --max-memory 2GiB
+dupelens check --max-memory 40%
 
 # Generate default config (optionally to a custom path)
 dupelens init
@@ -259,7 +263,8 @@ dupelens init --output custom.json
     { "pattern": "**/*_test.go",     "skip": true },
     { "pattern": "**/migrations/**", "skip": true }
   ],
-  "exclude": ["node_modules", "vendor", ".git", "dist", "build"]
+  "exclude": ["node_modules", "vendor", ".git", "dist", "build"],
+  "maxMemory": "2GiB"
 }
 ```
 
@@ -268,6 +273,46 @@ dupelens init --output custom.json
 `ignoreImports` (default `true`) drops import declarations before tokenizing, the same way comments and string contents are already dropped: they are mandatory module-access syntax, not logic. This matters in modular codebases — a NestJS file opens with 5–15 `import { X } from 'Y';` lines, and once identifiers are normalized for renamed-clone detection, every file's header collapses to the same token stream, so any two files match. Set it to `false` to restore the pre-0.4.0 behaviour.
 
 Recognition is per language family, by file extension, with no parser involved — JS/TS (`import`, `export … from`, `require(…)`), Python (`import`, `from … import`), Go (`package`, `import ( … )`), Ruby, Rust, JVM, PHP, C/C++/ObjC, C#, Dart and Swift. Multi-line declarations are dropped whole. Executable statements that merely start with the same word — C#'s `using (var s = …)`, JS's dynamic `import('./x')` — are left alone.
+
+### Memory budget (`maxMemory`)
+
+Every `check` runs under a memory budget, so a large repository can no longer take the whole machine
+down. The default, `auto`, is **the lower of 1 GiB and 25% of the available memory** — the system's
+`MemAvailable` or, inside a cgroup with a limit (containers, CI runners, systemd scopes), its remaining
+headroom, whichever is lower. Because it is a share of what is *available* rather than of the total RAM,
+several instances running in parallel (one per open project or worktree) each get less as memory
+fills up.
+
+| Value | Meaning |
+|---|---|
+| *(unset)* | `auto` = min(1 GiB, 25% of available memory) |
+| `"512MiB"`, `"2GiB"` | absolute budget — raise or restrict it |
+| `"40%"` | percentage (1–100) of the available memory at startup |
+
+Precedence: `--max-memory` flag > `DUPELENS_MAX_MEMORY` environment variable > `maxMemory` key
+(in `dupelens.json`, `[tool.dupelens]` in `pyproject.toml`, `package.json` or `composer.json`) > `auto`.
+An explicit value is applied as is. If the available memory cannot be determined, `auto` and any
+percentage fall back to 1 GiB (macOS uses the total RAM).
+
+If the scan exceeds the budget, dupelens stops cleanly with **exit code 2** ("could not measure") and no
+partial report — with or without `--fail`, so a pre-commit hook never treats an unfinished scan as a
+pass:
+
+```
+dupelens: memory budget exceeded (1 GiB, from auto: min(1 GiB, 25% of available memory)): the scan could not be completed.
+Raise it with --max-memory, DUPELENS_MAX_MEMORY or the maxMemory config key (e.g. 2GiB or 50%), or narrow the scan with exclude.
+```
+
+| Exit code | Meaning |
+|---|---|
+| `0` | no duplicates, or duplicates without `--fail` |
+| `1` | duplicates with `--fail`, or invalid usage/config |
+| `2` | memory budget exceeded: the scan could not be completed |
+
+Since 0.5.0 memory grows **linearly** with the source and with the number of copies of a block (0.4.x
+grew with its square): the full `site-packages` of a Python install — 226 MB of `.py` — scans in 388 MB,
+where 0.4.1 went past 22 GB. With three or more copies of the same block, each copy is reported against
+the first one (`a-b`, `a-c`; `b-c` is implied), and `tokens` is the real span of the duplicated block.
 
 ### Output (console)
 
@@ -316,7 +361,7 @@ finding, and since `--fail` defaults to `exact` only, the gate loses no detectio
 The filter keys on the *first token of each line*, so a data block whose lines start with distinct
 identifiers (`entry_1(…)`, `entry_2(…)`) is not covered — exclude those paths in `dupelens.json`.
 
-### Limitations (v0.4.1)
+### Limitations (v0.5.0)
 
 - Detects contiguous **exact** and **alpha-renamed** clones (see `--fail-on`). Structural refactors — reordered statements, inserted or deleted lines (gapped/Type-3 clones), and behaviourally-equivalent rewrites (Type-4) — are still not detected; that requires AST analysis ([ADR-012](docs/adr-012-dupelens-rabin-karp-sobre-ast.md) explains the trade-off).
 

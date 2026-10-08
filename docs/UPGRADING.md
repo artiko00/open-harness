@@ -215,3 +215,62 @@ the tool printed the parse error and fell back to compiled defaults — may now
 load for the first time and change what the tool reports. If output shifts after
 this upgrade, that config was there all along; it just never made it past the
 parser.
+
+---
+
+# Upgrading to dupelens 0.5.0
+
+`dupelens` 0.5.0 bounds its memory. Reported by users whose large repositories made it take all the RAM:
+0.4.x grew with the **square** of the number of copies of a block, so 16 MB of generated or vendored
+code could need more than 3 GB, and a 226 MB `site-packages` went past 22 GB before the OS killed the
+session. 0.5.0 scans that same tree in 388 MB. Most setups need no change; three behaviors do change.
+
+## dupelens 0.5.0
+
+### A memory budget, with exit code 2 when it is exceeded
+
+Every `check` now runs under a budget. The default, `auto`, is the lower of **1 GiB** and **25% of the
+available memory** (the system's, or the remaining headroom of the cgroup the process runs in). Set it
+with `--max-memory`, the `DUPELENS_MAX_MEMORY` environment variable or the `maxMemory` config key, in
+that order of precedence, as `"512MiB"`, `"2GiB"` or `"40%"`.
+
+If a scan exceeds the budget, dupelens prints the budget, where it came from and how to raise it, and
+exits with **code 2** ("could not measure") without a partial report — with or without `--fail`.
+
+**Why:** an unbounded scan can take the whole machine down, and several projects or worktrees often run
+their hooks in parallel. A share of the *available* memory leaves room for the other instances.
+
+**Impact:** exit code `2` is new for dupelens. A pre-commit hook treats it as a failure, the same way it
+treats scopelens' `2`: an unfinished scan never counts as a pass.
+
+**What to do:** nothing for most repositories — the new engine fits 226 MB of source in under 400 MB.
+If a repository needs more, raise the budget in config:
+
+```json
+{ "maxMemory": "4GiB" }
+```
+
+or narrow the scan with `exclude`.
+
+### Three or more copies of a block are reported against the first one
+
+With copies in `a`, `b` and `c`, 0.4.x reported `a-b`, `a-c` and `b-c`; 0.5.0 reports `a-b` and `a-c`.
+`b-c` is implied: both are copies of `a`.
+
+**Why:** reporting every pair is exactly what made memory and time grow with the square of the copies.
+
+**Impact:** fewer findings, and lower `matchCount`/`exactCount` in the JSON. The result of `--fail` does
+not change: if any copy exists, there is still at least one finding.
+
+### `tokens` is the real span of the duplicated block
+
+0.4.x counted `windowSize + pairs − 1` while merging, adding one token per pair of matching windows even
+when they came from different alignments. In periodic code — constant lists, similar function
+signatures — it reported "50 tokens" for blocks that were never contiguous at any alignment (one case
+measured: 31 real tokens reported as 71). 0.5.0 counts the tokens the block actually spans.
+
+**Impact:** findings whose real span is below `minTokens` stop being reported, mostly in the `renamed`
+bucket. On the Python standard library, numpy, matplotlib and yt_dlp, the result of `--fail` is the same
+as with 0.4.1.
+
+**What to do:** nothing. If you relied on those findings, lower `minTokens`.

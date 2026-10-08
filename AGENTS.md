@@ -100,7 +100,12 @@ func run(args []string) int {
 
 ### 4.1 Exit codes
 
-Los primeros 4 tools (linelens, dupelens, secretlens, testlens) usan sólo **`0`** (ok) y **`1`** (violaciones encontradas, con `--fail`).
+linelens, secretlens y testlens usan sólo **`0`** (ok) y **`1`** (violaciones encontradas, con `--fail`).
+
+**`dupelens` (v0.5.0) agrega el exit code `2` cuando el escaneo excede su presupuesto de memoria**
+(`--max-memory` / `DUPELENS_MAX_MEMORY` / `maxMemory`; default: el menor entre 1 GiB y el 25 % de la
+memoria disponible). Corta sin reporte parcial, con o sin `--fail`. Sus errores de uso y de config
+siguen en `1` ([ADR-024](docs/adr-024-dupelens-presupuesto-de-memoria.md)).
 
 **`scopelens` (v0.2.1) agrega el exit code `2`: "no se pudo medir".** El gate no puede inventar un conteo cuando le falta información, así que **nunca falla en verde**: cada condición que impide una medición confiable devuelve `2`, no `0`.
 

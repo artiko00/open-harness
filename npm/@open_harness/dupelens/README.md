@@ -1,6 +1,6 @@
 # @open_harness/dupelens
 
-Code duplication detector. Uses **Rabin-Karp** rolling-hash fingerprinting over tokenized source — strings and comments are stripped before hashing to reduce false positives. Language-agnostic (Go, TS, JS, Python, Rust, Java, etc.). Single native binary, zero runtime dependencies.
+Code duplication detector. Uses **Rabin-Karp** rolling-hash fingerprinting over tokenized source — strings, comments and import declarations are stripped before hashing to reduce false positives. Detects **exact** (token-for-token) and **renamed** (same structure, different identifiers) clones. Language-agnostic (Go, TS, JS, Python, Rust, Java, etc.). Single native binary, zero runtime dependencies, with a **bounded memory budget**.
 
 Part of the [open-harness](https://github.com/artiko00/open-harness) monorepo. [Español abajo](#español).
 
@@ -17,15 +17,17 @@ The right native binary for your platform (Linux x64, macOS arm64, macOS x64, Wi
 ## Usage
 
 ```bash
-npx dupelens check                  # scan current directory with defaults
-npx dupelens check --fail           # exit 1 if duplicates found (CI / git hooks)
-npx dupelens check --min-tokens 30  # override the rolling window size
-npx dupelens check --format=json    # JSON output for tooling integrations
-npx dupelens check --dir ./src      # scan a specific directory
-npx dupelens check --verbose        # print timings to stderr
-npx dupelens check --no-color       # plain console output
-npx dupelens init                   # generate a default dupelens.json
-npx dupelens version                # print version
+npx dupelens check                     # scan current directory with defaults
+npx dupelens check --fail              # exit 1 if exact duplicates found (CI / git hooks)
+npx dupelens check --fail-on all       # which kinds break --fail: exact | renamed | all
+npx dupelens check --min-tokens 30     # override the report threshold
+npx dupelens check --max-memory 2GiB   # memory budget: <n>MiB, <n>GiB or <n>% of available memory
+npx dupelens check --format=json       # JSON output for tooling integrations
+npx dupelens check --dir ./src         # scan a specific directory
+npx dupelens check --verbose           # print timings and the memory budget to stderr
+npx dupelens check --no-color          # plain console output
+npx dupelens init                      # generate a default dupelens.json
+npx dupelens version                   # print version
 ```
 
 ## Configuration
@@ -36,19 +38,25 @@ Place a `dupelens.json` at the repo root:
 {
   "default": {
     "minTokens": 50,
-    "minLines": 5
+    "minLines": 5,
+    "windowSize": 0,
+    "ignoreImports": true
   },
   "rules": [
     { "pattern": "**/*_test.go",     "skip": true },
     { "pattern": "**/migrations/**", "skip": true }
   ],
-  "exclude": ["node_modules", "vendor", ".git", "dist", "build"]
+  "exclude": ["node_modules", "vendor", ".git", "dist", "build"],
+  "maxMemory": "2GiB"
 }
 ```
 
-- `minTokens` — window size of the rolling hash. Higher values catch only larger duplications.
-- `minLines` — filters short matches (e.g. back-to-back identical imports).
+- `minTokens` — report threshold: blocks shorter than this are not reported. `tokens` is the real span of the duplicated block.
+- `minLines` — filters short matches.
+- `windowSize` — detection window of the rolling hash, independent of `minTokens` (`0` = built-in default, 25).
+- `ignoreImports` — drops import declarations before tokenizing (default `true`).
 - `rules` — per-pattern `skip`. The first matching entry wins.
+- `maxMemory` — memory budget, see below (default: `auto`).
 
 ### Alternative: configure inside `package.json`
 
@@ -60,24 +68,39 @@ If you prefer not to keep a separate `dupelens.json`, add a `dupelens` key in yo
   "dupelens": {
     "default": { "minTokens": 50, "minLines": 5 },
     "rules": [{ "pattern": "**/*_test.go", "skip": true }],
-    "exclude": ["node_modules", "dist"]
+    "exclude": ["node_modules", "dist"],
+    "maxMemory": "2GiB"
   }
 }
 ```
 
-Precedence: `--config <path>` > `dupelens.json` > `package.json` key > built-in defaults. CLI flags (`--min-tokens`, `--format`, etc.) always win.
+Precedence: `--config <path>` > `dupelens.json` > the manifest chain (`pyproject.toml` > `package.json` > `composer.json`, merged field by field) > built-in defaults. CLI flags (`--min-tokens`, `--max-memory`, etc.) always win.
+
+## Memory budget
+
+Every `check` runs under a memory budget, so a large repository can no longer take the whole machine down. The default, `auto`, is **the lower of 1 GiB and 25% of the available memory** — the system's available memory or, inside a cgroup with a limit (containers, CI runners), its remaining headroom. Being a share of what is *available*, several instances running in parallel each get less as memory fills up.
+
+| Value | Meaning |
+|---|---|
+| *(unset)* | `auto` = min(1 GiB, 25% of available memory) |
+| `"512MiB"`, `"2GiB"` | absolute budget — raise or restrict it |
+| `"40%"` | percentage (1–100) of the available memory at startup |
+
+Precedence: `--max-memory` > `DUPELENS_MAX_MEMORY` environment variable > `maxMemory` config key > `auto`. If the scan exceeds the budget, dupelens stops with **exit code 2** and no partial report, with or without `--fail`.
+
+Memory grows linearly with the source and with the number of copies of a block: 226 MB of Python source scans in under 400 MB. With three or more copies of the same block, each copy is reported against the first one (`a-b`, `a-c`; `b-c` is implied).
 
 ## Output (console)
 
 ```
-DUPLICATES (2 match(es) found in 87 files):
+DUPLICATES (2 match(es) (1 exact · 1 renamed) found in 87 files):
 
-  src/auth.go:42-58  <->  src/users.go:12-28  (35 tokens)
+  src/auth.go:42-58  <->  src/users.go:12-28  (35 tokens, exact)
   | func validate(input string) error {
   | ...
-  src/db.go:1-10  <->  src/cache.go:1-10  (15 tokens)
+  src/db.go:1-10  <->  src/cache.go:1-10  (15 tokens, renamed)
 
-SUMMARY: 2 match(es) across 87 files
+SUMMARY: 2 match(es) (1 exact · 1 renamed) across 87 files
 Top duplicated files:
   - src/auth.go  (1 match(es))
 ```
@@ -88,11 +111,13 @@ Top duplicated files:
 {
   "scannedFiles": 87,
   "matchCount": 2,
+  "exactCount": 1,
+  "renamedCount": 1,
   "matches": [
     {
       "fileA": "src/auth.go", "startLineA": 42, "endLineA": 58,
       "fileB": "src/users.go", "startLineB": 12, "endLineB": 28,
-      "tokens": 35
+      "tokens": 35, "kind": "exact"
     }
   ],
   "summary": {
@@ -120,11 +145,11 @@ npx dupelens check --fail
 - Language-agnostic: the same binary scans Go, TypeScript, Python, Rust, Java, etc.
 - Fast: rolling hash detects matches in `O(n)` over the token stream.
 
-The trade-off is documented in [ADR-012](https://github.com/artiko00/open-harness/blob/main/docs/adr-012-dupelens-rabin-karp-sobre-ast.md).
+The trade-off is documented in [ADR-012](https://github.com/artiko00/open-harness/blob/main/docs/adr-012-dupelens-rabin-karp-sobre-ast.md); the memory budget in [ADR-024](https://github.com/artiko00/open-harness/blob/main/docs/adr-024-dupelens-presupuesto-de-memoria.md).
 
-## Limitations (v0.2.0)
+## Limitations (v0.5.0)
 
-- Detects only **literal** or near-literal duplication (token-by-token). Refactors with renamed variables are not flagged — that requires AST analysis.
+- Detects contiguous **exact** and **renamed** clones. Reordered statements, inserted or deleted lines (gapped clones) and behaviourally-equivalent rewrites are not detected — that requires AST analysis.
 - The algorithm is binary (match or no match); there is no similarity threshold flag.
 - Per-rule `minTokens` override does not work cross-file because window sizes must be uniform. Use `rules.skip` to exclude patterns entirely.
 
@@ -133,13 +158,14 @@ The trade-off is documented in [ADR-012](https://github.com/artiko00/open-harnes
 | Code | Meaning |
 |---|---|
 | `0` | No duplicates (or `--fail` not passed) |
-| `1` | Duplicates found and `--fail` was passed, or config error |
+| `1` | Duplicates found and `--fail` was passed, or usage/config error |
+| `2` | Memory budget exceeded: the scan could not be completed |
 
 ---
 
 ## Español
 
-Detector de duplicación de código. Usa fingerprinting **Rabin-Karp** (hash rodante) sobre el código tokenizado — los strings y comentarios se eliminan antes del hashing para reducir falsos positivos. Agnóstico al lenguaje (Go, TS, JS, Python, Rust, Java, etc.). Un solo binario nativo, cero dependencias.
+Detector de duplicación de código. Usa fingerprinting **Rabin-Karp** (hash rodante) sobre el código tokenizado — los strings, comentarios y declaraciones de import se eliminan antes del hashing para reducir falsos positivos. Detecta clones **exact** (token a token) y **renamed** (misma estructura, identificadores distintos). Agnóstico al lenguaje. Un solo binario nativo, cero dependencias, con **presupuesto de memoria acotado**.
 
 Parte del monorepo [open-harness](https://github.com/artiko00/open-harness).
 
@@ -154,28 +180,35 @@ El binario para tu plataforma se descarga automáticamente via `optionalDependen
 ### Uso
 
 ```bash
-npx dupelens check                  # escanea con defaults
-npx dupelens check --fail           # exit 1 si hay duplicados (CI / git hooks)
-npx dupelens check --min-tokens 30  # cambia el tamaño de ventana del hash rodante
-npx dupelens check --format=json    # salida JSON para integraciones
-npx dupelens check --dir ./src      # escanea un directorio específico
-npx dupelens check --verbose        # imprime timings en stderr
-npx dupelens check --no-color       # consola sin colores
-npx dupelens init                   # genera un dupelens.json por defecto
-npx dupelens version                # imprime la versión
+npx dupelens check                     # escanea con defaults
+npx dupelens check --fail              # exit 1 si hay duplicados exact (CI / git hooks)
+npx dupelens check --fail-on all       # qué rompe --fail: exact | renamed | all
+npx dupelens check --min-tokens 30     # cambia el umbral de reporte
+npx dupelens check --max-memory 2GiB   # presupuesto: <n>MiB, <n>GiB o <n>% de la memoria disponible
+npx dupelens check --format=json       # salida JSON para integraciones
+npx dupelens check --dir ./src         # escanea un directorio específico
+npx dupelens check --verbose           # imprime tiempos y el presupuesto en stderr
+npx dupelens check --no-color          # consola sin colores
+npx dupelens init                      # genera un dupelens.json por defecto
+npx dupelens version                   # imprime la versión
 ```
 
 ### Configuración
 
-Colocá un `dupelens.json` en la raíz del repo (ver ejemplo arriba).
+Colocá un `dupelens.json` en la raíz del repo (ver ejemplo arriba), o una key `dupelens` en tu `package.json` con la misma forma. Precedencia: `--config <path>` > `dupelens.json` > la cadena de manifiestos (`pyproject.toml` > `package.json` > `composer.json`, fusionados campo por campo) > defaults. Los flags CLI siempre ganan.
 
-- `minTokens` — tamaño de la ventana del hash rodante. Valores más altos detectan solo duplicaciones más grandes.
-- `minLines` — filtra matches cortos (ej. imports idénticos consecutivos).
+- `minTokens` — umbral de reporte: los bloques más cortos no se reportan. `tokens` es el tramo real del bloque duplicado.
+- `minLines` — filtra matches cortos.
+- `windowSize` — ventana de detección del hash rodante, independiente de `minTokens` (`0` = default interno, 25).
+- `ignoreImports` — descarta las declaraciones de import antes de tokenizar (default `true`).
 - `rules` — `skip` por patrón. Gana la primera regla coincidente.
+- `maxMemory` — presupuesto de memoria (default: `auto`).
 
-#### Alternativa: configurar dentro de `package.json`
+### Presupuesto de memoria
 
-Si preferís no tener un `dupelens.json` separado, agregá una key `dupelens` en tu `package.json` con la misma forma del archivo dedicado. Precedencia: `--config <path>` > `dupelens.json` > key en `package.json` > defaults. Los flags CLI (`--min-tokens`, `--format`, etc.) siempre ganan.
+Cada `check` corre bajo un presupuesto de memoria. El default, `auto`, es **el menor entre 1 GiB y el 25 % de la memoria disponible** (la del sistema o, dentro de un cgroup con límite, su margen). Se cambia con `--max-memory`, la variable `DUPELENS_MAX_MEMORY` o la clave `maxMemory`, en ese orden de precedencia, con un valor absoluto (`"512MiB"`, `"2GiB"`) o un porcentaje (`"40%"`). Si el escaneo excede el presupuesto, termina con **exit code 2** y sin reporte parcial, con o sin `--fail`.
+
+Con tres o más copias del mismo bloque, cada copia se reporta contra la primera (`a-b`, `a-c`; `b-c` queda implícito).
 
 ### Salida
 
@@ -191,11 +224,11 @@ Sirve con Husky, lefthook o GitHub Actions usando los mismos snippets de la secc
 - Agnóstico: el mismo binario escanea Go, TypeScript, Python, Rust, Java, etc.
 - Rápido: el hash rodante detecta matches en `O(n)` sobre el stream de tokens.
 
-El trade-off está documentado en [ADR-012](https://github.com/artiko00/open-harness/blob/main/docs/adr-012-dupelens-rabin-karp-sobre-ast.md).
+El trade-off está documentado en [ADR-012](https://github.com/artiko00/open-harness/blob/main/docs/adr-012-dupelens-rabin-karp-sobre-ast.md); el presupuesto de memoria, en [ADR-024](https://github.com/artiko00/open-harness/blob/main/docs/adr-024-dupelens-presupuesto-de-memoria.md).
 
-### Limitaciones (v0.2.0)
+### Limitaciones (v0.5.0)
 
-- Solo detecta duplicación **literal** o cuasi-literal (token a token). Refactors con variables renombradas no se detectan — eso requiere análisis AST.
+- Detecta clones contiguos **exact** y **renamed**. Sentencias reordenadas, líneas insertadas o borradas y reescrituras equivalentes no se detectan — eso requiere análisis AST.
 - El algoritmo es binario (hay match o no hay); no existe un flag de umbral de similitud.
 - El override de `minTokens` por regla no funciona entre archivos porque la ventana debe ser uniforme. Usá `rules.skip` para excluir patrones por completo.
 
@@ -204,7 +237,8 @@ El trade-off está documentado en [ADR-012](https://github.com/artiko00/open-har
 | Código | Significado |
 |---|---|
 | `0` | Sin duplicados (o no se pasó `--fail`) |
-| `1` | Hay duplicados con `--fail`, o error de configuración |
+| `1` | Hay duplicados con `--fail`, o error de uso o configuración |
+| `2` | Se excedió el presupuesto de memoria: no se pudo completar el escaneo |
 
 ## License
 

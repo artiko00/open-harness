@@ -103,6 +103,7 @@ Default config file: `dupelens.json`.
 | `rules[].minTokens` | int | — | Per-pattern token threshold. |
 | `rules[].skip` | bool | `false` | If `true`, matching files are skipped. |
 | `exclude` | []string | `node_modules`, `vendor`, `.git`, `dist`, `build`, `coverage`, `__pycache__`, `target`, `.next`, `.nuxt`, `out`, `.cache` | Directories not scanned. Setting it replaces the defaults. |
+| `maxMemory` | string | `auto` | Memory budget: `"<n>MiB"`, `"<n>GiB"` or `"<n>%"` of the available memory. `auto` (key absent) = the lower of 1 GiB and 25% of the available memory. Exceeding it stops the scan with exit code `2`. |
 
 ```json
 {
@@ -111,9 +112,17 @@ Default config file: `dupelens.json`.
     { "pattern": "**/*_test.go", "skip": true },
     { "pattern": "**/migrations/**", "skip": true }
   ],
-  "exclude": ["node_modules", "vendor", ".git", "dist", "build"]
+  "exclude": ["node_modules", "vendor", ".git", "dist", "build"],
+  "maxMemory": "2GiB"
 }
 ```
+
+The memory budget resolves as `--max-memory` flag > `DUPELENS_MAX_MEMORY` environment variable >
+`maxMemory` key > `auto`. "Available memory" is the system's (`MemAvailable` on Linux) or, inside a
+cgroup with a memory limit — containers, CI runners, systemd scopes — its remaining headroom, whichever
+is lower; macOS uses the total RAM. An explicit value is applied as is; a percentage that cannot be
+computed falls back to 1 GiB with a warning. See
+[ADR-024](adr-024-dupelens-presupuesto-de-memoria.md).
 
 The `--fail-on exact|renamed|all` flag (default `exact`) selects which clone kinds
 break `--fail`. See [ADR-012](adr-012-dupelens-rabin-karp-sobre-ast.md) and
