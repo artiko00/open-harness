@@ -145,7 +145,7 @@ En `pre-commit`, el `2` también aborta el commit: una medición rota nunca se t
 open-harness/
 ├── tools/
 │   ├── linelens/        ← v0.3.3 (file length linter)
-│   ├── dupelens/        ← v0.4.1 (duplicate detector, Rabin-Karp)
+│   ├── dupelens/        ← v0.5.0 (duplicate detector, Rabin-Karp)
 │   ├── secretlens/      ← v0.3.3 (secret/credential detector)
 │   ├── testlens/        ← v0.3.3 (test coverage detector, multi-language)
 │   └── scopelens/       ← v0.2.1 (per-PR file+line budget gate sobre git, exit 2 = no medible)
