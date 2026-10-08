@@ -5,6 +5,19 @@ All notable changes to `dupelens` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-10-08
+
+### Fixed
+
+- **npm: `npx dupelens` works after a local install.** The four platform packages
+  (`@open_harness/dupelens-<os>-<cpu>`) declared `"bin": { "dupelens": ... }`, the same
+  name as the wrapper's command. With npm 10, the optional dependencies for the
+  other platforms fail on `os`/`cpu` and, when npm rolls them back, it deletes
+  `node_modules/.bin/dupelens` — the wrapper's link. `npx dupelens` then looked the
+  package up in the registry and failed with a 404. The platform packages no
+  longer declare `bin`; the wrapper never used it (it resolves the binary through
+  `require.resolve`). No change to the binary or its behavior (F-025).
+
 ## [0.5.0] - 2026-10-08
 
 Bounded memory on large repositories (F-024). Reported by users whose projects made

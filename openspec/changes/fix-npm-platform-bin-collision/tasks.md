@@ -20,12 +20,12 @@
 
 ## 3. Release
 
-- [ ] 3.1 Bump: linelens/secretlens/testlens 0.3.3 → 0.3.4, dupelens 0.5.0 → 0.5.1, scopelens
+- [x] 3.1 Bump: linelens/secretlens/testlens 0.3.3 → 0.3.4, dupelens 0.5.0 → 0.5.1, scopelens
   0.2.1 → 0.2.2, meta 0.3.6 → 0.3.7 (npm y PyPI), y CHANGELOGs. Verificación: `check-versions.sh` en
   verde.
-- [ ] 3.2 Build: `build-npm-all.sh`, `build-npm.sh scopelens` y `build-pypi.sh` de los cinco tools y el
+- [x] 3.2 Build: `build-npm-all.sh`, `build-npm.sh scopelens` y `build-pypi.sh` de los cinco tools y el
   meta. Verificación: cada binario linux-x64 imprime su versión nueva y `twine check` pasa.
-- [ ] 3.3 Tests de los cinco tools y los cuatro `_shared`, y los cinco gates sobre el repo.
+- [x] 3.3 Tests de los cinco tools y los cuatro `_shared`, y los cinco gates sobre el repo.
   Verificación: todo en verde.
 - [ ] 3.4 Publicar npm (20 plataformas, 5 wrappers, meta) y PyPI (5 tools, `open-harness-suite`); tags.
   Verificación: `npm publish`/`twine upload` sin errores.

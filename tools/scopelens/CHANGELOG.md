@@ -5,6 +5,19 @@ All notable changes to `scopelens` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2026-10-08
+
+### Fixed
+
+- **npm: `npx scopelens` works after a local install.** The four platform packages
+  (`@open_harness/scopelens-<os>-<cpu>`) declared `"bin": { "scopelens": ... }`, the same
+  name as the wrapper's command. With npm 10, the optional dependencies for the
+  other platforms fail on `os`/`cpu` and, when npm rolls them back, it deletes
+  `node_modules/.bin/scopelens` — the wrapper's link. `npx scopelens` then looked the
+  package up in the registry and failed with a 404. The platform packages no
+  longer declare `bin`; the wrapper never used it (it resolves the binary through
+  `require.resolve`). No change to the binary or its behavior (F-025).
+
 ## [0.2.1] - 2026-08-07
 
 ### Fixed
